@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: var(--font-inter);
+  --color-darkpurple-grad: #1b0d29;
+  --color-purple-grad: #1b0d2900;
+  --color-violet: #5d4dbe;
+  --color-light-gray: #E0E3E3;
+  --color-dark-gray: #5C5F60;
+  --color-gray: #747778;
+  --color-light-beige: #FCFBF2;
+  --color-golden-brown: #736E42;
+  --color-offwhite: #D4D4D4;
+  --color-subtle-black: #191C1D;
+  --color-gray-3: #444748;
+  --color-gray-4: #6C7580;
+  --color-gray-5: #FBFDFD;
+  --color-gray-6: #EFF1F1;
+  --color-gray-7:#A8A9A9;
+  --color-gray-8:#878787;
+  --color-gray-9:#C4C7C7;
+  --color-light-violet: #E6DEFF;
+  --color-dark-violet: #25103A;
+  --color-light-black:#6C8080;
+  --color-disabled-text:#979898;
+  --color-disabled-button:#E4E4E4;
+  --color-light-violet:#F5F5F5;
+  --color-red:#FF5656;
+  --color-violet-2:#C0AFF3;
+  --color-violet-3:#8174D9;
+}
+
+body {
+  font-family: var(--font-inter), sans-serif;
+
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  background-color: transparent !important;
+  color: white !important;
+  font-size: 16px !important;
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  transition: background-color 1000s ease-in-out 0s,
+    -webkit-text-fill-color 1000s ease-in-out 0s;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height:8px
+}
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide arrows in Firefox */
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(36, 36, 36, 0.712);
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 10px;
+  border-radius: 6px;
+  background: #5d4dbe;
+}
+::-webkit-scrollbar-thumb:window-inactive {
+  background: #5d4dbe;
+}
+
+:root {
+}
+
+
+
+@theme inline {
+}
+
+@layer base {
+  * {
+  }
+  body {
+  }
+}
