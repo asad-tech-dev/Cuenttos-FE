@@ -8,6 +8,10 @@ import {
   WriteIcon,
   FavouriteIcon,
   ProfileIcon,
+  HomeActive,
+  LibraryActive,
+  FavouriteActive,
+  ProfileActive,
 } from "../icons";
 import Image from "next/image";
 
@@ -20,7 +24,7 @@ export default function Sidebar() {
       href: "/home",
       icon: (isActive: boolean) =>
         isActive ? (
-          <Image src="/home.svg" alt="Home" width={16} height={17} />
+          <HomeActive className="text-black" />
         ) : (
           <HomeIcon className="text-gray" />
         ),
@@ -30,7 +34,7 @@ export default function Sidebar() {
       href: "/library",
       icon: (isActive: boolean) =>
         isActive ? (
-          <Image src="/menu_book.svg" alt="Library" width={18} height={16} />
+          <LibraryActive className="text-black" />
         ) : (
           <LibraryIcon className="text-gray" />
         ),
@@ -46,7 +50,7 @@ export default function Sidebar() {
       href: "/favourite",
       icon: (isActive: boolean) =>
         isActive ? (
-          <Image src="/bookmark.svg" alt="Favourite" width={14} height={17} />
+          <FavouriteActive className="text-black" />
         ) : (
           <FavouriteIcon className="text-gray" />
         ),
@@ -56,7 +60,7 @@ export default function Sidebar() {
       href: "/profile",
       icon: (isActive: boolean) =>
         isActive ? (
-          <Image src="/person.svg" alt="Profile" width={16} height={16} />
+          <ProfileActive className="text-black" />
         ) : (
           <ProfileIcon className="text-gray" />
         ),

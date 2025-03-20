@@ -114,6 +114,11 @@ function CuenttoDetailPage() {
           height={16}
           color="black"
           className="cursor-pointer"
+          onClick={() =>
+            CustomToast({
+              title: "Cuentto actions have not been implemented yet.",
+            })
+          }
         />
       </div>
       {loading ? (
