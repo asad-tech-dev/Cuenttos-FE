@@ -1,5 +1,6 @@
 import AppHeader from "../components/headers/appHeader";
 import Sidebar from "../components/sidebar/mainSidebar";
+import { Toaster } from "@/components/ui/sonner"
 
 export default function RootLayout({
   children,
@@ -16,6 +17,7 @@ export default function RootLayout({
                 <main className="flex-1 ml-[256px] mt-[55px] py-6">{children}</main>
               </div>
             </div>
+            <Toaster />
           </body>
         </html>
       );
