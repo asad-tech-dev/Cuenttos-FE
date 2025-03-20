@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function OnboardHeader({ showButtons = true }: { showButtons?: boolean }) {
   return (
-    <div className="flex h-[55px] px-10 items-center backdrop-blur-sm justify-between bg-[#09090999]">
+    <div className="flex h-[55px] md:px-10 px-4 items-center backdrop-blur-sm justify-between bg-[#09090999]">
       <div>
         <Link href="/">
           <Image

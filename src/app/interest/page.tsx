@@ -55,13 +55,13 @@ export default function InterestPage() {
       <div className="relative z-10">
         <OnboardHeader showButtons={false} />
         <div className="flex items-center h-screen justify-center w-full ">
-          <div className="flex flex-col -mt-[55px] text-center gap-[30px] w-[760px] h-[352px]">
-            <h1 className="text-[32px] text-white font-normal leading-[40px]">
+          <div className="flex flex-col -mt-[55px] text-center gap-[30px] md:w-[760px] h-[352px]">
+            <h1 className="md:text-[32px] text-[26px] text-white font-normal md:leading-[40px] leading-[30px]">
               Tell us a little bit more about<br></br>yourself and your literary
               interests.
             </h1>
-            <div className="mt-[30px] flex flex-col w-[760px] items-center justify-center">
-              <div className=" grid grid-cols-3 gap-4 w-full justify-center ">
+            <div className="mt-[30px] flex flex-col md:w-[760px] w-[500px] items-center justify-center">
+              <div className=" grid md:grid-cols-3 grid-cols-2 gap-4 md:w-full w-[96%] justify-center ">
                 {moods.map((moods) => (
                   <button
                     key={moods.id}
@@ -80,7 +80,7 @@ export default function InterestPage() {
                 ))}
               </div>
             </div>
-            <div className="flex flex-row gap-4 items-center justify-end mt-[30px]">
+            <div className="flex flex-row gap-4 md:px-0 px-2 items-center justify-end mt-[30px]">
               <Link href="/login">
                 <button className="w-[110px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer">
                   Continue
