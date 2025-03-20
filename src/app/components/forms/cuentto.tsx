@@ -403,7 +403,7 @@ export default function CuenttoForm() {
                           height={24}
                           className="cursor-pointer w-[65px] rounded-tl-[4px] rounded-bl-[4px] h-[65px] object-cover object-center"
                         />
-                        <div className=" w-full relative bg-light-violet px-[20px] rounded-tr-[4px] rounded-br-[4px] flex justify-between">
+                        <div className=" w-full relative bg-violet-4 px-[20px] rounded-tr-[4px] rounded-br-[4px] flex justify-between">
                           <CloseIcon
                             width={23}
                             height={23}
