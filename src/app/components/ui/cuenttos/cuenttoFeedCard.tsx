@@ -1,7 +1,9 @@
+"use client";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { FavouriteIcon, CommentIcon, CupIcon, OptionIcon } from "../../icons";
+import CustomToast from "../../toasts/comingSoon";
 
 interface Cuentto {
   id: number;
@@ -68,6 +70,11 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
               width={4}
               height={16}
               className="cursor-pointer text-subtle-black"
+              onClick={() =>
+                CustomToast({
+                  title: "Cuentto actions have not been implemented yet.",
+                })
+              }
             />
           </div>
         </div>
@@ -102,7 +109,11 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
       </div>
 
       <div className="flex justify-between items-center">
-        <div className="flex items-center cursor-pointer gap-2">
+        <div className="flex items-center cursor-pointer gap-2"  onClick={() =>
+              CustomToast({
+                title: "Comments have not been implemented yet.",
+              })
+            }>
           <CommentIcon
             width={18}
             height={18}
@@ -117,11 +128,21 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
             width={18}
             height={18}
             className="cursor-pointer text-subtle-black"
+            onClick={() =>
+              CustomToast({
+                title: "Cuentto actions have not been implemented yet.",
+              })
+            }
           />
           <FavouriteIcon
             width={14}
             height={17}
             className="cursor-pointer text-subtle-black"
+            onClick={() =>
+              CustomToast({
+                title: "Saving Cuentto Feature have not been implemented yet.",
+              })
+            }
           />
         </div>
       </div>

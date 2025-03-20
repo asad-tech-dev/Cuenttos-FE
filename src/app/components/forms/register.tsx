@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import Spinner from "../ui/Spinner";
+import CustomToast from "@/app/components/toasts/comingSoon";
 
 const schema = z.object({
   username: z
@@ -153,7 +154,15 @@ export default function RegisterForm() {
           )}
         </button>
 
-        <button className="w-[211px] h-[40px] text-black bg-white cursor-pointer text-[14px] rounded-[8px] font-medium flex gap-4 justify-center items-center">
+        <button
+          className="w-[211px] h-[40px] text-black bg-white cursor-pointer text-[14px] rounded-[8px] font-medium flex gap-4 justify-center items-center"
+          type="button"
+          onClick={() =>
+            CustomToast({
+              title: "Sign in with Google has not been implemented yet.",
+            })
+          }
+        >
           <GoogleIcon width={20} height={20} className="text-black" />
           Continue with Google
         </button>

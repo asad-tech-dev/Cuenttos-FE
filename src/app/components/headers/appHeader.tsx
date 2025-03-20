@@ -1,6 +1,8 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import { BellIcon, SearchIcon } from "../icons";
+import CustomToast from "../toasts/comingSoon";
 
 export default function AppHeader() {
   return (
@@ -17,20 +19,26 @@ export default function AppHeader() {
         </Link>
       </div>
       <div className="flex flex-row gap-6 items-center justify-end">
-        <Link href="/">
-          <SearchIcon
-            width={17}
-            height={17}
-            className="cursor-pointer text-subtle-black"
-          />
-        </Link>
-        <Link href="/">
-          <BellIcon
-            width={20}
-            height={20}
-            className="cursor-pointer text-subtle-black"
-          />
-        </Link>
+        <SearchIcon
+          width={17}
+          height={17}
+          className="cursor-pointer text-subtle-black"
+          onClick={() =>
+            CustomToast({
+              title: "Search Functionality has not been implemented yet.",
+            })
+          }
+        />
+        <BellIcon
+          width={20}
+          height={20}
+          className="cursor-pointer text-subtle-black"
+          onClick={() =>
+            CustomToast({
+              title: "Notifications have not been implemented yet.",
+            })
+          }
+        />
       </div>
     </div>
   );

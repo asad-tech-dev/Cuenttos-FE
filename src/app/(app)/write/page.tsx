@@ -3,6 +3,7 @@ import checkAuth from "@/HOC/checkAuth";
 import { useEffect, useState } from "react";
 import { PlusIcon } from "@/app/components/icons";
 import Link from "next/link";
+import CustomToast from "@/app/components/toasts/comingSoon";
 function WritePage() {
   const [username, setUsername] = useState<string | null>(null);
 
@@ -53,7 +54,14 @@ function WritePage() {
                 </div>
               </div>
             </Link>
-            <div className="w-[288px] h-[347px] cursor-pointer flex flex-col bg-light-beige justify-between px-[40px] py-[40px] border-l-[5px] border-golden-brown rounded-tr-[10px] rounded-br-[10px]">
+            <div
+              className="w-[288px] h-[347px] cursor-pointer flex flex-col bg-light-beige justify-between px-[40px] py-[40px] border-l-[5px] border-golden-brown rounded-tr-[10px] rounded-br-[10px]"
+              onClick={() =>
+                CustomToast({
+                  title: "Writing Thought has not been implemented yet.",
+                })
+              }
+            >
               <span className="font-normal text-subtle-black  text-[22px] leading-[28px]">
                 Write a new <br></br>Thought
               </span>
