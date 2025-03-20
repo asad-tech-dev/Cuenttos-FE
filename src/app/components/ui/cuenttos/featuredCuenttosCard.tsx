@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-import CustomToast from "../../toasts/comingSoon";
 
 interface FeaturedCuentto {
   id: number;
