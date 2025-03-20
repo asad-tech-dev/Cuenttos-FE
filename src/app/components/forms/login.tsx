@@ -48,7 +48,7 @@ export default function LoginForm() {
       if (token) {
         localStorage.setItem("authToken", token);
       }
-      router.push("/interest");
+      router.push("/library");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
