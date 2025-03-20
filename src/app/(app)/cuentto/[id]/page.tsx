@@ -5,6 +5,7 @@ import axios from "axios";
 import { formatDistanceToNow } from "date-fns";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { SkeletonCuenttoDetail } from "@/app/components/skeletons/CuenttoDetail";
 import {
   FavouriteIcon,
   CommentIcon,
@@ -51,6 +52,7 @@ function CuenttoDetailPage() {
   const isFeatured = searchParams.get("featured") === "true";
   const [cuentto, setCuentto] = useState<CuenttoDetail | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [loading, setLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
@@ -78,6 +80,7 @@ function CuenttoDetailPage() {
     if (!id) return;
     const fetchCuentto = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem("authToken");
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/cuentto/detail/${id}`,
@@ -90,6 +93,8 @@ function CuenttoDetailPage() {
         setCuentto(response.data.cuentto);
       } catch (error) {
         console.error("Error fetching cuentto:", error);
+      }finally {
+        setLoading(false);
       }
     };
     fetchCuentto();
@@ -110,6 +115,10 @@ function CuenttoDetailPage() {
           className="cursor-pointer"
         />
       </div>
+      {loading ? (
+      <SkeletonCuenttoDetail />
+    ) : (
+      <>
       <div
         className="relative flex flex-col mt-[30px] justify-between rounded-[24px] bg-gray-5 h-[370px] p-[60px]"
         style={{
@@ -265,7 +274,8 @@ function CuenttoDetailPage() {
           />
         </div>
       </div>
-    </div>
-  );
-}
+      </>
+    )}
+  </div>
+);}
 export default checkAuth(CuenttoDetailPage);
