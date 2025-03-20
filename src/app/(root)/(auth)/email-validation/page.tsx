@@ -7,6 +7,7 @@ export default function ValidationPage() {
         alt="Google Icon"
         width={112}
         height={112}
+        className="-ml-[10px]"
       />
       <h1 className="text-[45px] text-white font-normal leading-[52px]">
         We have sent you an email to verify your account.
