@@ -5,7 +5,7 @@ export function SkeletonCuenttoDetail() {
     <div className="flex flex-col mt-[30px] space-y-5">
       <div className="relative flex flex-col justify-between rounded-[24px] bg-gray-6 h-[370px] p-[60px] animate-pulse">
         <div className="flex flex-col gap-[16px]">
-          <Skeleton className="h-[45px] w-[70%] rounded-3xl" />
+          <Skeleton className="h-[45px] w-[40%] rounded-3xl" />
           <Skeleton className="h-[20px] w-[150px] rounded-full" />
         </div>
 

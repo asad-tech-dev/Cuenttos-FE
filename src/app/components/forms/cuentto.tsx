@@ -40,7 +40,7 @@ const schema = z.object({
     .min(10, "Title must be at least 10 characters")
     .max(150, "Title cannot be longer than 80 characters"),
   description: z.string().min(1, "Description is required"),
-  duration: z.coerce.number().min(1, "Duration is required"),
+  duration: z.coerce.number().optional(),
   moodId: z.coerce.number().min(1, "Select at least one emotion"),
   musicId: z.coerce.number().optional(),
   groupIds: z.array(z.number()).optional(),
@@ -53,9 +53,17 @@ export default function CuenttoForm() {
     register,
     handleSubmit,
     setValue,
+    watch,
     trigger,
     formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema), mode: "onChange" });
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: {
+      description: "",
+      duration: 0,
+    },
+  });
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
@@ -80,6 +88,12 @@ export default function CuenttoForm() {
   const [openDialog, setOpenDialog] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const description = watch("description");
+
+  useEffect(() => {
+    const readingTime = estimateReadingTime(description);
+    setValue("duration", readingTime);
+  }, [description, setValue]);
   useEffect(() => {
     const fetchDurations = async () => {
       const tempDurations: Durations = {};
@@ -136,6 +150,15 @@ export default function CuenttoForm() {
       }
     }
   };
+
+  const estimateReadingTime = (text: string = ""): number => {
+    const trimmedText = text.trim();
+    if (trimmedText.length === 0) return 0;
+    const wordsPerMinute = 200;
+    const words = trimmedText.split(/\s+/);
+    return Math.ceil(words.length / wordsPerMinute);
+  };
+
   const selectMood = (id: number, label: string) => {
     if (selectedMood === label) {
       setValue("moodId", 0);
@@ -230,9 +253,9 @@ export default function CuenttoForm() {
   }, []);
 
   const onSubmit = async (data: FormData) => {
-    setLoading(true);
 
     try {
+      setLoading(true);
       const token = localStorage.getItem("authToken");
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/cuentto`, data, {
         headers: {
@@ -264,18 +287,16 @@ export default function CuenttoForm() {
       className="flex flex-col w-full mt-10"
     >
       <div className="flex w-full justify-between pb-[20px] border-b border-light-gray">
-        <div className="">
+        <div className="flex flex-row gap-[5px] items-center">
           <input
             {...register("duration")}
             type="number"
-            placeholder="2 min read"
-            className="text-dark-violet placeholder-dark-violet w-[1100px] text-[16px] bg-none outline-none  placeholder-black no-spinner"
+            className="text-dark-violet font-medium w-[10px] text-[16px] bg-none outline-none  placeholder-black no-spinner"
+            readOnly
           />
-          {errors.duration && (
-            <p className="text-red-400 text-left w-full">
-              {errors.duration.message}
+            <p className="text-dark-violet text-[16px] font-medium">
+            min read
             </p>
-          )}
         </div>
         <div className="flex flex-row items-center gap-[40px]">
           <MicIcon
@@ -506,6 +527,12 @@ export default function CuenttoForm() {
           rows={8}
           placeholder="Start typing here (Doesn’t have to be a large cuentto)"
           className="text-subtle-black placeholder-gray-7 w-full text-[16px] font-normal bg-none outline-none resize-none"
+          style={{ height: "auto" }}
+          onInput={(e) => {
+            const textarea = e.target as HTMLTextAreaElement;
+            textarea.style.height = "auto";
+            textarea.style.height = `${textarea.scrollHeight}px`;
+          }}
         />
         {errors.description && (
           <p className="text-red-400 text-left w-full">

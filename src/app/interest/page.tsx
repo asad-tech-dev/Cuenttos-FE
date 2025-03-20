@@ -81,7 +81,7 @@ export default function InterestPage() {
               </div>
             </div>
             <div className="flex flex-row gap-4 items-center justify-end mt-[30px]">
-              <Link href="/library">
+              <Link href="/login">
                 <button className="w-[110px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer">
                   Continue
                 </button>

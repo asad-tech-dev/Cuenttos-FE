@@ -55,7 +55,7 @@ export default function RegisterForm() {
           },
         }
       );
-      router.push("/login");
+      router.push("/interest");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
