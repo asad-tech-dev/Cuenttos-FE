@@ -110,7 +110,7 @@ function LibraryPage() {
           </>
         )}
       </div>
-      {loading1 ? (
+      {loading2 ? (
         <SkeletonCuenttoFeed />
       ) : (
         <>
