@@ -19,3 +19,7 @@ export { default as VolumeIcon } from "./VolumeIcon";
 export { default as MicIcon } from "./MicIcon";
 export { default as PlayIcon } from "./PlayIcon";
 export { default as CloseIcon } from "./CloseIcon";
+export { default as HomeActive } from "./HomeActive";
+export { default as LibraryActive } from "./LibraryActive";
+export { default as FavouriteActive } from "./FavouriteActive";
+export { default as ProfileActive } from "./ProfileActive";
