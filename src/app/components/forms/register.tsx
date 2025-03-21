@@ -159,7 +159,7 @@ export default function RegisterForm() {
           type="button"
           onClick={() =>
             CustomToast({
-              title: "Sign in with Google has not been implemented yet.",
+              title: "Coming Soon.",
             })
           }
         >

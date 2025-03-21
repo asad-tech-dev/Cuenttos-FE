@@ -58,7 +58,7 @@ function WritePage() {
               className="w-[288px] h-[347px] cursor-pointer flex flex-col bg-light-beige justify-between px-[40px] py-[40px] border-l-[5px] border-golden-brown rounded-tr-[10px] rounded-br-[10px]"
               onClick={() =>
                 CustomToast({
-                  title: "Writing Thought has not been implemented yet.",
+                  title: "Coming Soon.",
                 })
               }
             >
