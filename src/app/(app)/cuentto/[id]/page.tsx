@@ -54,27 +54,35 @@ function CuenttoDetailPage() {
   const [cuentto, setCuentto] = useState<CuenttoDetail | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
 
   useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
+    const playAudio = async () => {
+      if (!loading && audioRef.current) {
+        try {
+          await audioRef.current.play();
+          setIsPlaying(true);
+        } catch (err) {
+          console.error("Autoplay blocked", err);
+          setIsPlaying(false);
+        }
       }
     };
-  }, []);
+    const timeout = setTimeout(() => {
+      playAudio();
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [loading]);
 
   const togglePlayPause = () => {
     if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
+    if (audioRef.current.paused) {
       audioRef.current.play();
+      setIsPlaying(true);
+    } else {
+      audioRef.current.pause();
+      setIsPlaying(false);
     }
-
-    setIsPlaying(!isPlaying);
   };
 
   useEffect(() => {
@@ -116,7 +124,7 @@ function CuenttoDetailPage() {
           className="cursor-pointer"
           onClick={() =>
             CustomToast({
-              title: "Cuentto actions have not been implemented yet.",
+              title: "Coming Soon.",
             })
           }
         />
@@ -232,14 +240,15 @@ function CuenttoDetailPage() {
             )}
           </div>
           <div className="pt-[40px] flex flex-col gap-[50px] ">
-            <p className="text-[16px] font-normal leading-[28px] text-black">
-              {cuentto?.description}
-            </p>
+            <div
+              className="text-[16px] leading-[30x] font-normal leading-[28px] text-black"
+              dangerouslySetInnerHTML={{ __html: cuentto?.description ?? "" }}
+            />
             <span
               className="w-[236px] h-[40px] rounded-[200px] bg-light-violet flex flex-row justify-center items-center gap-[10px] cursor-pointer"
               onClick={() =>
                 CustomToast({
-                  title: "Reactions have not been implemented yet.",
+                  title: "Coming Soon.",
                 })
               }
             >
@@ -259,7 +268,7 @@ function CuenttoDetailPage() {
               className="flex items-center cursor-pointer gap-[15px]"
               onClick={() =>
                 CustomToast({
-                  title: "Comments have not been implemented yet.",
+                  title: "Coming Soon.",
                 })
               }
             >
@@ -277,7 +286,7 @@ function CuenttoDetailPage() {
               className="flex flex-row gap-[40px]"
               onClick={() =>
                 CustomToast({
-                  title: "Cuentto actions have not been implemented yet.",
+                  title: "Coming Soon.",
                 })
               }
             >

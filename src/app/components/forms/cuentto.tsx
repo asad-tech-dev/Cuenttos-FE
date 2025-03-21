@@ -1,5 +1,5 @@
 "use client";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import CustomRadioButtonGroup from "../ui/CustomRadioButtonGroup";
 import { Dialog } from "@/components/ui/dialog";
 import Spinner from "../ui/Spinner";
+import { Editor } from "@tinymce/tinymce-react";
 
 type Mood = {
   id: number;
@@ -54,6 +55,7 @@ export default function CuenttoForm() {
     handleSubmit,
     setValue,
     watch,
+    control,
     trigger,
     formState: { errors },
   } = useForm<FormData>({
@@ -89,7 +91,6 @@ export default function CuenttoForm() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const description = watch("description");
-
   useEffect(() => {
     const readingTime = estimateReadingTime(description);
     setValue("duration", readingTime);
@@ -253,7 +254,6 @@ export default function CuenttoForm() {
   }, []);
 
   const onSubmit = async (data: FormData) => {
-
     try {
       setLoading(true);
       const token = localStorage.getItem("authToken");
@@ -294,9 +294,7 @@ export default function CuenttoForm() {
             className="text-dark-violet font-medium w-[10px] text-[16px] bg-none outline-none  placeholder-black no-spinner"
             readOnly
           />
-            <p className="text-dark-violet text-[16px] font-medium">
-            min read
-            </p>
+          <p className="text-dark-violet text-[16px] font-medium">min read</p>
         </div>
         <div className="flex flex-row items-center gap-[40px]">
           <MicIcon
@@ -521,21 +519,39 @@ export default function CuenttoForm() {
         )}
       </div>
 
-      <div className="w-full pt-[70px] pb-[40px] border-gray-7 border-b overflow-hidden ">
-        <textarea
-          {...register("description")}
-          rows={8}
-          placeholder="Start typing here (Doesn’t have to be a large cuentto)"
-          className="text-subtle-black placeholder-gray-7 w-full text-[16px] font-normal bg-none outline-none resize-none"
-          style={{ height: "auto" }}
-          onInput={(e) => {
-            const textarea = e.target as HTMLTextAreaElement;
-            textarea.style.height = "auto";
-            textarea.style.height = `${textarea.scrollHeight}px`;
-          }}
+      <div className="w-full pt-[40px] pb-[40px] border-gray-7 border-b overflow-hidden ">
+        <Controller
+          name="description"
+          control={control}
+          render={({ field }) => (
+            <Editor
+              apiKey={process.env.NEXT_PUBLIC_TINY_MCE || ""}
+              value={field.value}
+              onEditorChange={(content) => field.onChange(content)}
+              init={{
+                branding: false,
+                highlight_on_focus: false,
+                height: 300,
+                menubar: false,
+                placeholder:
+                  "Start typing here (Doesn’t have to be a large cuentto)",
+                plugins:
+                  "anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount",
+                toolbar:
+                  "undo redo | fontsize | bold italic underline strikethrough | align lineheight | numlist bullist indent outdent | removeformat",
+                content_style: `
+                  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+                  body {
+                    font-family: 'Inter', sans-serif !important; font-size: 16px !important; color: #191C1D !important; padding-top: 10px !important;
+                  }
+                     .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before { color: #A8A9A9; margin-top: 14px !important;}
+                       'table { outline: none !important }'}`,
+              }}
+            />
+          )}
         />
         {errors.description && (
-          <p className="text-red-400 text-left w-full">
+          <p className="text-red-400 text-left w-full mt-[10px]">
             {errors.description.message}
           </p>
         )}

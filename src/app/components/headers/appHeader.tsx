@@ -25,7 +25,7 @@ export default function AppHeader() {
           className="cursor-pointer text-subtle-black"
           onClick={() =>
             CustomToast({
-              title: "Search Functionality has not been implemented yet.",
+              title: "Coming Soon.",
             })
           }
         />
@@ -35,7 +35,7 @@ export default function AppHeader() {
           className="cursor-pointer text-subtle-black"
           onClick={() =>
             CustomToast({
-              title: "Notifications have not been implemented yet.",
+              title: "Coming Soon.",
             })
           }
         />

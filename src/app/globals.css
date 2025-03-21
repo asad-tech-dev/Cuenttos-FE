@@ -82,6 +82,39 @@ input:-webkit-autofill:active {
 ::-webkit-scrollbar-thumb:window-inactive {
   background: #5d4dbe;
 }
+.tox .tox-statusbar__path {
+  display: none !important;
+}
+.tox .tox-collection--list .tox-collection__item--active:not(.tox-collection__item--state-disabled) {
+  background-color: #5d4dbe !important;
+  color: #fff;
+}
+
+.tox .tox-tbtn--active, .tox .tox-tbtn--enabled, .tox .tox-tbtn--enabled:focus, .tox .tox-tbtn--enabled:hover {
+  background: #ececec !important;
+  box-shadow: none;
+  color: #ffffff;
+}
+.tox :not(svg):not(rect) {
+  border: none !important;
+}
+
+.tox-tinymce {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.tox .tox-tbtn:focus::after {
+  border-radius: 3px;
+  bottom: 0;
+  box-shadow: none !important;
+  content: '';
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
 
 :root {
 }

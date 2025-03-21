@@ -72,7 +72,7 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
               className="cursor-pointer text-subtle-black"
               onClick={() =>
                 CustomToast({
-                  title: "Cuentto actions have not been implemented yet.",
+                  title: "Coming Soon.",
                 })
               }
             />
@@ -92,11 +92,18 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
             {cuentto.title || "Untitled"}
           </h2>
           <p className="mt-[6px] text-gray text-[16px] leading-[28px] font-normal">
-            {cuentto.description
-              ? cuentto.description.length > 300
-                ? `${cuentto.description.substring(0, 300)}...`
-                : cuentto.description
-              : "No description available."}
+            {cuentto.description ? (
+              <span
+                dangerouslySetInnerHTML={{
+                  __html:
+                    cuentto.description.length > 300
+                      ? `${cuentto.description.substring(0, 300)}...`
+                      : cuentto.description,
+                }}
+              />
+            ) : (
+              "No description available."
+            )}
           </p>
         </Link>
         <div className="mt-[6px]">
@@ -109,11 +116,14 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
       </div>
 
       <div className="flex justify-between items-center">
-        <div className="flex items-center cursor-pointer gap-2"  onClick={() =>
-              CustomToast({
-                title: "Comments have not been implemented yet.",
-              })
-            }>
+        <div
+          className="flex items-center cursor-pointer gap-2"
+          onClick={() =>
+            CustomToast({
+              title: "Coming Soon.",
+            })
+          }
+        >
           <CommentIcon
             width={18}
             height={18}
@@ -130,7 +140,7 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
             className="cursor-pointer text-subtle-black"
             onClick={() =>
               CustomToast({
-                title: "Cuentto actions have not been implemented yet.",
+                title: "Coming Soon.",
               })
             }
           />
@@ -140,7 +150,7 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
             className="cursor-pointer text-subtle-black"
             onClick={() =>
               CustomToast({
-                title: "Saving Cuentto Feature have not been implemented yet.",
+                title: "Coming Soon.",
               })
             }
           />
