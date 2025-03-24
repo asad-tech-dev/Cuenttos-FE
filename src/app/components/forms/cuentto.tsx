@@ -218,16 +218,16 @@ export default function CuenttoForm() {
       try {
         const token = localStorage.getItem("authToken");
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/music?limit=4`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/music`,
           {
             headers: {
               Authorization: token ? `Bearer ${token}` : "",
             },
           }
         );
-        setMusics(response.data.musics.slice(0, 4));
+        setMusics(response.data.musics.slice(0, 5));
       } catch (error) {
-        console.error("Error fetching moods:", error);
+        console.error("Error fetching musics:", error);
       }
     };
     fetchMusics();
@@ -337,14 +337,14 @@ export default function CuenttoForm() {
                     <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
                       Select a background music
                     </p>
-                    <div className=" flex flex-col h-[448px] mt-[50px] gap-4 w-full justify-start ">
+                    <div className=" flex flex-col max-h-[548px] mt-[40px] gap-4 w-full justify-start ">
                       {musics.map((music, index) => (
                         <div
                           key={music.id}
-                          className={`flex flex-row justify-between items-center w-full pb-[35px] pt-[20px]
+                          className={`flex flex-row justify-between items-center w-full pt-[14px]
                             ${
                               index !== musics.length - 1
-                                ? "border-b border-light-gray"
+                                ? "border-b border-light-gray pb-[25px]"
                                 : "border-none"
                             }`}
                           onClick={() =>
@@ -364,7 +364,7 @@ export default function CuenttoForm() {
                                 togglePlayPause(music.id, music.musicFile)
                               }
                             >
-                              <Image
+                              <img
                                 src={
                                   music.albumArt
                                     ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${music.albumArt}`
@@ -373,9 +373,10 @@ export default function CuenttoForm() {
                                 alt="music cover"
                                 width={24}
                                 height={24}
-                                className="cursor-pointer w-[56px] h-[56px] rounded-[8px] backdrop-blur-2xl object-cover object-center"
+                                className="cursor-pointer w-[56px] h-[56px] rounded-[8px] object-cover object-center"
+                                style={{ filter: "blur(0.7px)" }}
                               />
-                              <div className="w-[29px] h-[29px] absolute z-100 rounded-full flex justify-center items-center border-[1px] border-white cursor-pointer top-3.5 right-3.5">
+                              <div className="w-[29px] h-[29px] absolute z-1000 rounded-full flex justify-center items-center border-[1px] border-white cursor-pointer top-3.5 right-3.5">
                                 {playingMusicId === music.id ? (
                                   <Pause
                                     size={18}
@@ -384,8 +385,8 @@ export default function CuenttoForm() {
                                   />
                                 ) : (
                                   <PlayIcon
-                                    width={13}
-                                    height={13}
+                                    width={12}
+                                    height={12}
                                     className="cursor-pointer text-white"
                                   />
                                 )}
@@ -411,7 +412,7 @@ export default function CuenttoForm() {
                   <div>
                     {selectedMusic && (
                       <div className="flex flex-row">
-                        <Image
+                        <img
                           src={
                             selectedMusic.albumArt
                               ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${selectedMusic.albumArt}`
