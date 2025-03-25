@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { PlusIcon } from "@/app/components/icons";
 import Link from "next/link";
 import CustomToast from "@/app/components/toasts/comingSoon";
+import Image from "next/image";
 function WritePage() {
   const [username, setUsername] = useState<string | null>(null);
 
@@ -41,11 +42,19 @@ function WritePage() {
           </h2>
           <div className="flex flex-row gap-[30px] w-[600px] h-[348px]">
             <Link href="/cuentto/create">
-              <div className="bg-[url('/gradient.png')] bg-cover bg-center w-[288px] h-[347px] flex flex-col justify-between px-[40px] py-[40px] bg-white rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[40px] rounded-br-[40px] cursor-pointer bg-gradient-to-br from-[#FBEAE7] via-[#D8EDF6] to-[#FFD6C9]">
-                <span className="font-normal text-subtle-black  text-[22px] leading-[28px]">
+              <div className="relative w-[288px] h-[347px] flex flex-col justify-between px-[40px] py-[40px] bg-white rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[40px] rounded-br-[40px] cursor-pointer bg-gradient-to-br from-[#FBEAE7] via-[#D8EDF6] to-[#FFD6C9]">
+                <Image
+                  src="/gradient.png"
+                  alt="Gradient background"
+                  fill
+                  className="absolute inset-0 object-cover rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[40px] rounded-br-[40px]"
+                  priority
+                  quality={100}
+                />
+                <span className="relative z-10font-normal text-subtle-black  text-[22px] leading-[28px]">
                   Write a new <br></br>Cuentto
                 </span>
-                <div className="flex flex-row justify-end w-full">
+                <div className="flex z-1000 flex-row justify-end w-full">
                   <PlusIcon
                     width={21}
                     height={21}
