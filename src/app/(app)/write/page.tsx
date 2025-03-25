@@ -42,7 +42,7 @@ function WritePage() {
           </h2>
           <div className="flex flex-row gap-[30px] w-[600px] h-[348px]">
             <Link href="/cuentto/create">
-              <div className="relative w-[288px] h-[347px] flex flex-col justify-between px-[40px] py-[40px] bg-white rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[40px] rounded-br-[40px] cursor-pointer bg-gradient-to-br from-[#FBEAE7] via-[#D8EDF6] to-[#FFD6C9]">
+              <div className="relative w-[288px] h-[347px] flex flex-col justify-between px-[40px] py-[40px] bg-white rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[40px] rounded-br-[40px] cursor-pointer">
                 <Image
                   src="/gradient.png"
                   alt="Gradient background"

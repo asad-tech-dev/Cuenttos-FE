@@ -366,7 +366,7 @@ export default function CuenttoForm() {
                               }
                             >
                               {!imageLoaded && (
-                                <div className="w-[56px] h-[56px] rounded-[8px] bg-gray-300 animate-pulse absolute"></div>
+                                <div className="w-[56px] h-[56px] rounded-[8px] bg-gray-6 animate-pulse absolute"></div>
                               )}
                               <img
                                 src={
@@ -377,11 +377,11 @@ export default function CuenttoForm() {
                                 alt="music cover"
                                 width={56}
                                 height={56}
-                                className={`w-[56px] h-[56px] rounded-[8px] object-cover object-center transition-opacity duration-300 ${
+                                className={`w-[56px] h-[56px] rounded-[8px] object-cover object-center transition-opacity duration-500 ease-in ${
                                   imageLoaded ? "opacity-100" : "opacity-0"
                                 }`}
                                 style={{ filter: "blur(0.7px)" }}
-                                onLoad={() => setImageLoaded(true)}
+                                onLoad={() => setTimeout(() => setImageLoaded(true),200)}
                               />
                               <div className="w-[29px] h-[29px] absolute z-1000 rounded-full flex justify-center items-center border-[1px] border-white cursor-pointer top-3.5 right-3.5">
                                 {playingMusicId === music.id ? (
