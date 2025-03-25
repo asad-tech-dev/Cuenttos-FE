@@ -1,5 +1,6 @@
 import OnboardHeader from "../components/headers/onboardHeader";
 import { Toaster } from "@/components/ui/sonner";
+import Image from "next/image";
 
 export default function RootLayout({
   children,
@@ -8,15 +9,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className="h-screen overflow-hidden relative"
-        style={{
-          backgroundImage: "url('/onboard-cover.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
+      <body className=" relative h-screen overflow-hidden relative">
+        <Image
+          src="/onboard-cover.png"
+          alt="cover background"
+          fill
+          className="absolute inset-0 object-cover"
+          priority
+          quality={100}
+        />
+
         <div className="absolute inset-0 bg-gradient-to-l h-screen from-darkpurple-grad to-purple-grad z-0"></div>
 
         <div className="relative z-10">

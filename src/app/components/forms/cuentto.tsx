@@ -68,6 +68,7 @@ export default function CuenttoForm() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [step, setStep] = useState(1);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [sidebarContent, setSidebarContent] = useState("music");
@@ -364,6 +365,9 @@ export default function CuenttoForm() {
                                 togglePlayPause(music.id, music.musicFile)
                               }
                             >
+                              {!imageLoaded && (
+                                <div className="w-[56px] h-[56px] rounded-[8px] bg-gray-300 animate-pulse absolute"></div>
+                              )}
                               <img
                                 src={
                                   music.albumArt
@@ -371,10 +375,13 @@ export default function CuenttoForm() {
                                     : "/default-avatar.png"
                                 }
                                 alt="music cover"
-                                width={24}
-                                height={24}
-                                className="cursor-pointer w-[56px] h-[56px] rounded-[8px] object-cover object-center"
+                                width={56}
+                                height={56}
+                                className={`w-[56px] h-[56px] rounded-[8px] object-cover object-center transition-opacity duration-300 ${
+                                  imageLoaded ? "opacity-100" : "opacity-0"
+                                }`}
                                 style={{ filter: "blur(0.7px)" }}
+                                onLoad={() => setImageLoaded(true)}
                               />
                               <div className="w-[29px] h-[29px] absolute z-1000 rounded-full flex justify-center items-center border-[1px] border-white cursor-pointer top-3.5 right-3.5">
                                 {playingMusicId === music.id ? (
