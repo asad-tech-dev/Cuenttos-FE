@@ -23,7 +23,7 @@ export default function RootLayout({
 
         <div className="relative z-10">
           <OnboardHeader />
-          <main className="flex items-center h-screen md:justify-end justify-center w-full -mt-[55px] md:pr-[280px]">
+          <main className="flex items-center h-screen md:justify-end justify-center w-full -mt-[55px] md:pr-[280px] pr-[20px] md:pl-[0px] pl-[20px]">
             {children}
           </main>
         </div>
