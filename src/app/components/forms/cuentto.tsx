@@ -381,7 +381,7 @@ export default function CuenttoForm() {
                                   imageLoaded ? "opacity-100" : "opacity-0"
                                 }`}
                                 style={{ filter: "blur(0.7px)" }}
-                                onLoad={() => setTimeout(() => setImageLoaded(true),200)}
+                                onLoad={() => setTimeout(() => setImageLoaded(true),500)}
                               />
                               <div className="w-[29px] h-[29px] absolute z-1000 rounded-full flex justify-center items-center border-[1px] border-white cursor-pointer top-3.5 right-3.5">
                                 {playingMusicId === music.id ? (

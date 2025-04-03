@@ -23,7 +23,7 @@ const FeaturedCuenttoFeedCard: React.FC<{ cuentto: FeaturedCuentto }> = ({
 }) => {
   return (
     <div
-      className=" w-[278px] h-[290px] rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[40px] rounded-br-[40px] px-6 py-8 flex flex-col justify-between"
+      className=" w-[278px] h-[290px] rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[40px] rounded-br-[40px] p-8 flex flex-col justify-between"
       style={{ backgroundColor: cuentto.mood.color }}
     >
       <Link href={`/cuentto/${cuentto.id}?featured=true`}>
