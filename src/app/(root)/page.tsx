@@ -1,4 +1,6 @@
 import Link from "next/link";
+import VioletButton from "../components/buttons/VioletButton";
+import TextButton from "../components/buttons/textButton";
 export default function Page() {
   return (
     <div className="flex flex-col gap-[30px] w-[409px] h-[296px]">
@@ -11,14 +13,11 @@ export default function Page() {
       </p>
       <div className="flex flex-row gap-4 items-center justify-start">
         <Link href="/login">
-          <button className="w-[155px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer">
-            Write a Cuentto
-          </button>
+        <VioletButton text="Write a Cuentto" className="w-[155px] h-[40px] text-[14px] font-medium" />
+
         </Link>
         <Link href="/login">
-          <button className="w-[133px] h-[40px] text-white cursor-pointer text-[14px] font-medium justify-center items-center">
-            Explore Cuentto
-          </button>
+        <TextButton text="Explore Cuentto" className="w-[133px] h-[40px]" />
         </Link>
       </div>
     </div>

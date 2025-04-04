@@ -8,8 +8,9 @@ import { GoogleIcon } from "../icons";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Spinner from "../ui/Spinner";
 import CustomToast from "@/app/components/toasts/comingSoon";
+import VioletButton from "../buttons/VioletButton";
+import GoogleButton from "../buttons/GoogleButton";
 
 const schema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email format"),
@@ -101,34 +102,20 @@ export default function LoginForm() {
         Forgot Your Password?
       </p>
       <div className="flex flex-row gap-4 mt-[16px]  justify-start">
-        <button
-          disabled={loading}
+        <VioletButton
+          text="Sign In"
+          className="w-[92px] h-[40px] text-[14px] font-medium"
+          loading={loading}
           type="submit"
-          className="w-[92px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer"
-        >
-          {loading ? (
-            <Spinner
-              size="w-6 h-6"
-              color="border-white"
-              borderSize="border-3"
-            />
-          ) : (
-            "Sign In"
-          )}
-        </button>
+        />
 
-        <button
-          className="w-[211px] h-[40px] text-black bg-white cursor-pointer text-[14px] rounded-[8px] font-medium flex gap-4 justify-center items-center"
+        <GoogleButton
+          text="Continue with Google"
           type="button"
-          onClick={() =>
-            CustomToast({
-              title: "Coming Soon.",
-            })
-          }
-        >
-          <GoogleIcon width={20} height={20} className="text-black" />
-          Continue with Google
-        </button>
+          className=""
+          icon={<GoogleIcon width={20} height={20} className="text-black" />}
+          onClick={() => CustomToast({ title: "Coming Soon." })}
+        />
       </div>
       <p className="text-white mt-[16px] text-[14px] font-normal w-full text-left">
         Don’t have an account?{" "}
