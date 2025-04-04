@@ -141,7 +141,7 @@ export default function RegisterForm() {
       <div className="flex md:flex-row flex-col gap-4 mt-[16px] justify-start">
         <VioletButton
           text="Create Account"
-          className="w-[154px] h-[40px] text-[14px] font-medium"
+          className="w-[154px] text-[14px]"
           loading={loading}
           type="submit"
         />

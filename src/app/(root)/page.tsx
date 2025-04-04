@@ -13,7 +13,7 @@ export default function Page() {
       </p>
       <div className="flex flex-row gap-4 items-center justify-start">
         <Link href="/login">
-        <VioletButton text="Write a Cuentto" className="w-[155px] h-[40px] text-[14px] font-medium" />
+        <VioletButton text="Write a Cuentto" className="w-[155px] text-[14px]" />
 
         </Link>
         <Link href="/login">

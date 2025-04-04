@@ -104,7 +104,7 @@ export default function LoginForm() {
       <div className="flex flex-row gap-4 mt-[16px]  justify-start">
         <VioletButton
           text="Sign In"
-          className="w-[92px] h-[40px] text-[14px] font-medium"
+          className="w-[92px] text-[14px]"
           loading={loading}
           type="submit"
         />

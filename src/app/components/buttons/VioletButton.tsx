@@ -11,7 +11,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const VioletButton: React.FC<ButtonProps> = ({ text, className = "", loading = false, onClick, ...props }) => {
   return (
     <button
-      className={`bg-violet cursor-pointer rounded-[8px] text-white ${className}`}
+      className={`bg-violet cursor-pointer rounded-[8px] text-white font-medium h-[40px] ${className}`}
       onClick={onClick}
       disabled={loading || props.disabled}
       {...props}

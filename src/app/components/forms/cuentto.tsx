@@ -503,7 +503,7 @@ export default function CuenttoForm() {
                   <div className="flex flex-row justify-end items-center">
                     <VioletButton
                       text="Add Music"
-                      className="w-[120px] h-[40px]"
+                      className="w-[120px]"
                       type="button"
                       onClick={() => setIsSheetOpen(false)}
                     />
@@ -627,7 +627,7 @@ export default function CuenttoForm() {
                 </p>
                 <VioletButton
                   text="Next"
-                  className="w-[80px] h-[40px] font-medium"
+                  className="w-[80px]"
                   type="button"
                   onClick={handleNextStep}
                 />
@@ -678,7 +678,7 @@ export default function CuenttoForm() {
                 </p>
                 <VioletButton
                   text="Share"
-                  className="w-[87px] h-[40px] font-medium"
+                  className="w-[87px]"
                   loading={loading}
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
