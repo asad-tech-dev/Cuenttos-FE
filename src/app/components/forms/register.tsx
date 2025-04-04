@@ -9,8 +9,9 @@ import { Eye, EyeOff, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Checkbox } from "@radix-ui/react-checkbox";
-import Spinner from "../ui/Spinner";
 import CustomToast from "@/app/components/toasts/comingSoon";
+import VioletButton from "../buttons/VioletButton";
+import GoogleButton from "../buttons/GoogleButton";
 
 const schema = z.object({
   username: z
@@ -138,34 +139,20 @@ export default function RegisterForm() {
       )}
       {error && <p className="text-red-400 w-full text-left">{error}</p>}
       <div className="flex md:flex-row flex-col gap-4 mt-[16px] justify-start">
-        <button
-          disabled={loading}
+        <VioletButton
+          text="Create Account"
+          className="w-[154px] text-[14px]"
+          loading={loading}
           type="submit"
-          className="w-[154px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer"
-        >
-          {loading ? (
-            <Spinner
-              size="w-6 h-6"
-              color="border-white"
-              borderSize="border-3"
-            />
-          ) : (
-            "Create Account"
-          )}
-        </button>
+        />
 
-        <button
-          className="w-[211px] h-[40px] text-black bg-white cursor-pointer text-[14px] rounded-[8px] font-medium flex gap-4 justify-center items-center"
+        <GoogleButton
+          text="Continue with Google"
           type="button"
-          onClick={() =>
-            CustomToast({
-              title: "Coming Soon.",
-            })
-          }
-        >
-          <GoogleIcon width={20} height={20} className="text-black" />
-          Continue with Google
-        </button>
+          className=""
+          icon={<GoogleIcon width={20} height={20} className="text-black" />}
+          onClick={() => CustomToast({ title: "Coming Soon." })}
+        />
       </div>
 
       <p className="text-white mt-[16px] text-[14px] font-normal w-full text-left">

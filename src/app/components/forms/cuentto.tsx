@@ -11,8 +11,8 @@ import { CheckIcon, CloseIcon, MicIcon, MusicIcon, PlayIcon } from "../icons";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import CustomRadioButtonGroup from "../ui/CustomRadioButtonGroup";
 import { Dialog } from "@/components/ui/dialog";
-import Spinner from "../ui/Spinner";
 import { Editor } from "@tinymce/tinymce-react";
+import VioletButton from "../buttons/VioletButton";
 
 type Mood = {
   id: number;
@@ -381,7 +381,9 @@ export default function CuenttoForm() {
                                   imageLoaded ? "opacity-100" : "opacity-0"
                                 }`}
                                 style={{ filter: "blur(0.7px)" }}
-                                onLoad={() => setTimeout(() => setImageLoaded(true),500)}
+                                onLoad={() =>
+                                  setTimeout(() => setImageLoaded(true), 500)
+                                }
                               />
                               <div className="w-[29px] h-[29px] absolute z-1000 rounded-full flex justify-center items-center border-[1px] border-white cursor-pointer top-3.5 right-3.5">
                                 {playingMusicId === music.id ? (
@@ -499,13 +501,12 @@ export default function CuenttoForm() {
                     )}
                   </div>
                   <div className="flex flex-row justify-end items-center">
-                    <button
+                    <VioletButton
+                      text="Add Music"
+                      className="w-[120px]"
                       type="button"
-                      className="bg-violet w-[120px] h-[40px] rounded-[8px] text-white cursor-pointer"
                       onClick={() => setIsSheetOpen(false)}
-                    >
-                      Add Music
-                    </button>
+                    />
                   </div>
                 </>
               )}
@@ -624,13 +625,12 @@ export default function CuenttoForm() {
                 >
                   previous step
                 </p>
-                <button
+                <VioletButton
+                  text="Next"
+                  className="w-[80px]"
                   type="button"
                   onClick={handleNextStep}
-                  className="bg-violet w-[80px] h-[40px] rounded-[8px] text-white cursor-pointer"
-                >
-                  Next
-                </button>
+                />
               </div>
             </>
           )}
@@ -676,21 +676,13 @@ export default function CuenttoForm() {
                 >
                   previous step
                 </p>
-                <button
+                <VioletButton
+                  text="Share"
+                  className="w-[87px]"
+                  loading={loading}
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
-                  className="bg-violet w-[87px] h-[40px] rounded-[8px] text-white cursor-pointer"
-                >
-                  {loading ? (
-                    <Spinner
-                      size="w-6 h-6"
-                      color="border-white"
-                      borderSize="border-3"
-                    />
-                  ) : (
-                    "Share"
-                  )}
-                </button>
+                />
               </div>
             </>
           )}
