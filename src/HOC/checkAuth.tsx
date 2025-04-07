@@ -13,10 +13,23 @@ const checkAuth = <P extends object>(WrappedComponent: ComponentType<P>) => {
 
       if (!token) {
         router.replace("/login");
-      } else {
-        setIsAuthenticated(true);
-      }
-    }, [router]);
+        return}
+        try {
+          const payloadBase64 = token.split(".")[1];
+          const decodedPayload = atob(payloadBase64);
+          const payload = JSON.parse(decodedPayload);
+          const isExpired = payload.exp * 1000 < Date.now();
+          if (isExpired) {
+            localStorage.removeItem("authToken");
+            router.replace("/login");
+          } else {
+            setIsAuthenticated(true);
+          }
+        } catch (error) {
+          localStorage.removeItem("authToken");
+          router.replace("/login");
+        }
+      }, [router]);
 
     if (isAuthenticated === null) {
       return null;
