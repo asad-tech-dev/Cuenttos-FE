@@ -26,6 +26,7 @@ const checkAuth = <P extends object>(WrappedComponent: ComponentType<P>) => {
             setIsAuthenticated(true);
           }
         } catch (error) {
+          console.error("Invalid token", error);
           localStorage.removeItem("authToken");
           router.replace("/login");
         }
