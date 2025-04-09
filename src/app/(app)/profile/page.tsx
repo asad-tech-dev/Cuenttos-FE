@@ -34,7 +34,7 @@ function ProfileePage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(
+      await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/profile/delete`,
         data,
         {
