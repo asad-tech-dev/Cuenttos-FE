@@ -95,7 +95,7 @@ function ChildSafetyStandardsPage() {
                 Removal of CSAM:
               </span>{" "}
               Any content found to violate CSAE standards will be removed from
-              the platform, and the responsible user's account will be suspended
+              the platform, and the responsible user&apos;s account will be suspended
               or permanently banned, depending on the severity of the violation.
             </li>
             <li>
