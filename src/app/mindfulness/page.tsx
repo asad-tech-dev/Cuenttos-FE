@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import BreathingAnimation from "../components/breathinganimation/BreathingAnimation";
+// import BreathingAnimation from "../components/breathinganimation/BreathingAnimation";
 import Lottie from "lottie-react";
 export default function MindfulnessPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  // const [isPlaying, setIsPlaying] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(90);
   const [animationData, setAnimationData] = useState(null);
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function MindfulnessPage() {
       if (audioRef.current) {
         try {
           await audioRef.current.play();
-          setIsPlaying(true);
+          // setIsPlaying(true);
         } catch (e) {
           console.log("Autoplay prevented. User interaction is needed.", e);
         }
