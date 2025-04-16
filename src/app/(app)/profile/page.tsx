@@ -9,7 +9,7 @@ import { z } from "zod";
 import { BackIcon } from "@/app/components/icons";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Eye, EyeOff } from "lucide-react";
-import CustomToast from "@/app/components/toasts/comingSoon";
+import CustomToast from "@/app/components/toasts/toast";
 
 const schema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email format"),

@@ -123,9 +123,7 @@ function CuenttoDetailPage() {
           color="black"
           className="cursor-pointer"
           onClick={() =>
-            CustomToast({
-              title: "Coming Soon.",
-            })
+            CustomToast()
           }
         />
       </div>
@@ -247,9 +245,7 @@ function CuenttoDetailPage() {
             <span
               className="w-[236px] h-[40px] rounded-[200px] bg-light-violet flex flex-row justify-center items-center gap-[10px] cursor-pointer"
               onClick={() =>
-                CustomToast({
-                  title: "Coming Soon.",
-                })
+                CustomToast()
               }
             >
               <p className="text-[14px] font-medium text-black">
@@ -267,9 +263,7 @@ function CuenttoDetailPage() {
             <div
               className="flex items-center cursor-pointer gap-[15px]"
               onClick={() =>
-                CustomToast({
-                  title: "Coming Soon.",
-                })
+                CustomToast()
               }
             >
               <CommentIcon
@@ -285,9 +279,7 @@ function CuenttoDetailPage() {
             <div
               className="flex flex-row gap-[40px]"
               onClick={() =>
-                CustomToast({
-                  title: "Coming Soon.",
-                })
+                CustomToast()
               }
             >
               <CupIcon

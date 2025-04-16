@@ -114,7 +114,7 @@ export default function LoginForm() {
           type="button"
           className=""
           icon={<GoogleIcon width={20} height={20} className="text-black" />}
-          onClick={() => CustomToast({ title: "Coming Soon." })}
+          onClick={() => CustomToast()}
         />
       </div>
       <p className="text-white mt-[16px] text-[14px] font-normal w-full text-left">

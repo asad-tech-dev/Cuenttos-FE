@@ -24,9 +24,7 @@ export default function AppHeader() {
           height={17}
           className="cursor-pointer text-subtle-black"
           onClick={() =>
-            CustomToast({
-              title: "Coming Soon.",
-            })
+            CustomToast()
           }
         />
         <BellIcon
@@ -34,9 +32,7 @@ export default function AppHeader() {
           height={20}
           className="cursor-pointer text-subtle-black"
           onClick={() =>
-            CustomToast({
-              title: "Coming Soon.",
-            })
+            CustomToast()
           }
         />
       </div>

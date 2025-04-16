@@ -151,7 +151,7 @@ export default function RegisterForm() {
           type="button"
           className=""
           icon={<GoogleIcon width={20} height={20} className="text-black" />}
-          onClick={() => CustomToast({ title: "Coming Soon." })}
+          onClick={() => CustomToast()}
         />
       </div>
 
