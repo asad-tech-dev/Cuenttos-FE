@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 // import BreathingAnimation from "../components/breathinganimation/BreathingAnimation";
-import Lottie from "lottie-react";
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 export default function MindfulnessPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   // const [isPlaying, setIsPlaying] = useState(false);
@@ -74,8 +76,16 @@ export default function MindfulnessPage() {
             </h1>
 
             <div className="mt-[40px] flex justify-center">
-              {/* <BreathingAnimation /> */}
-              <Lottie animationData={animationData} loop={true} autoplay={true} style={{ width: 300, height: 300 }} />
+              {animationData ? (
+                <Lottie
+                  animationData={animationData}
+                  loop={true}
+                  autoplay={true}
+                  style={{ width: 300, height: 300 }}
+                />
+              ) : (
+                <Skeleton className="w-[300px] h-[300px] rounded-full bg-violet/20" />
+              )}
             </div>
 
             <div>
