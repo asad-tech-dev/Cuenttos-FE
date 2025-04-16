@@ -3,7 +3,6 @@ import checkAuth from "@/HOC/checkAuth";
 import { useEffect, useState } from "react";
 import { PlusIcon } from "@/app/components/icons";
 import Link from "next/link";
-import CustomToast from "@/app/components/toasts/comingSoon";
 import Image from "next/image";
 function WritePage() {
   const [username, setUsername] = useState<string | null>(null);
@@ -41,7 +40,7 @@ function WritePage() {
             WHAT ARE YOU WRITING TODAY?
           </h2>
           <div className="flex flex-row gap-[30px] w-[600px] h-[348px]">
-            <Link href="/cuentto/create">
+            <Link href="/mindfulness">
               <div className="relative w-[288px] h-[347px] flex flex-col justify-between px-[40px] py-[40px] bg-white rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[40px] rounded-br-[40px] cursor-pointer">
                 <Image
                   src="/gradient.png"
@@ -63,12 +62,10 @@ function WritePage() {
                 </div>
               </div>
             </Link>
-            <div
+            {/* <div
               className="w-[288px] h-[347px] cursor-pointer flex flex-col bg-light-beige justify-between px-[40px] py-[40px] border-l-[5px] border-golden-brown rounded-tr-[10px] rounded-br-[10px]"
               onClick={() =>
-                CustomToast({
-                  title: "Coming Soon.",
-                })
+                CustomToast({)
               }
             >
               <span className="font-normal text-subtle-black  text-[22px] leading-[28px]">
@@ -81,7 +78,7 @@ function WritePage() {
                   className="text-subtle-black"
                 />
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

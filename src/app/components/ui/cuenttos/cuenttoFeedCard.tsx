@@ -71,9 +71,7 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
               height={16}
               className="cursor-pointer text-subtle-black"
               onClick={() =>
-                CustomToast({
-                  title: "Coming Soon.",
-                })
+                CustomToast()
               }
             />
           </div>
@@ -119,9 +117,7 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
         <div
           className="flex items-center cursor-pointer gap-2"
           onClick={() =>
-            CustomToast({
-              title: "Coming Soon.",
-            })
+            CustomToast()
           }
         >
           <CommentIcon
@@ -139,9 +135,7 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
             height={18}
             className="cursor-pointer text-subtle-black"
             onClick={() =>
-              CustomToast({
-                title: "Coming Soon.",
-              })
+              CustomToast()
             }
           />
           <FavouriteIcon
@@ -149,9 +143,7 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
             height={17}
             className="cursor-pointer text-subtle-black"
             onClick={() =>
-              CustomToast({
-                title: "Coming Soon.",
-              })
+              CustomToast()
             }
           />
         </div>

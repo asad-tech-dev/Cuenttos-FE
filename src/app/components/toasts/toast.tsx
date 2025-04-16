@@ -1,8 +1,11 @@
-
 import { toast } from "sonner";
 
-const CustomToast = () => {
-  return toast("Download mobile app.", {
+interface ToastProps {
+  title: string;
+}
+
+const CustomToast = ({ title }: ToastProps) => {
+  return toast(title, {
     duration: 5000,
     position: "top-center",
     style: {
