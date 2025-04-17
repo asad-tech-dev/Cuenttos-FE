@@ -5,13 +5,46 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
-// import BreathingAnimation from "../components/breathinganimation/BreathingAnimation";
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 export default function MindfulnessPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  // const [isPlaying, setIsPlaying] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(90);
   const [animationData, setAnimationData] = useState(null);
+  const quotes = [
+    "Relax Your Mind For a Bit.",
+    "Let your body settle into stillness.",
+    "Feel the natural rhythm within you.",
+    "Notice the air around you.",
+    "Allow yourself to arrive in this moment.",
+    "Let your thoughts pass by like clouds.",
+    "Sense the space between movement and stillness.",
+    "Gently bring your awareness to your center.",
+    "Allow distractions to fade into the background.",
+    "Tune in to the quiet beneath the noise.",
+    "Be with what is, just as it is.",
+    "Let your attention rest softly.",
+    "Feel the present moment unfold.",
+    "There is nothing to do, nowhere to go.",
+    "Every moment is enough.",
+    "Stay connected to the stillness within.",
+    "Observe without needing to change anything.",
+    "Let calm expand from the inside out.",
+    "Feel grounded, steady, and supported.",
+    "Trust in the quiet strength of now.",
+    "Simply remain here, fully aware.",
+  ];
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length);
+        setFade(true);
+      }, 500);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, []);
   useEffect(() => {
     fetch("/breathing-animation.json")
       .then((res) => res.json())
@@ -33,7 +66,6 @@ export default function MindfulnessPage() {
       if (audioRef.current) {
         try {
           await audioRef.current.play();
-          // setIsPlaying(true);
         } catch (e) {
           console.log("Autoplay prevented. User interaction is needed.", e);
         }
@@ -71,8 +103,12 @@ export default function MindfulnessPage() {
       <div className="relative z-10">
         <div className="flex items-start mt-[200px] h-screen justify-center w-full">
           <div className="flex flex-col text-center md:px-0 px-[20px]">
-            <h1 className="md:text-[32px] text-[26px] text-white font-medium md:leading-[40px] leading-[30px]">
-              Relax Your Mind For a Bit
+            <h1
+              className={`md:text-[32px] text-[26px] text-white font-medium md:leading-[40px] leading-[30px] transition-opacity duration-500 ${
+                fade ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              {quotes[currentQuoteIndex]}
             </h1>
 
             <div className="mt-[40px] flex justify-center">
