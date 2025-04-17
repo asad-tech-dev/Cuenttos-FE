@@ -8,8 +8,9 @@ import Image from "next/image";
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 export default function MindfulnessPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [secondsLeft, setSecondsLeft] = useState(90);
+  const [secondsLeft, setSecondsLeft] = useState(60);
   const [animationData, setAnimationData] = useState(null);
+  const [showContinue, setShowContinue] = useState(true);
   const quotes = [
     "Relax Your Mind For a Bit.",
     "Let your body settle into stillness.",
@@ -35,6 +36,13 @@ export default function MindfulnessPage() {
   ];
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [fade, setFade] = useState(true);
+  useEffect(() => {
+    if (secondsLeft <= 0) {
+      setTimeout(() => {
+        setShowContinue(false);
+      }, 800);
+    }
+  }, [secondsLeft]);
   useEffect(() => {
     const interval = setInterval(() => {
       setFade(false);
@@ -124,28 +132,39 @@ export default function MindfulnessPage() {
               )}
             </div>
 
-            <div>
-              <p className="mt-[30px] text-white text-md font-medium">
-                {secondsLeft > 0 ? (
-                  `${secondsLeft} seconds left`
-                ) : (
-                  <Link
-                    href="/cuentto/create"
-                    className=" hover:text-violet transition-colors duration-300"
-                  >
-                    Start Writing
-                  </Link>
-                )}
-              </p>
-            </div>
+            {secondsLeft > 0 && (
+              <div className="mt-[30px] transition-all duration-1000 ease-in-out flex justify-center">
+                <p className="text-white text-md font-medium opacity-100 scale-100 transition-all duration-1000">
+                  {secondsLeft} seconds left
+                </p>
+              </div>
+            )}
 
-            <div className="flex flex-row gap-4 md:px-0 items-center justify-center mt-[80px]">
-              <Link href="/cuentto/create">
-                <button className="w-[150px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer">
-                  Continue Anyway
-                </button>
-              </Link>
-            </div>
+            {secondsLeft <= 0 && (
+              <div className="mt-[30px] flex justify-center transition-all duration-1000 ease-in-out opacity-100 scale-100">
+                <Link href="/cuentto/create">
+                  <button className="w-[120px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer transition-all duration-1000">
+                    Start Writing
+                  </button>
+                </Link>
+              </div>
+            )}
+
+            {showContinue && (
+              <div
+                className={`flex flex-row gap-4 md:px-0 items-center justify-center mt-[80px] transition-all duration-0 ease-in-out ${
+                  secondsLeft > 0
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-95"
+                }`}
+              >
+                <Link href="/cuentto/create">
+                  <button className="w-[150px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer">
+                    Continue Anyway
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
