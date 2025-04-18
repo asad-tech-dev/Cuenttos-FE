@@ -3,6 +3,7 @@
 import Image from "next/image";
 import OnboardHeader from "../headers/onboardHeader";
 import Link from "next/link";
+import { AnimatedGradientTextDemo } from "./animatedtext";
 
 export const Hero2 = () => {
   return (
@@ -14,8 +15,11 @@ export const Hero2 = () => {
       <div className="absolute  z-0 w-[750px] sm:w-[1536px] sm:h-[768px] lg:w-[2400px] llg:h-[800px] rounded-[100%] bg-white left-1/2 -translate-x-1/2  bg-[radial-gradient(closest-side,#fff_82%,#5d4dbe)] top-[calc(100%-96px)] sm:top-[calc(100%-120px)]"></div>
 
       <div className="relative z-10 pt-[72px] sm:pt-24">
-        <div className="flex justify-center mt-[80px]">
-          <div className="inline-flex relative">
+        <div className="flex flex-col justify-center items-center mt-[100px]">
+          <div className="flex items-center justify-center">
+            <AnimatedGradientTextDemo />
+          </div>
+          <div className="inline-flex relative mt-[30px]">
             <h1 className="text-7xl sm:text-9xl font-bold tracking-tightner text-center inline-flex">
               Wellness <br /> through Writing.
             </h1>
@@ -51,10 +55,10 @@ export const Hero2 = () => {
         </div>
 
         <div className="flex justify-center mt-8">
-            <Link href="/login">
-          <button className="bg-white text-black py-3 px-5 rounded-lg font-medium cursor-pointer">
-            Get Started
-          </button>
+          <Link href="/login">
+            <button className="bg-white text-black py-3 px-5 rounded-lg font-medium cursor-pointer">
+              Get Started
+            </button>
           </Link>
         </div>
       </div>
