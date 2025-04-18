@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["200", "300", "400", "500","600", "700"],
+  weight: ["200", "300", "400", "500", "600", "700"],
 });
 export const metadata: Metadata = {
   title: "Cuentto",
@@ -19,7 +20,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.variable}>{children}</body>
+      <body className={inter.variable}>
+          <main className="">
+            {children}
+          </main>
+        <Toaster />
+      </body>
     </html>
   );
 }
