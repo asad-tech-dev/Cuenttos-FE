@@ -16,10 +16,13 @@ const CTA: React.FC = () => {
               Join Over Thousands of Users To Transform Your Writing Experience
             </h2>
 
-            <p className="mx-auto max-w-xl md:px-5">
+            <p className="mx-auto max-w-3xl md:px-5">
               Discover a space where your thoughts flow freely. Cuentto empowers
               you to express, connect, and share without limits — all through a
               beautifully crafted social writing platform.
+            </p>
+            <p className="mx-auto max-w-2xl md:px-5 font-bold text-white text-sm mt-[20px]">
+              cuentto © 2025. All rights reserved
             </p>
 
             <div className="mt-4 flex flex-col sm:flex-row items-center sm:gap-4">
