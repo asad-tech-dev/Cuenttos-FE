@@ -116,10 +116,10 @@ const CardWithEffect = ({ children }: { children: React.ReactNode }) => {
             height: "300px",
             top: mousePosition.y - 150,
             left: mousePosition.x - 150,
-            background: "#5D2CA8",
+            background: "rgba(93, 44, 168, 0.3)",
             filter: "blur(100px)",
             transform: "translate(-0%, -0%)",
-            zIndex: 10, // Ensure the effect is on top
+            zIndex: 10,
             willChange: "transform, top, left",
           }}
         />
