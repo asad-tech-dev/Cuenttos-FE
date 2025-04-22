@@ -115,7 +115,7 @@ const TestimonialsColumn = (props: {
 
 export const Testimonials = () => {
   return (
-    <section className="bg-white py-[72px] md:w-[1000px] flex justify-center sm:py-24 mx-auto md:-mt-[10px] mt-[380px]">
+    <section className="bg-white py-[72px] md:w-[1000px] flex justify-center sm:py-24 mx-auto md:-mt-[0px] mt-[380px]">
       <div className="">
         <div className="flex flex-col justify-center items-center md:w-full w-[400px]">
           <h2 className="text-center md:text-5xl text-3xl font-bold tracking-tighter text-black">What our <span className="text-violet">users say</span></h2>
