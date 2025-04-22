@@ -3,8 +3,8 @@ import PlayStoreButton from "./PlayStoreButton";
 
 const CTA: React.FC = () => {
   return (
-    <main className="flex justify-center">
-    <section className="mt-10 mb-5 lg:my-20 w-[80%]">
+    <main className="flex justify-center md:-mt-[70px] md:mb-0 mb-[40px]">
+    <section className="lg:my-20 w-[80%]">
       <div className="relative h-full w-full z-10 mx-auto py-12 sm:py-20">
         <div className="h-full w-full">
           <div className="rounded-3xl opacity-95 absolute inset-0 -z-10 h-full w-full bg-black  bg-[size:6rem_4rem]">
