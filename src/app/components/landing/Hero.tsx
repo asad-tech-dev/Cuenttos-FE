@@ -24,10 +24,10 @@ export default function Hero() {
               <div className="flex items-center justify-center">
                 <AnimatedGradientTextDemo />
               </div>
-              <h1 className="text-[65px] text-white font-semibold text-center leading-[72px] w-[600px]">
+              <h1 className="text-[65px] text-white font-semibold text-center leading-[72px] md:w-[600px]">
                 Wellness through Writing.
               </h1>
-              <p className="text-[16px] text-center text-offwhite font-normal mt-[20px] leading-[24px] w-[500px]">
+              <p className="text-[16px] text-center text-offwhite font-normal mt-[20px] leading-[24px] md:w-[500px]">
                 In a world dominated by dopamine generating algorithms, Cuentto
                 provides a safe haven for connecting with yourself and others
                 through writing.
