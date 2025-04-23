@@ -15,7 +15,7 @@ export function AnimatedGradientTextDemo() {
         >
           Get on Apple and Play store
         </span>
-        <ChevronRight className="ml-1 size-3 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
+        <ChevronRight className="ml-1 size-3 text-white transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
       </AnimatedGradientText>
     </div>
   );
