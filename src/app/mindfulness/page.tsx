@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import checkAuth from "@/HOC/checkAuth";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
-export default function MindfulnessPage() {
+ function MindfulnessPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(60);
   const [animationData, setAnimationData] = useState(null);
@@ -171,3 +172,4 @@ export default function MindfulnessPage() {
     </div>
   );
 }
+export default checkAuth(MindfulnessPage);
