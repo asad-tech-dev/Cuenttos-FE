@@ -2,15 +2,24 @@
 
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 
 export const ProductShowcase = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start end", "end start"],
+    offset: isMobile ? ["start 0.5", "end start"] : ["start end", "end start"],
   });
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
 
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const leftImageX = useTransform(scrollYProgress, [0, 1], [0, -500]);
   const centerImageX = useTransform(scrollYProgress, [0, 1], [0, 0]);
   const rightImageX = useTransform(scrollYProgress, [0, 1], [0, 500]);
@@ -18,7 +27,7 @@ export const ProductShowcase = () => {
   return (
     <div
       ref={containerRef}
-      className="bg-white text-white bg-gradient-to-b from-white to-[#5d4dbe]/20 py-[72px] sm:py-24 mx-auto relative overflow-hidden"
+      className="bg-white text-white bg-gradient-to-b from-white to-[#5d4dbe]/20 md:py-[92px] py-[40px] pb-0 mx-auto relative overflow-hidden"
     >
       <h2 className="text-center md:text-5xl text-3xl font-bold tracking-tighter text-black">
         Intuitive <span className="text-violet">interface</span>
@@ -32,8 +41,7 @@ export const ProductShowcase = () => {
         </p>
       </div>
 
-      <div className="relative flex justify-center items-center mt-14 h-[550px]">
-
+      <div className="relative flex justify-center items-center md:mt-14 h-[550px]">
         <motion.div
           style={{
             x: leftImageX,
@@ -46,7 +54,7 @@ export const ProductShowcase = () => {
             width={300}
             height={300}
             alt="App screen 1"
-            className="rounded-[20px]"
+            className="rounded-[20px] md:w-[300px] w-[200px]"
           />
         </motion.div>
 
@@ -62,7 +70,7 @@ export const ProductShowcase = () => {
             width={300}
             height={300}
             alt="App screen 2"
-            className="rounded-[20px]"
+            className="rounded-[20px] md:w-[300px] w-[200px]"
           />
         </motion.div>
 
@@ -78,7 +86,7 @@ export const ProductShowcase = () => {
             width={300}
             height={300}
             alt="App screen 3"
-            className="rounded-[20px]"
+            className="rounded-[20px] md:w-[300px] w-[200px]"
           />
         </motion.div>
       </div>
