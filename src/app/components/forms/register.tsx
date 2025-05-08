@@ -138,7 +138,7 @@ export default function RegisterForm() {
         <p className="text-red-400 text-left">{errors.terms.message}</p>
       )}
       {error && <p className="text-red-400 w-full text-left">{error}</p>}
-      <div className="flex md:flex-row flex-col gap-4 mt-[16px] justify-start">
+      <div className="flex flex-row gap-4 mt-[16px] justify-start">
         <VioletButton
           text="Create Account"
           className="w-[154px] text-[14px]"
