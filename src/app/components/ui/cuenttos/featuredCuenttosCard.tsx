@@ -1,22 +1,7 @@
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-
-interface FeaturedCuentto {
-  id: number;
-  title: string;
-  duration: number;
-  createdAt: string;
-  mood: {
-    title: string;
-    color: string;
-  };
-  user: {
-    username: string;
-    profileName: string;
-    profilePicture?: string;
-  };
-}
+import { FeaturedCuentto } from "@/types/cuentto";
 
 const FeaturedCuenttoFeedCard: React.FC<{ cuentto: FeaturedCuentto }> = ({
   cuentto,

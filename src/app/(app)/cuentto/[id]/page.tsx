@@ -1,12 +1,12 @@
 "use client";
 import checkAuth from "@/HOC/checkAuth";
 import { Pause } from "lucide-react";
-import axios from "axios";
 import { formatDistanceToNow } from "date-fns";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SkeletonCuenttoDetail } from "@/app/components/skeletons/CuenttoDetail";
 import CustomToast from "@/app/components/toasts/comingSoon";
+import { fetchDetailCuentto } from "@/lib/api/cuentto";
 import {
   FavouriteIcon,
   CommentIcon,
@@ -20,38 +20,14 @@ import {
   PlayIcon,
 } from "@/app/components/icons";
 import Image from "next/image";
-
-interface CuenttoDetail {
-  id: number;
-  title: string;
-  description: string;
-  duration: number;
-  createdAt: string;
-  mood: {
-    title: string;
-    color: string;
-  };
-  user: {
-    username: string;
-    profileName: string;
-    profilePicture?: string;
-  };
-  music: {
-    id: number;
-    name: string;
-    musicFile: number;
-  };
-  _count: {
-    comments: number;
-  };
-}
+import { Cuentto } from "@/types/cuentto";
 
 function CuenttoDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { id } = useParams();
   const isFeatured = searchParams.get("featured") === "true";
-  const [cuentto, setCuentto] = useState<CuenttoDetail | null>(null);
+  const [cuentto, setCuentto] = useState<Cuentto | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [loading, setLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -87,26 +63,18 @@ function CuenttoDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    const fetchCuentto = async () => {
+    const getCuentto = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("authToken");
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/cuentto/detail/${id}`,
-          {
-            headers: {
-              Authorization: token ? `Bearer ${token}` : "",
-            },
-          }
-        );
-        setCuentto(response.data.cuentto);
+        const data = await fetchDetailCuentto(Number(id));;
+        setCuentto(data);
       } catch (error) {
-        console.error("Error fetching cuentto:", error);
+        console.log(error)
       } finally {
         setLoading(false);
       }
     };
-    fetchCuentto();
+    getCuentto();
   }, [id]);
   return (
     <div className="flex flex-col gap-[30px] w-full py-[60px] px-[110px]">
@@ -122,9 +90,7 @@ function CuenttoDetailPage() {
           height={16}
           color="black"
           className="cursor-pointer"
-          onClick={() =>
-            CustomToast()
-          }
+          onClick={() => CustomToast()}
         />
       </div>
       {loading ? (
@@ -244,9 +210,7 @@ function CuenttoDetailPage() {
             />
             <span
               className="w-[236px] h-[40px] rounded-[200px] bg-light-violet flex flex-row justify-center items-center gap-[10px] cursor-pointer"
-              onClick={() =>
-                CustomToast()
-              }
+              onClick={() => CustomToast()}
             >
               <p className="text-[14px] font-medium text-black">
                 This cuentto makes me...
@@ -262,9 +226,7 @@ function CuenttoDetailPage() {
           <div className="flex flex-row justify-between items-center mt-[20px]">
             <div
               className="flex items-center cursor-pointer gap-[15px]"
-              onClick={() =>
-                CustomToast()
-              }
+              onClick={() => CustomToast()}
             >
               <CommentIcon
                 width={18}
@@ -278,9 +240,7 @@ function CuenttoDetailPage() {
             </div>
             <div
               className="flex flex-row gap-[40px]"
-              onClick={() =>
-                CustomToast()
-              }
+              onClick={() => CustomToast()}
             >
               <CupIcon
                 width={18}

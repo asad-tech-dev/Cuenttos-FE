@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import { z } from "zod";
 import { GoogleIcon } from "../icons";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -11,20 +10,18 @@ import Link from "next/link";
 import CustomToast from "@/app/components/toasts/comingSoon";
 import VioletButton from "../buttons/VioletButton";
 import GoogleButton from "../buttons/GoogleButton";
-
-const schema = z.object({
-  email: z.string().min(1, "Email is required").email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-type FormData = z.infer<typeof schema>;
+import { LoginFormData, loginSchema } from "@/lib/formSchemas/auth";
+import { loginUser, storeToken } from "@/lib/api/auth";
 
 export default function LoginForm() {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema), mode: "onChange" });
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+  });
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,24 +30,15 @@ export default function LoginForm() {
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const token = response.data.token;
+      const token = await loginUser(data);
       if (token) {
-        localStorage.setItem("authToken", token);
+        storeToken(token);
+        router.push("/library");
       }
-      router.push("/library");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
@@ -63,6 +51,7 @@ export default function LoginForm() {
       setLoading(false);
     }
   };
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}

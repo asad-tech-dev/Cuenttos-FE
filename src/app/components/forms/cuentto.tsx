@@ -2,7 +2,6 @@
 import { useForm, Controller } from "react-hook-form";
 import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Pause } from "lucide-react";
 import axios from "axios";
 import PublishCuentto from "../popups/publishCuentto";
@@ -13,41 +12,14 @@ import CustomRadioButtonGroup from "../ui/CustomRadioButtonGroup";
 import { Dialog } from "@/components/ui/dialog";
 import { Editor } from "@tinymce/tinymce-react";
 import VioletButton from "../buttons/VioletButton";
-
-type Mood = {
-  id: number;
-  title: string;
-  color: string;
-};
-type Group = {
-  id: number;
-  name: string;
-};
-type Music = {
-  id: number;
-  name: string;
-  artist: string;
-  albumArt: string;
-  musicFile: string;
-  length: number;
-};
-type Durations = {
-  [key: string]: string;
-};
-
-const schema = z.object({
-  title: z
-    .string()
-    .min(10, "Title must be at least 10 characters")
-    .max(150, "Title cannot be longer than 80 characters"),
-  description: z.string().min(1, "Description is required"),
-  duration: z.coerce.number().optional(),
-  moodId: z.coerce.number().min(1, "Select at least one emotion"),
-  musicId: z.coerce.number().optional(),
-  groupIds: z.array(z.number()).optional(),
-});
-
-type FormData = z.infer<typeof schema>;
+import { Mood } from "@/types/mood";
+import { Music, Durations } from "@/types/music";
+import { Group } from "@/types/group";
+import { fetchMusics } from "@/lib/api/music";
+import { fetchGroups } from "@/lib/api/group";
+import { fetchMoods } from "@/lib/api/mood";
+import { CuenttoSchema, CuenttoCreateData } from "@/lib/formSchemas/cuentto";
+import { createCuentto } from "@/lib/api/cuentto";
 
 export default function CuenttoForm() {
   const {
@@ -58,8 +30,8 @@ export default function CuenttoForm() {
     control,
     trigger,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
+  } = useForm<CuenttoCreateData>({
+    resolver: zodResolver(CuenttoSchema),
     mode: "onChange",
     defaultValues: {
       description: "",
@@ -195,75 +167,45 @@ export default function CuenttoForm() {
     }
   };
   useEffect(() => {
-    const fetchMoods = async () => {
+    const getMoods = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/moods`,
-          {
-            headers: {
-              Authorization: token ? `Bearer ${token}` : "",
-            },
-          }
-        );
-        setMoods(response.data.moods);
+        const data = await fetchMoods();
+        setMoods(data);
       } catch (error) {
-        console.error("Error fetching moods:", error);
+        console.log(error);
       }
     };
-    fetchMoods();
+    getMoods();
   }, []);
 
   useEffect(() => {
-    const fetchMusics = async () => {
+    const getMusics = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/music`,
-          {
-            headers: {
-              Authorization: token ? `Bearer ${token}` : "",
-            },
-          }
-        );
-        setMusics(response.data.musics.slice(0, 5));
+        const data = await fetchMusics();
+        setMusics(data);
       } catch (error) {
-        console.error("Error fetching musics:", error);
+        console.log(error);
       }
     };
-    fetchMusics();
+    getMusics();
   }, []);
 
   useEffect(() => {
-    const fetchGroups = async () => {
+    const getGroups = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/group/user`,
-          {
-            headers: {
-              Authorization: token ? `Bearer ${token}` : "",
-            },
-          }
-        );
-        setGroups(response.data.groups);
+        const data = await fetchGroups();
+        setGroups(data);
       } catch (error) {
-        console.error("Error fetching moods:", error);
+        console.log(error);
       }
     };
-    fetchGroups();
+    getGroups();
   }, []);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: CuenttoCreateData) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("authToken");
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/cuentto`, data, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
+      await createCuentto(data);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
