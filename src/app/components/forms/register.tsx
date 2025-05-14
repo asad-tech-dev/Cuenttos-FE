@@ -2,7 +2,6 @@
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import axios from "axios";
 import { GoogleIcon } from "../icons";
 import { Eye, EyeOff, Check } from "lucide-react";
@@ -12,21 +11,8 @@ import { Checkbox } from "@radix-ui/react-checkbox";
 import CustomToast from "@/app/components/toasts/comingSoon";
 import VioletButton from "../buttons/VioletButton";
 import GoogleButton from "../buttons/GoogleButton";
-
-const schema = z.object({
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters")
-    .max(30, "Username cannot be longer than 30 characters")
-    .regex(/^\S+$/, "Username cannot contain spaces"),
-  email: z.string().min(1, "Email is required").email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  terms: z.boolean().refine((val) => val === true, {
-    message: "You must accept the terms and conditions",
-  }),
-});
-
-type FormData = z.infer<typeof schema>;
+import { RegisterFormData,registerSchema } from "@/lib/formSchemas/auth";
+import { registerUser } from "@/lib/api/auth";
 
 export default function RegisterForm() {
   const {
@@ -35,7 +21,7 @@ export default function RegisterForm() {
     formState: { errors },
     setValue,
     watch,
-  } = useForm<FormData>({ resolver: zodResolver(schema), mode: "onChange" });
+  } = useForm<RegisterFormData>({ resolver: zodResolver(registerSchema), mode: "onChange" });
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -44,19 +30,11 @@ export default function RegisterForm() {
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const onSubmit = async (data: FormData) => {
+const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
     setError(null);
     try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await registerUser(data);
       router.push("/interest");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
@@ -70,6 +48,7 @@ export default function RegisterForm() {
       setLoading(false);
     }
   };
+
 
   return (
     <form

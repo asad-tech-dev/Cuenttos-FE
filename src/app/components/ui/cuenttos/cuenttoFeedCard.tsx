@@ -4,26 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { FavouriteIcon, CommentIcon, CupIcon, OptionIcon } from "../../icons";
 import CustomToast from "../../toasts/comingSoon";
-
-interface Cuentto {
-  id: number;
-  title: string;
-  description: string;
-  duration: number;
-  createdAt: string;
-  mood: {
-    title: string;
-    color: string;
-  };
-  user: {
-    username: string;
-    profileName: string;
-    profilePicture?: string;
-  };
-  _count: {
-    comments: number;
-  };
-}
+import { Cuentto } from "@/types/cuentto";
 
 const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
   return (

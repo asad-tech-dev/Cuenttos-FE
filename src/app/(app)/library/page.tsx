@@ -1,96 +1,46 @@
 "use client";
 import checkAuth from "@/HOC/checkAuth";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import CuenttoFeedCard from "@/app/components/ui/cuenttos/cuenttoFeedCard";
 import FeaturedCuenttoFeedCard from "@/app/components/ui/cuenttos/featuredCuenttosCard";
 import { SkeletonCuenttoFeatured } from "@/app/components/skeletons/CuenttoFeatured";
 import { SkeletonCuenttoFeed } from "@/app/components/skeletons/CuenttoFeed";
+import { Cuentto, FeaturedCuentto } from "@/types/cuentto";
+import { fetchAllCuenttos, fetchFeaturedCuenttos } from "@/lib/api/cuentto";
 
-interface Cuentto {
-  id: number;
-  title: string;
-  description: string;
-  duration: number;
-  createdAt: string;
-  mood: {
-    title: string;
-    color: string;
-  };
-  user: {
-    username: string;
-    profileName: string;
-    profilePicture?: string;
-  };
-  _count: {
-    comments: number;
-  };
-}
-interface Featured {
-  id: number;
-  title: string;
-  duration: number;
-  createdAt: string;
-  mood: {
-    title: string;
-    color: string;
-  };
-  user: {
-    username: string;
-    profileName: string;
-    profilePicture?: string;
-  };
-}
 function LibraryPage() {
   const [cuenttos, setCuenttos] = useState<Cuentto[]>([]);
-  const [featured, setFeatured] = useState<Featured[]>([]);
+  const [featured, setFeatured] = useState<FeaturedCuentto[]>([]);
   const [loading1, setLoading1] = useState(false);
   const [loading2, setLoading2] = useState(false);
   useEffect(() => {
-    const fetchCuenttos = async () => {
+    const getCuenttos = async () => {
       try {
         setLoading1(true);
-        const token = localStorage.getItem("authToken");
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/feed/all`,
-          {
-            headers: {
-              Authorization: token ? `Bearer ${token}` : "",
-            },
-          }
-        );
-        setCuenttos(response.data.cuenttos);
+        const data = await fetchAllCuenttos();
+        setCuenttos(data);
       } catch (error) {
-        console.error("Error fetching cuenttos:", error);
+        console.log(error)
       } finally {
         setLoading1(false);
       }
     };
-    fetchCuenttos();
+    getCuenttos();
   }, []);
 
   useEffect(() => {
-    const fetchFeaturedCuenttos = async () => {
+    const getFeatured = async () => {
       try {
         setLoading2(true);
-        const token = localStorage.getItem("authToken");
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/feed/featured`,
-          {
-            headers: {
-              Authorization: token ? `Bearer ${token}` : "",
-            },
-          }
-        );
-        console.log("data.featured:", response.data);
-        setFeatured(response.data.cuenttos || []);
+        const data = await fetchFeaturedCuenttos();
+        setFeatured(data);
       } catch (error) {
-        console.error("Error fetching featured cuenttos:", error);
+        console.log(error)
       } finally {
         setLoading2(false);
       }
     };
-    fetchFeaturedCuenttos();
+    getFeatured();
   }, []);
   return (
     <div className="pl-[110px]">

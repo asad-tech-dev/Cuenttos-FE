@@ -1,15 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import OnboardHeader from "../components/headers/onboardHeader";
 import { CheckIcon } from "../components/icons";
 import Image from "next/image";
+import { Mood } from "@/types/mood";
+import { fetchMoods } from "@/lib/api/mood";
 export default function InterestPage() {
-  type Mood = {
-    id: number;
-    title: string;
-  };
   const [activeGenres, setActiveGenres] = useState<string[]>([]);
   const [moods, setMoods] = useState<Mood[]>([]);
 
@@ -21,17 +18,15 @@ export default function InterestPage() {
     );
   };
   useEffect(() => {
-    const fetchMoods = async () => {
+    const getMoods = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/moods`
-        );
-        setMoods(response.data.moods);
+        const data = await fetchMoods();
+        setMoods(data);
       } catch (error) {
-        console.error("Error fetching moods:", error);
+        console.log(error);
       }
     };
-    fetchMoods();
+    getMoods();
   }, []);
 
   return (
@@ -52,8 +47,9 @@ export default function InterestPage() {
         <div className="flex items-center h-screen justify-center w-full ">
           <div className="flex flex-col -mt-[55px] text-center gap-[30px] md:w-[760px] h-[352px] md:px-0 px-[20px]">
             <h1 className="md:text-[32px] text-[26px] text-white font-normal md:leading-[40px] leading-[30px]">
-              Tell us a little bit more<br className="md:hidden block"></br>about<br className="md:block hidden"></br> yourself and your<br className="md:hidden block"></br>literary
-              interests.
+              Tell us a little bit more<br className="md:hidden block"></br>
+              about<br className="md:block hidden"></br> yourself and your
+              <br className="md:hidden block"></br>literary interests.
             </h1>
             <div className="mt-[30px] flex flex-col md:w-[760px] items-center justify-center items-start">
               <div className=" md:grid grid-cols-3 flex flex-wrap gap-4 md:w-full justify-start items-start ">
