@@ -29,7 +29,7 @@ const Aboutdata: datatype[] = [
 
 const Explain = () => {
   return (
-    <div className="bg-white" id="features">
+    <div className="bg-white" id="explain">
       <div className="mx-auto max-w-2xl py-20 px-4 sm:px-6 lg:max-w-7xl lg:px-8">
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-4 lg:gap-x-8 mt-6">

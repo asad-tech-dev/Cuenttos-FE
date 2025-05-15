@@ -1,7 +1,9 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import VioletButton from "../buttons/VioletButton";
 import { AnimatedGradientTextDemo } from "./animatedtext";
+import { ChevronDown } from "lucide-react";
 import OnboardHeader from "../headers/onboardHeader";
 
 export default function Hero() {
@@ -39,12 +41,17 @@ export default function Hero() {
                     className="w-[155px] text-[14px]"
                   />
                 </Link>
-                {/* <Link href="/login">
-                  <TextButton
-                    text="Explore Cuentto"
-                    className="w-[133px] h-[40px]"
-                  />
-                </Link> */}
+
+                <div
+                  className="absolute bottom-30 left-1/2 -translate-x-8 cursor-pointer flex flex-col gap-0 text-white animate-bounce"
+                  onClick={() => {
+                    const element = document.getElementById("explain");
+                    element?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  <ChevronDown size={46} />
+                  <ChevronDown size={46} className="-mt-[30px]" />
+                </div>
               </div>
             </div>
           </div>
