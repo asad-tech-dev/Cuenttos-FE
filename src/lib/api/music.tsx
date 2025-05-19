@@ -9,5 +9,5 @@ export const fetchMusics = async (): Promise<Music[]> => {
       Authorization: token ? `Bearer ${token}` : "",
     },
   });
-  return response.data.musics.slice(0, 5);
+  return response.data.musics;
 };

@@ -280,7 +280,7 @@ export default function CuenttoForm() {
                     <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
                       Select a background music
                     </p>
-                    <div className=" flex flex-col max-h-[548px] mt-[40px] gap-4 w-full justify-start ">
+                    <div className=" flex flex-col !max-h-[548px] mt-[40px] gap-4 w-[500px] justify-start overflow-y-auto pr-4 ">
                       {musics.map((music, index) => (
                         <div
                           key={music.id}
