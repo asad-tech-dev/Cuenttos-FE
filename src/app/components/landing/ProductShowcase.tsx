@@ -34,10 +34,10 @@ export const ProductShowcase = () => {
       </h2>
       <div className="max-w-3xl mx-auto md:w-full w-[400px]">
         <p className="md:text-xl text-md text-center mt-5 text-dark-gray ">
-          Cuentto offers a sleek, intuitive interface designed to provide the
-          best user experience. Whether you are writing down your thoughts,
-          exploring ideas, or sharing your voice with the world — everything
-          feels seamless, natural, and inspiring.
+          Cuentto® offers a sleek, intuitive interface designed to provide a
+          tranquil and free of visual noise experience. Whether you are writing
+          down your thoughts, exploring ideas, or sharing your voice with the
+          world — everything feels possible, seamless and inspiring .
         </p>
       </div>
 
