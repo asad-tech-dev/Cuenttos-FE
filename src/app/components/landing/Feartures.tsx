@@ -208,8 +208,7 @@ const BentoBox1 = () => {
           <div className="flex flex-col justify-between h-full">
             <div className="mb-4 px-6 mt-6">
               <div className="flex justify-between items-center mb-6 pb-2">
-                <h2 className="text-black text-xl">
-                </h2>
+                <h2 className="text-black text-xl"></h2>
                 <div className="flex items-center">
                   <div className="h-1 bg-black w-8 rounded-lg"></div>
                   <span className="ml-2 text-gray-600 text-sm">
@@ -233,8 +232,8 @@ const BentoBox1 = () => {
                 Make your Custom Groups
               </h1>
               <p className="text-gray-600 text-lg">
-                Make multiple groups among your follwers to share your stories
-                with the specified followers only.
+                Create multiple groups to share your stories with selected
+                followers.
               </p>
             </div>
           </div>
@@ -248,8 +247,9 @@ const BentoBox1 = () => {
                   Attach Music with Cuenttos
                 </h1>
                 <p className="text-gray-600 text-lg">
-                  Select music while creating cuenttos to make it more immense
-                  and relatable to the readers.
+                  The reading and writing experience becomes more impactful with music.
+                  Choose music while creating cuenttos and make your stories
+                  more immersive and relatable for readers.
                 </p>
               </div>
             </div>
