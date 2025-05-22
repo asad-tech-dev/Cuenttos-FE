@@ -3,12 +3,10 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
-  HomeIcon,
   LibraryIcon,
   WriteIcon,
   FavouriteIcon,
   ProfileIcon,
-  HomeActive,
   LibraryActive,
   FavouriteActive,
   ProfileActive,
