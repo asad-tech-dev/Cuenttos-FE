@@ -19,16 +19,6 @@ export default function Sidebar() {
 
   const menuItems = [
     {
-      name: "Home",
-      href: "/home",
-      icon: (isActive: boolean) =>
-        isActive ? (
-          <HomeActive className="text-black" />
-        ) : (
-          <HomeIcon className="text-gray" />
-        ),
-    },
-    {
       name: "Library",
       href: "/library",
       icon: (isActive: boolean) =>
@@ -45,8 +35,8 @@ export default function Sidebar() {
       special: true,
     },
     {
-      name: "Favourite",
-      href: "/favourite",
+      name: "Saved Cuentto",
+      href: "/saved",
       icon: (isActive: boolean) =>
         isActive ? (
           <FavouriteActive className="text-black" />
@@ -68,9 +58,10 @@ export default function Sidebar() {
 
   return (
     <div
-      className="flex flex-col w-[256px] fixed left-0 top-[55px] justify-center pl-8 bg-white border-r border-light-gray"
+      className="flex flex-col w-[256px] fixed left-0 top-[55px] justify-start  pl-8 bg-white border-r border-light-gray"
       style={{ height: "calc(100vh - 55px)" }}
     >
+      <div className="mt-[10px]">
       {menuItems.map((item) => {
         const isActive = pathname === item.href;
 
@@ -100,6 +91,7 @@ export default function Sidebar() {
           </Link>
         );
       })}
+      </div>
     </div>
   );
 }
