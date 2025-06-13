@@ -108,7 +108,7 @@ const Footer = () => {
         </h4>
         <div className="flex gap-5 mt-5 md:mt-0 justify-center md:justify-start">
           <h4 className="text-dark-gray text-sm font-normal">
-            <Link href="/" target="_blank">
+            <Link href="/privacy-policy" >
               Privacy policy
             </Link>
           </h4>

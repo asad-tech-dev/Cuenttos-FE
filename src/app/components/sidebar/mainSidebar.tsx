@@ -56,7 +56,7 @@ export default function Sidebar() {
 
   return (
     <div
-      className="flex flex-col w-[256px] fixed left-0 top-[55px] justify-start  pl-8 bg-white border-r border-light-gray"
+      className="flex flex-col w-[256px] fixed left-0  justify-center  pl-8 bg-white border-r border-light-gray"
       style={{ height: "calc(100vh - 55px)" }}
     >
       <div className="mt-[10px]">
