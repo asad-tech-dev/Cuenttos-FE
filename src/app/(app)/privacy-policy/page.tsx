@@ -25,7 +25,7 @@ function PrivacyPolicyPage() {
           Your privacy is important to us, and we are committed to protecting
           any personal information you provide while using our website,{" "}
           <span className="font-semibold text-black">cuentto.com</span> (the
-          "Website").
+          &apos;&apos;Website&apos;&apos;).
         </p>
 
         <section className="mt-[40px]">
@@ -120,7 +120,8 @@ function PrivacyPolicyPage() {
           </h2>
           <p className="text-gray mt-[20px]">
             We may update this Privacy Policy from time to time. Any changes
-            will be posted on this page with an updated "Last updated" date.
+            will be posted on this page with an updated &apos;&apos;Last
+            updated&apos;&apos; date.
           </p>
         </section>
 
