@@ -32,13 +32,13 @@ const Explain = () => {
     <div className="bg-white" id="explain">
       <div className="mx-auto max-w-2xl py-20 px-4 sm:px-6 lg:max-w-7xl lg:px-8 flex flex-col gap-[10px]">
         <div className=" flex justify-center items-center md:px-[180px] px-[10px]">
-        <h2 className="text-center md:text-4xl text-2xl font-medium tracking-tighter text-center md:leading-[46px] leading-[30px] text-black">
-          The <span className="text-violet">cuentto®</span> writing experience is
-          rooted in the transformative power of sharing. When you know your
-          writing will be shared, your perspective shifts, and the way you craft
-          and express yourself becomes more intentional, insightful and
-          meaningful.
-        </h2>
+          <h2 className="text-center md:text-4xl text-2xl font-medium tracking-tighter text-center md:leading-[46px] leading-[30px] text-black">
+            The <span className="text-violet">cuentto®</span> writing experience
+            is rooted in the transformative power of sharing. When you know your
+            writing will be shared, your perspective shifts, and the way you
+            craft and express yourself becomes more intentional, insightful and
+            meaningful.
+          </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-4 lg:gap-x-8 mt-6">
           {Aboutdata.map((item, i) => (
@@ -48,12 +48,12 @@ const Explain = () => {
                 alt={item.imgSrc}
                 width={55}
                 height={55}
-                className="mb-2"
+                className="mb-2 md:w-[55px] w-[30px]"
               />
-              <h3 className="text-2xl font-semibold text-black mt-5">
+              <h3 className="md:text-2xl text-xl font-semibold text-black mt-5">
                 {item.heading}
               </h3>
-              <h4 className="text-lg font-normal text-dark-gray my-2">
+              <h4 className="md:text-lg text-md font-normal text-dark-gray my-2">
                 {item.paragraph}
               </h4>
             </div>

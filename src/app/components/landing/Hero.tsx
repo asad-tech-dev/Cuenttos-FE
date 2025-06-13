@@ -26,7 +26,7 @@ export default function Hero() {
               <div className="flex items-center justify-center">
                 <AnimatedGradientTextDemo />
               </div>
-              <h1 className="text-[65px] text-white font-semibold text-center leading-[72px] md:w-[600px]">
+              <h1 className="md:text-[65px] text-[50px] text-white font-semibold text-center md:leading-[72px] leading-[50px] md:w-[600px]">
                 Wellness through Writing.
               </h1>
               <p className="text-[16px] text-center text-offwhite font-normal mt-[20px] leading-[24px] md:w-[500px]">
@@ -43,14 +43,14 @@ export default function Hero() {
                 </Link>
 
                 <div
-                  className="absolute bottom-30 left-1/2 -translate-x-8 cursor-pointer flex flex-col gap-0 text-white animate-bounce"
+                  className="absolute md:bottom-30 bottom-3 left-1/2 -translate-x-8 cursor-pointer flex flex-col gap-0 text-white animate-bounce"
                   onClick={() => {
                     const element = document.getElementById("explain");
                     element?.scrollIntoView({ behavior: "smooth" });
                   }}
                 >
-                  <ChevronDown size={46} />
-                  <ChevronDown size={46} className="-mt-[30px]" />
+                  <ChevronDown className="w-[40px] h-[40px] sm:w-[44px] sm:h-[44px]" />
+                  <ChevronDown className="w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] -mt-[30px]" />
                 </div>
               </div>
             </div>
