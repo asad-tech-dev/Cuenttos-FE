@@ -188,10 +188,10 @@ const AWSIcon = () => {
       </div>
 
       <div className="text-left p-6 mt-4">
-        <h1 className="text-black text-2xl font-bold mb-2">
+        <h1 className="text-black md:text-2xl text-xl font-bold mb-2">
           Download Mobile app
         </h1>
-        <p className="text-gray-600 text-lg">
+        <p className="text-gray-600 md:text-lg text-md">
           Get the Cuentto app on Google and Apple store and start your Writing
           journey today.
         </p>
@@ -202,7 +202,7 @@ const AWSIcon = () => {
 
 const BentoBox1 = () => {
   return (
-    <div className="bg-white flex justify-center items-center min-h-screen p-5 rounded-lg sm:py-24 ">
+    <div className="bg-white flex justify-center items-center md:min-h-screen md:p-5 md:mt-[0px] mt-[100px] pl-[10px] rounded-lg  ">
       <div className="flex flex-col md:flex-row gap-4 w-full max-w-7xl min-h-[800px] md:min-h-[800px] md:h-[800px]">
         <CardWithEffect>
           <div className="flex flex-col justify-between h-full">
@@ -228,10 +228,10 @@ const BentoBox1 = () => {
               ></Image>
             </div>
             <div className="text-left p-6 ">
-              <h1 className="text-black text-2xl font-bold mb-2">
+              <h1 className="text-black md:text-2xl text-xl font-bold mb-2">
                 Make your Custom Groups
               </h1>
-              <p className="text-gray-600 text-lg">
+              <p className="text-gray-600 md:text-lg text-md">
                 Create multiple groups to share your stories with selected
                 followers.
               </p>
@@ -243,13 +243,13 @@ const BentoBox1 = () => {
             <div className="flex flex-col justify-center h-full">
               <LogoBeam />
               <div className="text-left p-6">
-                <h1 className="text-black text-2xl font-bold mb-2">
+                <h1 className="text-black md:text-2xl text-xl font-bold mb-2">
                   Attach Music with Cuenttos
                 </h1>
-                <p className="text-gray-600 text-lg">
-                  The reading and writing experience becomes more impactful with music.
-                  Choose music while creating cuenttos and make your stories
-                  more immersive and relatable for readers.
+                <p className="text-gray-600 md:text-lg text-md">
+                  The reading and writing experience becomes more impactful with
+                  music. Choose music while creating cuenttos and make your
+                  stories more immersive and relatable for readers.
                 </p>
               </div>
             </div>

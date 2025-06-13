@@ -27,12 +27,12 @@ export const ProductShowcase = () => {
   return (
     <div
       ref={containerRef}
-      className="bg-white text-white bg-gradient-to-b from-white to-[#5d4dbe]/20 md:py-[92px] py-[40px] pb-0 mx-auto relative overflow-hidden"
+      className="bg-white text-white bg-gradient-to-b from-white to-[#5d4dbe]/20 md:py-[92px] px-[10px] py-[40px]  md:pb-[100px] pb-[0px] mx-auto relative overflow-hidden"
     >
       <h2 className="text-center md:text-5xl text-3xl font-bold tracking-tighter text-black">
         Intuitive <span className="text-violet">interface</span>
       </h2>
-      <div className="max-w-3xl mx-auto md:w-full w-[400px]">
+      <div className="mx-auto w-full md:w-[700px]">
         <p className="md:text-xl text-md text-center mt-5 text-dark-gray ">
           Cuentto® offers a sleek, intuitive interface designed to provide a
           tranquil and free of visual noise experience. Whether you are writing
