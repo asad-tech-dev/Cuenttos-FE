@@ -21,7 +21,7 @@ function PrivacyPolicyPage() {
         <h1 className="text-3xl font-semibold text-black">Privacy Policy</h1>
 
         <p className="text-gray">
-          Welcome to <span className="font-semibold text-black">Cuentto</span>{" "}
+          Welcome to <span className="font-semibold text-black">Cuentto.</span>{" "}
           Your privacy is important to us, and we are committed to protecting
           any personal information you provide while using our website,{" "}
           <span className="font-semibold text-black">cuentto.com</span> (the
