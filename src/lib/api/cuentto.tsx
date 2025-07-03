@@ -21,7 +21,7 @@ export const fetchFeaturedCuenttos = async (): Promise<FeaturedCuentto[]> => {
       Authorization: token ? `Bearer ${token}` : "",
     },
   });
-  return response.data.cuenttos || [];
+  return response.data.cuenttos.slice(0, 4);
 };
 
 export const createCuentto = async (data: CuenttoCreateData) => {
