@@ -3,9 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { BellIcon, SearchIcon } from "../icons";
 import CustomToast from "../toasts/comingSoon";
-import checkAuth from "@/HOC/checkAuth";
 
-function AppHeader() {
+export default function AppHeader() {
   return (
     <div className="flex h-[55px] fixed w-full top-0 z-50 px-12 items-center justify-between bg-white border-b border-light-gray">
       <div>
@@ -40,4 +39,3 @@ function AppHeader() {
     </div>
   );
 }
-export default checkAuth(AppHeader);

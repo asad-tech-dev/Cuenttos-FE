@@ -11,9 +11,8 @@ import {
   FavouriteActive,
   ProfileActive,
 } from "../icons";
-import checkAuth from "@/HOC/checkAuth";
 
-function Sidebar() {
+export default function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
@@ -94,4 +93,3 @@ function Sidebar() {
     </div>
   );
 }
-export default checkAuth(Sidebar);
