@@ -49,7 +49,7 @@ export default function InterestPage() {
             <h1 className="md:text-[32px] text-[26px] text-white font-normal md:leading-[40px] leading-[30px]">
               Tell us a little bit more<br className="md:hidden block"></br>
               about<br className="md:block hidden"></br> yourself and your
-              <br className="md:hidden block"></br>literary interests.
+              <br className="md:hidden block"></br> literary interests.
             </h1>
             <div className="mt-[30px] flex flex-col md:w-[760px] items-center justify-center items-start">
               <div className=" md:grid grid-cols-3 flex flex-wrap gap-4 md:w-full justify-start items-start ">
@@ -57,11 +57,10 @@ export default function InterestPage() {
                   <button
                     key={moods.id}
                     onClick={() => toggleGenre(moods.title)}
-                    className={`py-1.5 flex items-center justify-center md:gap-2.5 gap-1 text-white border rounded-[100px] cursor-pointer md:text-[14px] text-[12px] font-medium transition-all duration-500 ease-in-out ${
-                      activeGenres.includes(moods.title)
-                        ? "bg-violet border-violet"
-                        : "border-white px-2"
-                    }`}
+                    className={`py-1.5 flex items-center justify-center md:gap-2.5 gap-1 text-white border rounded-[100px] cursor-pointer md:text-[14px] text-[12px] font-medium transition-all duration-500 ease-in-out ${activeGenres.includes(moods.title)
+                      ? "bg-violet border-violet"
+                      : "border-white px-2"
+                      }`}
                   >
                     {activeGenres.includes(moods.title) && (
                       <CheckIcon width={18} height={18} color="white" />
