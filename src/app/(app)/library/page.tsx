@@ -52,7 +52,7 @@ function LibraryPage() {
           <SkeletonCuenttoFeatured />
         ) : (
           <>
-            <div className="flex flex-row gap-[20px]">
+            <div className="flex flex-row gap-[20px] flex-wrap">
               {featured.map((cuentto) => (
                 <FeaturedCuenttoFeedCard key={cuentto.id} cuentto={cuentto} />
               ))}
