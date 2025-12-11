@@ -4,6 +4,7 @@ export interface Cuentto {
   description: string;
   duration: number;
   createdAt: string;
+  publicLink?: string | null;
   mood: {
     title: string;
     color: string;
