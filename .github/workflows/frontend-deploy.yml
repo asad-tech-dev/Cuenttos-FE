@@ -23,7 +23,7 @@ jobs:
             echo "🔄 Starting deployment for Cuenttos Frontend..."
             
             # Navigate to project directory
-            cd ~/Cuenttos-FE || exit 1
+            cd /home/cuentto/Cuenttos-FE || exit 1
             
             # Stash any local changes
             echo "📦 Stashing local changes..."
