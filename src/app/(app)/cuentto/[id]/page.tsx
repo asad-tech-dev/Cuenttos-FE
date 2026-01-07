@@ -43,7 +43,7 @@ function CuenttoDetailPageContent() {
         if (!data.publicLink) {
           const token = localStorage.getItem("authToken");
           if (!token) {
-            router.replace("/login");
+            router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
             return;
           }
           try {
@@ -59,14 +59,14 @@ function CuenttoDetailPageContent() {
           } catch (error) {
             console.error("Invalid token", error);
             localStorage.removeItem("authToken");
-            router.replace("/login");
+            router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
             return;
           }
         }
         setNeedsAuth(false);
       } catch (error) {
         console.log(error);
-        router.replace("/login");
+        router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
       } finally {
         setLoading(false);
       }

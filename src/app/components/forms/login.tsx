@@ -1,17 +1,19 @@
 "use client";
-import { useForm } from "react-hook-form";
-import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
-import { GoogleIcon } from "../icons";
-import { Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import axios from "axios";
 import CustomToast from "@/app/components/toasts/comingSoon";
 import VioletButton from "../buttons/VioletButton";
 import GoogleButton from "../buttons/GoogleButton";
-import { LoginFormData, loginSchema } from "@/lib/formSchemas/auth";
+
+import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { GoogleIcon } from "../icons";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Eye, EyeOff } from "lucide-react";
 import { loginUser, storeToken } from "@/lib/api/auth";
+import { useSearchParams, useRouter } from "next/navigation";
+import { LoginFormData, loginSchema } from "@/lib/formSchemas/auth";
 
 export default function LoginForm() {
   const {
@@ -27,6 +29,8 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -37,7 +41,7 @@ export default function LoginForm() {
       const token = await loginUser(data);
       if (token) {
         storeToken(token);
-        router.push("/library");
+        router.push(redirect || "/library");
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
@@ -60,7 +64,7 @@ export default function LoginForm() {
       <input
         {...register("email")}
         placeholder="Email"
-        className="border border-white text-white text-[16px] bg-none outline-none w-[360px] h-[56px] rounded-[8px] w-full px-4 placeholder-white"
+        className="border border-white text-white text-[16px] bg-none outline-none h-[56px] rounded-[8px] w-full px-4 placeholder-white"
       />
       {errors.email && (
         <p className="text-red-400 text-left w-full">{errors.email.message}</p>
@@ -71,7 +75,7 @@ export default function LoginForm() {
           {...register("password")}
           type={showPassword ? "text" : "password"}
           placeholder="Password"
-          className="border border-white text-white bg-none outline-none text-[16px]  w-[360px] h-[56px] rounded-[8px] w-full px-4 placeholder-white"
+          className="border border-white text-white bg-none outline-none text-[16px] h-[56px] rounded-[8px] w-full px-4 placeholder-white"
         />
         <button
           type="button"
