@@ -60,7 +60,7 @@ export default function LoginForm() {
       <input
         {...register("email")}
         placeholder="Email"
-        className="border border-white border-[1px] text-white text-[16px] bg-none outline-none w-[360px] h-[56px] rounded-[8px] w-full px-4 placeholder-white"
+        className="border border-white text-white text-[16px] bg-none outline-none w-[360px] h-[56px] rounded-[8px] w-full px-4 placeholder-white"
       />
       {errors.email && (
         <p className="text-red-400 text-left w-full">{errors.email.message}</p>
@@ -71,7 +71,7 @@ export default function LoginForm() {
           {...register("password")}
           type={showPassword ? "text" : "password"}
           placeholder="Password"
-          className="border border-white border-[1px] text-white bg-none outline-none text-[16px]  w-[360px] h-[56px] rounded-[8px] w-full px-4 placeholder-white"
+          className="border border-white text-white bg-none outline-none text-[16px]  w-[360px] h-[56px] rounded-[8px] w-full px-4 placeholder-white"
         />
         <button
           type="button"
@@ -87,9 +87,11 @@ export default function LoginForm() {
         </p>
       )}
       {error && <p className="text-red-400 w-full text-left">{error}</p>}
-      <p className="text-violet mt-[10px] text-[14px] font-medium w-full text-right cursor-pointer">
-        Forgot Your Password?
-      </p>
+      <Link href="/forgot-password">
+        <p className="text-violet mt-[10px] text-[14px] font-medium w-full text-right cursor-pointer">
+          Forgot Your Password?
+        </p>
+      </Link>
       <div className="flex flex-row gap-4 mt-[16px]  justify-start">
         <VioletButton
           text="Sign In"

@@ -66,6 +66,7 @@ function CuenttoDetailPageContent() {
         setNeedsAuth(false);
       } catch (error) {
         console.log(error);
+        router.replace("/login");
       } finally {
         setLoading(false);
       }

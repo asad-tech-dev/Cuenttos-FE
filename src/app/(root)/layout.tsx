@@ -9,7 +9,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className=" relative h-screen overflow-hidden relative">
+      <body className="relative h-screen overflow-hidden">
         <Image
           src="/onboard-cover.png"
           alt="cover background"
