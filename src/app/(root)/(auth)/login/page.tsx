@@ -1,4 +1,8 @@
+import Spinner from "@/app/components/ui/Spinner";
 import LoginForm from "@/app/components/forms/login";
+
+import { Suspense } from "react";
+
 export default function LoginPage() {
   return (
     <div className="flex flex-col gap-[20px] w-[360px] h-[480px]">
@@ -11,7 +15,15 @@ export default function LoginPage() {
       </p>
 
       <div className="mt-[16px]">
-        <LoginForm />
+        <Suspense
+          fallback={
+            <div className="flex justify-center items-center w-full h-[200px]">
+              <Spinner size="w-10 h-10" borderSize="border-4" />
+            </div>
+          }
+        >
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );
