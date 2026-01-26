@@ -25,9 +25,7 @@ jobs:
             # Navigate to project directory
             cd /home/cuentto/Cuenttos-FE || exit 1
             
-            # Stash any local changes
-            echo "📦 Stashing local changes..."
-            git stash
+
             
             # Pull latest changes
             echo "⬇️  Pulling latest code..."
