@@ -3,7 +3,7 @@ import axios from "axios";
 import VioletButton from "@/app/components/buttons/VioletButton";
 
 import { verifyOTP } from "@/lib/api/auth";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect, Suspense } from "react";
 
 function VerifyOTPContent() {
@@ -11,7 +11,6 @@ function VerifyOTPContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState<string | null>(null);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);

@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPassword } from "@/lib/api/auth";
 
 import { Eye, EyeOff } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   resetPasswordSchema,
   ResetPasswordFormData,
@@ -30,7 +30,6 @@ function ResetPasswordContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState<string | null>(null);
   const [otp, setOtp] = useState<string | null>(null);
 
