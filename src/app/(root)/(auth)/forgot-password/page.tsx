@@ -32,7 +32,8 @@ export default function ForgotPasswordPage() {
     setError(null);
     try {
       await forgotPassword(data);
-      router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
+      sessionStorage.setItem("forgot_email", data.email);
+      router.push(`/verify-otp`);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
@@ -61,7 +62,9 @@ export default function ForgotPasswordPage() {
         className="flex flex-col w-full gap-4 mt-[16px]"
       >
         <input
-          {...register("email")}
+          {...register("email", {
+            onChange: () => setError(null),
+          })}
           placeholder="Email"
           className="border border-white text-white text-[16px] bg-none outline-none w-full h-[56px] rounded-[8px] px-4 placeholder-white"
         />

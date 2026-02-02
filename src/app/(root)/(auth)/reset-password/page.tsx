@@ -31,14 +31,21 @@ function ResetPasswordContent() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email");
-  const otp = searchParams.get("otp");
+  const [email, setEmail] = useState<string | null>(null);
+  const [otp, setOtp] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!email || !otp) {
+    const storedEmail = sessionStorage.getItem("forgot_email");
+    const storedOtp = sessionStorage.getItem("forgot_otp");
+    const isOtpVerified = sessionStorage.getItem("otp_verified");
+
+    if (!storedEmail || !storedOtp || !isOtpVerified) {
       router.push("/forgot-password");
+    } else {
+      setEmail(storedEmail);
+      setOtp(storedOtp);
     }
-  }, [email, otp, router]);
+  }, [router]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!email || !otp) {
@@ -54,6 +61,9 @@ function ResetPasswordContent() {
         otp,
         password: data.password,
       });
+      sessionStorage.removeItem("forgot_email");
+      sessionStorage.removeItem("forgot_otp");
+      sessionStorage.removeItem("otp_verified");
       router.push("/login");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
@@ -84,7 +94,9 @@ function ResetPasswordContent() {
       >
         <div className="relative w-full">
           <input
-            {...register("password")}
+            {...register("password", {
+              onChange: () => setError(null),
+            })}
             type={showPassword ? "text" : "password"}
             placeholder="New Password"
             className="border border-white text-white text-[16px] bg-none outline-none w-full h-[56px] rounded-[8px] px-4 placeholder-white"
@@ -105,7 +117,9 @@ function ResetPasswordContent() {
 
         <div className="relative w-full">
           <input
-            {...register("confirmPassword")}
+            {...register("confirmPassword", {
+              onChange: () => setError(null),
+            })}
             type={showConfirmPassword ? "text" : "password"}
             placeholder="Confirm Password"
             className="border border-white text-white text-[16px] bg-none outline-none w-full h-[56px] rounded-[8px] px-4 placeholder-white"
