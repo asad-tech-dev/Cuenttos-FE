@@ -32,7 +32,8 @@ export default function ForgotPasswordPage() {
     setError(null);
     try {
       await forgotPassword(data);
-      router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
+      sessionStorage.setItem("forgot_email", data.email);
+      router.push(`/verify-otp`);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(

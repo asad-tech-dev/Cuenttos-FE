@@ -12,15 +12,18 @@ function VerifyOTPContent() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email");
+  const [email, setEmail] = useState<string | null>(null);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    if (!email) {
+    const storedEmail = sessionStorage.getItem("forgot_email");
+    if (!storedEmail) {
       router.push("/forgot-password");
+    } else {
+      setEmail(storedEmail);
     }
-  }, [email, router]);
+  }, [router]);
 
   const handleChange = (element: HTMLInputElement, index: number) => {
     const value = element.value;
@@ -71,12 +74,9 @@ function VerifyOTPContent() {
     setError(null);
     try {
       await verifyOTP({ email, otp: otpString });
+      sessionStorage.setItem("forgot_otp", otpString);
       sessionStorage.setItem("otp_verified", "true");
-      router.push(
-        `/reset-password?email=${encodeURIComponent(
-          email
-        )}&otp=${encodeURIComponent(otpString)}`
-      );
+      router.push(`/reset-password`);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(

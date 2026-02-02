@@ -31,15 +31,21 @@ function ResetPasswordContent() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email");
-  const otp = searchParams.get("otp");
+  const [email, setEmail] = useState<string | null>(null);
+  const [otp, setOtp] = useState<string | null>(null);
 
   useEffect(() => {
+    const storedEmail = sessionStorage.getItem("forgot_email");
+    const storedOtp = sessionStorage.getItem("forgot_otp");
     const isOtpVerified = sessionStorage.getItem("otp_verified");
-    if (!email || !otp || !isOtpVerified) {
+
+    if (!storedEmail || !storedOtp || !isOtpVerified) {
       router.push("/forgot-password");
+    } else {
+      setEmail(storedEmail);
+      setOtp(storedOtp);
     }
-  }, [email, otp, router]);
+  }, [router]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!email || !otp) {
@@ -55,6 +61,8 @@ function ResetPasswordContent() {
         otp,
         password: data.password,
       });
+      sessionStorage.removeItem("forgot_email");
+      sessionStorage.removeItem("forgot_otp");
       sessionStorage.removeItem("otp_verified");
       router.push("/login");
     } catch (err: unknown) {
