@@ -71,6 +71,7 @@ function VerifyOTPContent() {
     setError(null);
     try {
       await verifyOTP({ email, otp: otpString });
+      sessionStorage.setItem("otp_verified", "true");
       router.push(
         `/reset-password?email=${encodeURIComponent(
           email

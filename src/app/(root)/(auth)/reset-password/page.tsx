@@ -35,7 +35,8 @@ function ResetPasswordContent() {
   const otp = searchParams.get("otp");
 
   useEffect(() => {
-    if (!email || !otp) {
+    const isOtpVerified = sessionStorage.getItem("otp_verified");
+    if (!email || !otp || !isOtpVerified) {
       router.push("/forgot-password");
     }
   }, [email, otp, router]);
@@ -54,6 +55,7 @@ function ResetPasswordContent() {
         otp,
         password: data.password,
       });
+      sessionStorage.removeItem("otp_verified");
       router.push("/login");
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
