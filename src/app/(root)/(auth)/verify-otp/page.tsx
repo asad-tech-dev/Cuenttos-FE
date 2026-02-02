@@ -32,6 +32,7 @@ function VerifyOTPContent() {
     const newOtp = [...otp];
     newOtp[index] = value.substring(value.length - 1);
     setOtp(newOtp);
+    setError(null);
 
     // Focus next input
     if (value && index < 5) {
@@ -53,6 +54,7 @@ function VerifyOTPContent() {
     if (data.length === 6 && !isNaN(Number(data))) {
       const newOtp = data.split("");
       setOtp(newOtp);
+      setError(null);
       inputRefs.current[5]?.focus();
     }
   };

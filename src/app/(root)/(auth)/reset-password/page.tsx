@@ -94,7 +94,9 @@ function ResetPasswordContent() {
       >
         <div className="relative w-full">
           <input
-            {...register("password")}
+            {...register("password", {
+              onChange: () => setError(null),
+            })}
             type={showPassword ? "text" : "password"}
             placeholder="New Password"
             className="border border-white text-white text-[16px] bg-none outline-none w-full h-[56px] rounded-[8px] px-4 placeholder-white"
@@ -115,7 +117,9 @@ function ResetPasswordContent() {
 
         <div className="relative w-full">
           <input
-            {...register("confirmPassword")}
+            {...register("confirmPassword", {
+              onChange: () => setError(null),
+            })}
             type={showConfirmPassword ? "text" : "password"}
             placeholder="Confirm Password"
             className="border border-white text-white text-[16px] bg-none outline-none w-full h-[56px] rounded-[8px] px-4 placeholder-white"
