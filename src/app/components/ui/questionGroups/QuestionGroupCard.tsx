@@ -50,39 +50,21 @@ export default function QuestionGroupCard({
           <ClipboardList size={20} className="text-violet" />
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-[11px] font-semibold uppercase tracking-[0.06em] ${
-                isActive ? "text-violet" : "text-gray-7"
-              }`}
-            >
-              {isActive ? "Active" : "Inactive"}
-            </span>
-            <Toggle
-              checked={isActive}
-              loading={toggling}
-              size="sm"
-              ariaLabel={`Toggle ${group.title} active state`}
-              onChange={(next) => onToggleActive?.(group.id, next)}
-            />
-          </div>
-
-          {onDelete && (
-            <button
-              type="button"
-              disabled={deleting}
-              aria-label={`Delete ${group.title}`}
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onDelete(group.id);
-              }}
-              className="flex h-[30px] w-[30px] items-center justify-center rounded-full text-gray-7 transition-colors duration-200 hover:bg-red/10 hover:text-red focus:outline-none focus-visible:ring-2 focus-visible:ring-red/30 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
+        <div className="flex items-center gap-2">
+          <span
+            className={`text-[11px] font-semibold uppercase tracking-[0.06em] ${
+              isActive ? "text-violet" : "text-gray-7"
+            }`}
+          >
+            {isActive ? "Active" : "Inactive"}
+          </span>
+          <Toggle
+            checked={isActive}
+            loading={toggling}
+            size="sm"
+            ariaLabel={`Toggle ${group.title} active state`}
+            onChange={(next) => onToggleActive?.(group.id, next)}
+          />
         </div>
       </div>
 
@@ -99,19 +81,38 @@ export default function QuestionGroupCard({
         )}
       </div>
 
-      <div className="mt-5 flex items-center justify-between border-t border-light-gray pt-4">
+      <div className="mt-5 flex items-center justify-between gap-3 border-t border-light-gray pt-4">
         <span className="rounded-full bg-gray-6 px-3 py-1 text-[11px] font-semibold text-dark-gray">
           {questionCount} {questionCount === 1 ? "question" : "questions"}
         </span>
-        {group.createdAt && (
-          <span className="text-[11px] text-gray-7">
-            {new Date(group.createdAt).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </span>
-        )}
+
+        <div className="flex items-center gap-2">
+          {group.createdAt && (
+            <span className="text-[11px] text-gray-7">
+              {new Date(group.createdAt).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+          )}
+
+          {onDelete && (
+            <button
+              type="button"
+              disabled={deleting}
+              aria-label={`Delete ${group.title}`}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onDelete(group.id);
+              }}
+              className="flex h-[28px] w-[28px] items-center justify-center rounded-full text-gray-7 transition-colors duration-200 hover:bg-red/10 hover:text-red focus:outline-none focus-visible:ring-2 focus-visible:ring-red/30 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
