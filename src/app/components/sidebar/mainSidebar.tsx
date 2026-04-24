@@ -171,7 +171,7 @@ export default function Sidebar() {
                           }`}
                         >
                           {isActive && (
-                            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-r bg-violet" />
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 bg-violet" />
                           )}
                           {item.icon(isActive)}
                           <p className="text-[12px] font-semibold">
