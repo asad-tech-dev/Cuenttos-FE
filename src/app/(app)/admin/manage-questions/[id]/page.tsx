@@ -7,7 +7,7 @@ import axios from "axios";
 import { ArrowLeft } from "lucide-react";
 import checkAdminAuth from "@/HOC/checkAdminAuth";
 import QuestionGroupForm from "@/app/components/forms/questionGroup";
-import Spinner from "@/app/components/ui/Spinner";
+import { SkeletonQuestionGroupForm } from "@/app/components/skeletons/QuestionGroupForm";
 import { fetchQuestionGroupById } from "@/lib/api/questionGroup";
 import {
   QuestionGroupFormData,
@@ -91,13 +91,7 @@ function EditQuestionGroupPage() {
       </header>
 
       {loading ? (
-        <div className="flex h-[300px] w-full items-center justify-center rounded-[16px] border border-light-gray bg-white">
-          <Spinner
-            size="w-8 h-8"
-            color="border-violet"
-            borderSize="border-3"
-          />
-        </div>
+        <SkeletonQuestionGroupForm />
       ) : error ? (
         <div className="flex h-[300px] w-full items-center justify-center rounded-[16px] border border-dashed border-red/40 bg-white">
           <p className="text-[14px] text-red">{error}</p>

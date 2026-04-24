@@ -6,9 +6,9 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import checkAdminAuth from "@/HOC/checkAdminAuth";
-import Spinner from "@/app/components/ui/Spinner";
 import EmptyState from "@/app/components/ui/EmptyState";
 import QuestionGroupCard from "@/app/components/ui/questionGroups/QuestionGroupCard";
+import { SkeletonQuestionGroupGrid } from "@/app/components/skeletons/QuestionGroupCard";
 import { QuestionGroup } from "@/types/questionGroup";
 import {
   fetchQuestionGroups,
@@ -111,9 +111,7 @@ function ManageQuestionsPage() {
       </header>
 
       {loading ? (
-        <div className="flex h-[300px] w-full items-center justify-center rounded-[16px] border border-light-gray bg-white">
-          <Spinner size="w-8 h-8" color="border-violet" borderSize="border-3" />
-        </div>
+        <SkeletonQuestionGroupGrid count={6} />
       ) : error ? (
         <div className="flex h-[300px] w-full items-center justify-center rounded-[16px] border border-dashed border-red/40 bg-white">
           <p className="text-[14px] text-red">{error}</p>
