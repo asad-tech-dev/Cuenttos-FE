@@ -11,7 +11,7 @@ import { GoogleIcon } from "../icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Eye, EyeOff } from "lucide-react";
-import { loginUser, storeToken } from "@/lib/api/auth";
+import { loginUser, storeToken, storeIsAdmin } from "@/lib/api/auth";
 import { useSearchParams, useRouter } from "next/navigation";
 import { LoginFormData, loginSchema } from "@/lib/formSchemas/auth";
 
@@ -38,9 +38,10 @@ export default function LoginForm() {
     setLoading(true);
     setError(null);
     try {
-      const token = await loginUser(data);
+      const { token, isAdmin } = await loginUser(data);
       if (token) {
         storeToken(token);
+        storeIsAdmin(Boolean(isAdmin));
         router.push(redirect || "/library");
       }
     } catch (err: unknown) {
