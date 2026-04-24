@@ -20,6 +20,7 @@ import { fetchGroups } from "@/lib/api/group";
 import { fetchMoods } from "@/lib/api/mood";
 import { CuenttoSchema, CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 import { createCuentto } from "@/lib/api/cuentto";
+import { getCurrentUserId } from "@/lib/api/auth";
 
 export default function CuenttoForm() {
   const {
@@ -79,7 +80,7 @@ export default function CuenttoForm() {
               return;
             }
             const audio = new Audio(
-              `${process.env.NEXT_PUBLIC_API_URL}/uploads/music/${musics.musicFile}`
+              `${process.env.NEXT_PUBLIC_API_URL}/uploads/music/${musics.musicFile}`,
             );
             audio.addEventListener("loadedmetadata", () => {
               tempDurations[musics.id] = formatTime(audio.duration);
@@ -90,7 +91,7 @@ export default function CuenttoForm() {
               resolve();
             });
           });
-        })
+        }),
       );
       setDurations(tempDurations);
     };
@@ -147,7 +148,7 @@ export default function CuenttoForm() {
     name: string,
     musicFile: string,
     albumArt: string,
-    artist: string
+    artist: string,
   ) => {
     {
       setValue("musicId", id);
@@ -194,7 +195,10 @@ export default function CuenttoForm() {
     const getGroups = async () => {
       try {
         const data = await fetchGroups();
-        setGroups(data);
+        const userId = getCurrentUserId();
+        setGroups(
+          userId !== null ? data.filter((g) => g.createdBy === userId) : [],
+        );
       } catch (error) {
         console.log(error);
       }
@@ -210,7 +214,7 @@ export default function CuenttoForm() {
       if (axios.isAxiosError(err)) {
         setError(
           err.response?.data?.message ||
-            "Cuentto creation failed. Please try again."
+            "Cuentto creation failed. Please try again.",
         );
       } else {
         setError("An unexpected error occurred. Please try again.");
@@ -296,7 +300,7 @@ export default function CuenttoForm() {
                               music.name,
                               music.musicFile,
                               music.albumArt,
-                              music.artist
+                              music.artist,
                             )
                           }
                         >
@@ -406,7 +410,7 @@ export default function CuenttoForm() {
                               onClick={() =>
                                 togglePlayPause(
                                   selectedMusic.id,
-                                  selectedMusic.musicFile
+                                  selectedMusic.musicFile,
                                 )
                               }
                             >
@@ -429,7 +433,7 @@ export default function CuenttoForm() {
                               ref={audioRef}
                               onTimeUpdate={() =>
                                 setCurrentTime(
-                                  audioRef.current?.currentTime || 0
+                                  audioRef.current?.currentTime || 0,
                                 )
                               }
                               onLoadedMetadata={() =>
@@ -592,7 +596,7 @@ export default function CuenttoForm() {
                         groupIds = [];
                       } else {
                         groupIds = values.map((value) =>
-                          parseInt(value.toString(), 10)
+                          parseInt(value.toString(), 10),
                         );
                       }
                       setValue("groupIds", groupIds);

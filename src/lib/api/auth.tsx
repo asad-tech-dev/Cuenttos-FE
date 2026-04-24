@@ -68,6 +68,18 @@ export const getIsAdmin = (): boolean => {
   }
 };
 
+export const getCurrentUserId = (): number | null => {
+  if (typeof window === "undefined") return null;
+  const token = localStorage.getItem("authToken");
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return typeof payload.userId === "number" ? payload.userId : null;
+  } catch {
+    return null;
+  }
+};
+
 export const registerUser = async (data: RegisterFormData) => {
   const response = await axios.post(`${API_URL}/api/auth/register`, data, {
     headers: {
