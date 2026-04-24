@@ -9,7 +9,7 @@ jobs:
   deploy:
     name: Deploy to Server
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 🚀 Deploy to Production Server
         uses: appleboy/ssh-action@v1.0.0
@@ -21,26 +21,27 @@ jobs:
           command_timeout: 10m
           script: |
             set -e  # 👈 Stop immediately if any command fails
-            
+
             echo "🔄 Starting deployment for Cuenttos Frontend..."
-            
+
             cd /home/cuentto/Cuenttos-FE || exit 1
-            
+
             echo "⬇️  Pulling latest code..."
+            git stash
             git pull origin main
-            
+
             echo "📥 Installing dependencies..."
             npm install --legacy-peer-deps
-            
+
             echo "🔨 Building project..."
             npm run build
-            
+
             echo "♻️  Restarting PM2 service..."
             pm2 restart cuenttos-frontend
-            
+
             pm2 save
-            
+
             echo "✅ Deployment complete!"
             pm2 status cuenttos-frontend
-            
+
             echo "🎉 Frontend deployed successfully!"
