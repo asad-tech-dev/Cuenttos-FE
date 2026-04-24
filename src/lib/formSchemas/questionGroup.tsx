@@ -15,10 +15,12 @@ export const QuestionGroupSchema = z.object({
   questions: z
     .array(
       z.object({
+        id: z.number().optional(),
         text: z
           .string()
           .min(3, "Question must be at least 3 characters")
           .max(300, "Question cannot be longer than 300 characters"),
+        description: z.string().nullable().optional(),
       })
     )
     .length(QUESTIONS_PER_GROUP, `Please provide ${QUESTIONS_PER_GROUP} questions`),

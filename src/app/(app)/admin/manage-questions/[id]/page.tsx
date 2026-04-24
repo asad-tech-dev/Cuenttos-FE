@@ -43,7 +43,14 @@ function EditQuestionGroupPage() {
 
         const questions = Array.from(
           { length: QUESTIONS_PER_GROUP },
-          (_, i) => ({ text: sorted[i]?.text ?? "" })
+          (_, i) => {
+            const q = sorted[i];
+            return {
+              ...(q?.id != null ? { id: q.id } : {}),
+              text: q?.text ?? "",
+              description: q?.description ?? null,
+            };
+          }
         );
 
         setInitialValues({

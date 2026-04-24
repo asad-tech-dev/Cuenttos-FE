@@ -66,7 +66,9 @@ const buildGroupPayload = (data: QuestionGroupFormData) => ({
   title: data.title,
   description: data.description || "",
   questions: data.questions.map((q, index) => ({
+    ...(q.id != null ? { id: q.id } : {}),
     text: q.text,
+    ...(q.description != null ? { description: q.description } : {}),
     order: index,
   })),
 });
@@ -86,7 +88,7 @@ export const updateQuestionGroup = async (
   id: number,
   data: QuestionGroupFormData
 ): Promise<QuestionGroup> => {
-  const response = await axios.put(
+  const response = await axios.patch(
     `${API_URL}/api/question-groups/${id}`,
     buildGroupPayload(data),
     { headers: authHeaders() }
