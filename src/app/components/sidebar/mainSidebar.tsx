@@ -5,13 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  ShieldCheck,
-  ClipboardList,
-  ChevronDown,
-  LogOut,
-  Loader2,
-} from "lucide-react";
+import { ShieldCheck, ClipboardList, ChevronDown, LogOut } from "lucide-react";
 import {
   LibraryIcon,
   WriteIcon,
