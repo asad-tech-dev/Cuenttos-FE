@@ -25,6 +25,34 @@ export const fetchQuestionGroups = async (): Promise<QuestionGroup[]> => {
   );
 };
 
+export const activateQuestionGroup = async (
+  id: number
+): Promise<QuestionGroup> => {
+  const response = await axios.patch(
+    `${API_URL}/api/question-groups/${id}/activate`,
+    {},
+    { headers: authHeaders() }
+  );
+  return response.data.questionGroup ?? response.data;
+};
+
+export const deactivateQuestionGroup = async (
+  id: number
+): Promise<QuestionGroup> => {
+  const response = await axios.patch(
+    `${API_URL}/api/question-groups/${id}/deactivate`,
+    {},
+    { headers: authHeaders() }
+  );
+  return response.data.questionGroup ?? response.data;
+};
+
+export const toggleQuestionGroupActive = async (
+  id: number,
+  isActive: boolean
+): Promise<QuestionGroup> =>
+  isActive ? activateQuestionGroup(id) : deactivateQuestionGroup(id);
+
 export const createQuestionGroup = async (
   data: QuestionGroupFormData
 ): Promise<QuestionGroup> => {

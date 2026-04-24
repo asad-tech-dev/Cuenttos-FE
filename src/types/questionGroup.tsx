@@ -9,7 +9,10 @@ export interface QuestionGroup {
   id: number;
   title: string;
   description?: string | null;
-  questions: Question[];
+  questions?: Question[];
+  isActive?: boolean;
+  createdBy?: number;
+  _count?: { questions: number };
   createdAt?: string;
   updatedAt?: string;
 }

@@ -1,21 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import checkAdminAuth from "@/HOC/checkAdminAuth";
 import Spinner from "@/app/components/ui/Spinner";
 import EmptyState from "@/app/components/ui/EmptyState";
 import QuestionGroupCard from "@/app/components/ui/questionGroups/QuestionGroupCard";
 import { QuestionGroup } from "@/types/questionGroup";
-import { fetchQuestionGroups } from "@/lib/api/questionGroup";
+import {
+  fetchQuestionGroups,
+  toggleQuestionGroupActive,
+} from "@/lib/api/questionGroup";
 
 function ManageQuestionsPage() {
   const router = useRouter();
   const [groups, setGroups] = useState<QuestionGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -40,6 +45,42 @@ function ManageQuestionsPage() {
   }, []);
 
   const goToCreate = () => router.push("/admin/manage-questions/create");
+
+  const handleToggleActive = useCallback(
+    async (id: number, next: boolean) => {
+      let snapshot: QuestionGroup[] = [];
+      setGroups((prev) => {
+        snapshot = prev;
+        return prev.map((g) => (g.id === id ? { ...g, isActive: next } : g));
+      });
+      setTogglingId(id);
+
+      try {
+        await toggleQuestionGroupActive(id, next);
+      } catch (err: unknown) {
+        setGroups(snapshot);
+        console.error("Toggle question group failed:", err);
+
+        let message = "Could not update the question group. Please try again.";
+        if (axios.isAxiosError(err)) {
+          const data = err.response?.data as
+            | { message?: string; error?: string }
+            | undefined;
+          message =
+            data?.message ??
+            data?.error ??
+            (err.response?.status
+              ? `Request failed (${err.response.status})`
+              : err.message) ??
+            message;
+        }
+        toast.error(message);
+      } finally {
+        setTogglingId(null);
+      }
+    },
+    []
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-8 px-6 py-8 sm:px-10 lg:px-[60px]">
@@ -90,6 +131,8 @@ function ManageQuestionsPage() {
             <QuestionGroupCard
               key={group.id}
               group={group}
+              toggling={togglingId === group.id}
+              onToggleActive={handleToggleActive}
               onClick={() =>
                 router.push(`/admin/manage-questions/${group.id}`)
               }
