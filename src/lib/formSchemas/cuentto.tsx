@@ -10,5 +10,6 @@ export const CuenttoSchema = z.object({
   musicId: z.coerce.number().optional(),
   groupIds: z.array(z.number()).optional(),
   isSelfShared: z.boolean().optional(),
+  isPublic: z.boolean().optional(),
 });
 export type CuenttoCreateData = z.infer<typeof CuenttoSchema>;

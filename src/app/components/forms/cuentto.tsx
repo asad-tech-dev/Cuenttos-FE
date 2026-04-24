@@ -592,13 +592,15 @@ export default function CuenttoForm() {
                     className="flex flex-col gap-4 w-full justify-start"
                     onChange={(values) => {
                       const isSelfShared = values.includes("self");
-                      let groupIds: number[] = [];
-                      if (!isSelfShared && !values.includes("all")) {
-                        groupIds = values.map((value) =>
-                          parseInt(value.toString(), 10),
-                        );
-                      }
+                      const isPublic =
+                        !isSelfShared && values.includes("all");
+                      const groupIds = isSelfShared
+                        ? []
+                        : values.filter(
+                            (v): v is number => typeof v === "number",
+                          );
                       setValue("isSelfShared", isSelfShared);
+                      setValue("isPublic", isPublic);
                       setValue("groupIds", groupIds);
                     }}
                     options={[
@@ -610,7 +612,7 @@ export default function CuenttoForm() {
                       })),
                     ]}
                     defaultValue={["all"]}
-                    exclusiveValues={["all", "self"]}
+                    exclusiveValues={["self"]}
                   />
                 </div>
                 {error && (
