@@ -15,12 +15,30 @@ import {
   toggleQuestionGroupActive,
 } from "@/lib/api/questionGroup";
 
+const SKELETON_COUNT_STORAGE_KEY = "manageQuestions:lastCount";
+const DEFAULT_SKELETON_COUNT = 3;
+
+const readCachedCount = (): number => {
+  if (typeof window === "undefined") return DEFAULT_SKELETON_COUNT;
+  const stored = Number(localStorage.getItem(SKELETON_COUNT_STORAGE_KEY));
+  return Number.isFinite(stored) && stored > 0
+    ? stored
+    : DEFAULT_SKELETON_COUNT;
+};
+
 function ManageQuestionsPage() {
   const router = useRouter();
   const [groups, setGroups] = useState<QuestionGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [skeletonCount, setSkeletonCount] = useState<number>(
+    DEFAULT_SKELETON_COUNT
+  );
+
+  useEffect(() => {
+    setSkeletonCount(readCachedCount());
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -29,6 +47,12 @@ function ManageQuestionsPage() {
         setError(null);
         const data = await fetchQuestionGroups();
         setGroups(data);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            SKELETON_COUNT_STORAGE_KEY,
+            String(data.length)
+          );
+        }
       } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response?.status === 404) {
           setGroups([]);
@@ -111,7 +135,7 @@ function ManageQuestionsPage() {
       </header>
 
       {loading ? (
-        <SkeletonQuestionGroupGrid count={6} />
+        <SkeletonQuestionGroupGrid count={skeletonCount} />
       ) : error ? (
         <div className="flex h-[300px] w-full items-center justify-center rounded-[16px] border border-dashed border-red/40 bg-white">
           <p className="text-[14px] text-red">{error}</p>
