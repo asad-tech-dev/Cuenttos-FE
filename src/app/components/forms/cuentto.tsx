@@ -207,9 +207,12 @@ export default function CuenttoForm() {
   }, []);
 
   const onSubmit = async (data: CuenttoCreateData) => {
+    const { musicId, ...rest } = data;
+    const payload: CuenttoCreateData = musicId ? { ...rest, musicId } : rest;
+
     try {
       setLoading(true);
-      await createCuentto(data);
+      await createCuentto(payload);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
@@ -592,8 +595,7 @@ export default function CuenttoForm() {
                     className="flex flex-col gap-4 w-full justify-start"
                     onChange={(values) => {
                       const isSelfShared = values.includes("self");
-                      const isPublic =
-                        !isSelfShared && values.includes("all");
+                      const isPublic = !isSelfShared && values.includes("all");
                       const groupIds = isSelfShared
                         ? []
                         : values.filter(
