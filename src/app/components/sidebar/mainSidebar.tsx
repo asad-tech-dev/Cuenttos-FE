@@ -1,9 +1,17 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import axios from "axios";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ShieldCheck, ClipboardList, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
+import {
+  ShieldCheck,
+  ClipboardList,
+  ChevronDown,
+  LogOut,
+  Loader2,
+} from "lucide-react";
 import {
   LibraryIcon,
   WriteIcon,
@@ -13,15 +21,52 @@ import {
   FavouriteActive,
   ProfileActive,
 } from "../icons";
-import { getIsAdmin } from "@/lib/api/auth";
+import { getIsAdmin, logoutUser, clearAuth } from "@/lib/api/auth";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   useEffect(() => {
     setIsAdmin(getIsAdmin());
   }, [pathname]);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logoutUser();
+      clearAuth();
+      toast.success("Logged out successfully", {
+        position: "top-center",
+        style: {
+          background: "#FFFFFF",
+          color: "#191c1d",
+          borderRadius: "8px",
+          fontSize: "14px",
+          padding: "16px",
+        },
+      });
+      router.replace("/login");
+    } catch (err: unknown) {
+      const message = axios.isAxiosError(err)
+        ? err.response?.data?.message || "Logout failed. Please try again."
+        : "Logout failed. Please try again.";
+      toast.error(message, {
+        position: "top-center",
+        style: {
+          background: "#FFFFFF",
+          color: "#b91c1c",
+          borderRadius: "8px",
+          fontSize: "14px",
+          padding: "16px",
+        },
+      });
+      setIsLoggingOut(false);
+    }
+  };
 
   const menuItems = [
     {
@@ -122,7 +167,7 @@ export default function Sidebar() {
         })}
 
         {isAdmin && (
-          <div className="mt-[16px]">
+          <div className="mt-[16px] mb-[16px]">
             <button
               type="button"
               onClick={() => setIsAdminOpen((prev) => !prev)}
@@ -189,6 +234,25 @@ export default function Sidebar() {
             </div>
           </div>
         )}
+
+        <div
+          className={`${isAdmin ? "" : "mt-[16px]"} pt-[12px] border-t border-light-gray w-[200px]`}
+        >
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            aria-label="Logout"
+            className={`group relative flex items-center gap-4 px-4 w-[200px] h-[56px] rounded-[100px] transition-all duration-300 cursor-pointer text-gray hover:text-[#b91c1c] disabled:opacity-60 disabled:cursor-not-allowed`}
+          >
+            <LogOut
+              size={20}
+              className="text-gray group-hover:text-[#b91c1c] transition-colors duration-300"
+            />
+
+            <p className="text-[14px] font-semibold">Logout</p>
+          </button>
+        </div>
       </div>
     </div>
   );
