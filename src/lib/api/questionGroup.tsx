@@ -25,6 +25,15 @@ export const fetchQuestionGroups = async (): Promise<QuestionGroup[]> => {
   );
 };
 
+export const fetchQuestionGroupById = async (
+  id: number
+): Promise<QuestionGroup> => {
+  const response = await axios.get(`${API_URL}/api/question-groups/${id}`, {
+    headers: authHeaders(),
+  });
+  return response.data.questionGroup ?? response.data;
+};
+
 export const activateQuestionGroup = async (
   id: number
 ): Promise<QuestionGroup> => {
@@ -53,21 +62,33 @@ export const toggleQuestionGroupActive = async (
 ): Promise<QuestionGroup> =>
   isActive ? activateQuestionGroup(id) : deactivateQuestionGroup(id);
 
+const buildGroupPayload = (data: QuestionGroupFormData) => ({
+  title: data.title,
+  description: data.description || "",
+  questions: data.questions.map((q, index) => ({
+    text: q.text,
+    order: index,
+  })),
+});
+
 export const createQuestionGroup = async (
   data: QuestionGroupFormData
 ): Promise<QuestionGroup> => {
-  const payload = {
-    title: data.title,
-    description: data.description || "",
-    questions: data.questions.map((q, index) => ({
-      text: q.text,
-      order: index,
-    })),
-  };
-
   const response = await axios.post(
     `${API_URL}/api/question-groups`,
-    payload,
+    buildGroupPayload(data),
+    { headers: authHeaders() }
+  );
+  return response.data.questionGroup ?? response.data;
+};
+
+export const updateQuestionGroup = async (
+  id: number,
+  data: QuestionGroupFormData
+): Promise<QuestionGroup> => {
+  const response = await axios.put(
+    `${API_URL}/api/question-groups/${id}`,
+    buildGroupPayload(data),
     { headers: authHeaders() }
   );
   return response.data.questionGroup ?? response.data;

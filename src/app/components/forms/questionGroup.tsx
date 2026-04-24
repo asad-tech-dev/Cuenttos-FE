@@ -13,9 +13,32 @@ import {
   QuestionGroupFormData,
   QUESTIONS_PER_GROUP,
 } from "@/lib/formSchemas/questionGroup";
-import { createQuestionGroup } from "@/lib/api/questionGroup";
+import {
+  createQuestionGroup,
+  updateQuestionGroup,
+} from "@/lib/api/questionGroup";
 
-export default function QuestionGroupForm() {
+type QuestionGroupFormMode = "create" | "edit";
+
+interface QuestionGroupFormProps {
+  mode?: QuestionGroupFormMode;
+  groupId?: number;
+  initialValues?: QuestionGroupFormData;
+}
+
+const emptyValues: QuestionGroupFormData = {
+  title: "",
+  description: "",
+  questions: Array.from({ length: QUESTIONS_PER_GROUP }, () => ({
+    text: "",
+  })),
+};
+
+export default function QuestionGroupForm({
+  mode = "create",
+  groupId,
+  initialValues,
+}: QuestionGroupFormProps = {}) {
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -28,13 +51,7 @@ export default function QuestionGroupForm() {
   } = useForm<QuestionGroupFormData>({
     resolver: zodResolver(QuestionGroupSchema),
     mode: "onChange",
-    defaultValues: {
-      title: "",
-      description: "",
-      questions: Array.from({ length: QUESTIONS_PER_GROUP }, () => ({
-        text: "",
-      })),
-    },
+    defaultValues: initialValues ?? emptyValues,
   });
 
   const { fields } = useFieldArray({
@@ -44,18 +61,28 @@ export default function QuestionGroupForm() {
 
   const onCancel = () => router.push("/admin/manage-questions");
 
+  const isEdit = mode === "edit" && typeof groupId === "number";
+
   const onSubmit = async (data: QuestionGroupFormData) => {
     try {
       setLoading(true);
       setSubmitError(null);
-      await createQuestionGroup(data);
-      toast.success("Question group created");
+      if (isEdit) {
+        await updateQuestionGroup(groupId as number, data);
+        toast.success("Question group updated");
+      } else {
+        await createQuestionGroup(data);
+        toast.success("Question group created");
+      }
       router.push("/admin/manage-questions");
     } catch (err: unknown) {
+      const fallback = isEdit
+        ? "Could not update the question group. Please try again."
+        : "Could not create the question group. Please try again.";
       const message =
         axios.isAxiosError(err) && err.response?.data?.message
           ? err.response.data.message
-          : "Could not create the question group. Please try again.";
+          : fallback;
       setSubmitError(message);
       toast.error(message);
     } finally {
@@ -157,7 +184,7 @@ export default function QuestionGroupForm() {
           Cancel
         </button>
         <VioletButton
-          text="Create Question"
+          text={isEdit ? "Save Changes" : "Create Question"}
           loading={loading}
           className="h-[44px] w-full sm:w-[180px] text-[14px]"
           type="submit"
