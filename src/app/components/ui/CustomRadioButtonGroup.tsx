@@ -6,6 +6,7 @@ interface CustomRadioButtonGroupProps {
   onChange: (values: (string | number)[]) => void;
   defaultValue?: (string | number)[];
   className?: string;
+  exclusiveValues?: (string | number)[];
 }
 
 const CustomRadioButtonGroup: React.FC<CustomRadioButtonGroupProps> = ({
@@ -13,20 +14,20 @@ const CustomRadioButtonGroup: React.FC<CustomRadioButtonGroupProps> = ({
   onChange,
   defaultValue = ["all"],
   className,
+  exclusiveValues = ["all"],
 }) => {
   const [selectedValues, setSelectedValues] = useState<(string | number)[]>(
     defaultValue
   );
 
   const handleClick = (value: string | number) => {
-    if (value === "all") {
-      setSelectedValues(["all"]);
-      onChange(["all"]);
+    if (exclusiveValues.includes(value)) {
+      setSelectedValues([value]);
+      onChange([value]);
     } else {
-      let newValues = [...selectedValues];
-      if (newValues.includes("all")) {
-        newValues = newValues.filter((v) => v !== "all");
-      }
+      let newValues = selectedValues.filter(
+        (v) => !exclusiveValues.includes(v)
+      );
       if (newValues.includes(value)) {
         newValues = newValues.filter((v) => v !== value);
       } else {
