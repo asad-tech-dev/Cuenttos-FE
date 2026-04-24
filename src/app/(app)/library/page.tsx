@@ -45,19 +45,19 @@ function LibraryPage() {
   return (
     <div className="pl-[110px]">
       <div className="flex flex-col gap-[16px]">
-        <h2 className="text-dark-gray text-[12px] font-medium">
-          FEATURED CUENTTOS
+        <h2 className="text-dark-gray text-[12px] font-medium flex items-center gap-1.5">
+          <span aria-hidden>🔥</span> TRENDING CUENTTOS
         </h2>
         {loading1 ? (
           <SkeletonCuenttoFeatured />
         ) : (
-          <>
-            <div className="flex flex-row gap-[20px] flex-wrap">
-              {featured.map((cuentto) => (
-                <FeaturedCuenttoFeedCard key={cuentto.id} cuentto={cuentto} />
-              ))}
-            </div>
-          </>
+          <div className="flex flex-row gap-[20px] overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory md:flex-wrap md:overflow-visible md:snap-none">
+            {featured.map((cuentto, idx) => (
+              <div key={cuentto.id} className="shrink-0 snap-start md:shrink">
+                <FeaturedCuenttoFeedCard cuentto={cuentto} index={idx} />
+              </div>
+            ))}
+          </div>
         )}
       </div>
       {loading2 ? (
