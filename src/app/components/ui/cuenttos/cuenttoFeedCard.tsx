@@ -2,132 +2,114 @@
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-import { FavouriteIcon, CommentIcon, CupIcon, OptionIcon } from "../../icons";
+import {
+  FavouriteIcon,
+  CommentIcon,
+  ShareIcon,
+  MusicIcon,
+} from "../../icons";
 import CustomToast from "../../toasts/comingSoon";
 import { Cuentto } from "@/types/cuentto";
 
 const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
-  return (
-    <div className="bg-white w-[984px] h-[347px] border border-light-gray rounded-[12px] p-8 flex flex-col justify-between">
-      <div>
-        <div className="flex flex-row justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-[32px] h-[32px]">
-              <Image
-                src={
-                  cuentto.user.profilePicture
-                    ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${cuentto.user.profilePicture}`
-                    : "/default-avatar.png"
-                }
-                alt="user image"
-                width={32}
-                height={32}
-                className="object-cover rounded-full !w-full !h-full border border-white"
-              />
-            </div>
-            <div>
-              <p className="font-medium text-[11px] text-black">
-                {cuentto.user.username}
-              </p>
-              <p className="font-normal text-[11px] text-gray">
-                {cuentto.createdAt
-                  ? formatDistanceToNow(new Date(cuentto.createdAt), {
-                      addSuffix: true,
-                    })
-                  : "Unknown time"}
-              </p>
-            </div>
-            <div className="ml-[20px]">
-              <Image
-                src="/filter-chip.svg"
-                alt="filter"
-                width={38}
-                height={38}
-              />
-            </div>
-          </div>
-          <div>
-            <OptionIcon
-              width={4}
-              height={16}
-              className="cursor-pointer text-subtle-black"
-              onClick={() =>
-                CustomToast()
-              }
-            />
-          </div>
-        </div>
+  const relativeTime = cuentto.createdAt
+    ? formatDistanceToNow(new Date(cuentto.createdAt), { addSuffix: true })
+    : "Unknown time";
 
-        <div className="mt-[16px]">
-          <span
-            className="px-3 py-1 font-medium text-[11px] text-gray rounded-full w-fit"
-            style={{ backgroundColor: cuentto.mood.color }}
-          >
-            {cuentto.mood.title}
+  return (
+    <div className="bg-white w-full max-w-[984px] border border-light-gray rounded-[16px] p-6 sm:p-8 flex flex-col gap-5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="inline-flex items-center gap-2 bg-[#EEEAFE] text-[#6C5CE7] rounded-full px-3 py-1.5">
+          <ShareIcon
+            width={12}
+            height={14}
+            className="text-[#6C5CE7]"
+          />
+          <span className="text-[12px] font-semibold">
+            {cuentto.user.username} shared with you
           </span>
         </div>
-        <Link href={`/cuentto/${cuentto.id}`}>
-          <h2 className="mt-[10px] text-[22px] font-normal text-black">
-            {cuentto.title || "Untitled"}
-          </h2>
-          <p className="mt-[6px] text-gray text-[16px] leading-[28px] font-normal">
-            {cuentto.description ? (
-              <span
-                dangerouslySetInnerHTML={{
-                  __html:
-                    cuentto.description.length > 300
-                      ? `${cuentto.description.substring(0, 300)}...`
-                      : cuentto.description,
-                }}
-              />
-            ) : (
-              "No description available."
-            )}
-          </p>
-        </Link>
-        <div className="mt-[6px]">
-          <span className=" text-gray text-[11px] font-medium">
-            {typeof cuentto.duration === "number"
-              ? `${cuentto.duration} min read`
-              : "Unknown duration"}
-          </span>
-        </div>
+        <span className="text-gray text-[12px] font-normal whitespace-nowrap">
+          {relativeTime}
+        </span>
       </div>
 
-      <div className="flex justify-between items-center">
-        <div
-          className="flex items-center cursor-pointer gap-2"
-          onClick={() =>
-            CustomToast()
-          }
-        >
-          <CommentIcon
-            width={18}
-            height={18}
-            className="cursor-pointer text-black"
-          />
-          <span className="text-black text-[11px] font-medium">
-            {cuentto._count.comments ?? 0} comments
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-[40px] h-[40px] shrink-0">
+            <Image
+              src={
+                cuentto.user.profilePicture
+                  ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${cuentto.user.profilePicture}`
+                  : "/default-avatar.png"
+              }
+              alt="user image"
+              width={40}
+              height={40}
+              className="object-cover rounded-full !w-full !h-full border border-white"
+            />
+          </div>
+          <div>
+            <p className="font-semibold text-[14px] text-black leading-tight">
+              {cuentto.user.profileName || cuentto.user.username}
+            </p>
+            <p className="font-normal text-[12px] text-gray mt-0.5">
+              {relativeTime}
+            </p>
+          </div>
+        </div>
+        {cuentto.music?.name && (
+          <div className="flex items-center gap-1.5 text-gray shrink-0">
+            <MusicIcon width={12} height={14} className="text-gray" />
+            <span className="text-[13px] font-normal truncate max-w-[180px]">
+              {cuentto.music.name}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <Link href={`/cuentto/${cuentto.id}`} className="flex flex-col gap-3">
+        <span className="text-gray text-[12px] font-normal">
+          Reading time ·{" "}
+          <span className="text-black font-semibold">
+            {typeof cuentto.duration === "number"
+              ? `${cuentto.duration} min`
+              : "—"}
           </span>
-        </div>
-        <div className="flex flex-row gap-[20px]">
-          <CupIcon
-            width={18}
-            height={18}
+        </span>
+        <h2 className="font-serif text-[22px] sm:text-[24px] leading-[1.3] font-bold text-black">
+          {cuentto.title || "Untitled"}
+        </h2>
+      </Link>
+
+      <div className="flex justify-between items-center pt-1">
+        <div className="flex items-center gap-5">
+          <div
+            className="flex items-center cursor-pointer gap-2"
+            onClick={() => CustomToast()}
+          >
+            <CommentIcon
+              width={18}
+              height={18}
+              className="text-subtle-black"
+            />
+            <span className="text-subtle-black text-[13px] font-medium">
+              {cuentto._count.comments ?? 0}
+            </span>
+          </div>
+          <ShareIcon
+            width={16}
+            height={20}
             className="cursor-pointer text-subtle-black"
-            onClick={() =>
-              CustomToast()
-            }
-          />
-          <FavouriteIcon
-            width={14}
-            height={17}
-            className="cursor-pointer text-subtle-black"
-            onClick={() =>
-              CustomToast()
-            }
+            onClick={() => CustomToast()}
           />
         </div>
+        <FavouriteIcon
+          width={14}
+          height={17}
+          className="cursor-pointer text-subtle-black"
+          onClick={() => CustomToast()}
+        />
       </div>
     </div>
   );
