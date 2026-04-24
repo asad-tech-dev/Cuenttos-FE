@@ -40,7 +40,7 @@ const FeaturedCuenttoFeedCard: React.FC<{
 
   return (
     <div
-      className="relative w-full sm:w-[260px] md:w-[280px] h-[260px] rounded-[20px] p-5 flex flex-col justify-between overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-transform hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)]"
+      className="relative w-full sm:w-[260px] md:w-[300px] h-[220px] rounded-[20px] p-5 flex flex-col justify-between overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-transform hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)]"
       style={{ background: gradient }}
     >
       <div className="flex items-start justify-between">
