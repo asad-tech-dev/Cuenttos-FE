@@ -131,7 +131,14 @@ function ManageQuestionsPage() {
       let snapshot: QuestionGroup[] = [];
       setGroups((prev) => {
         snapshot = prev;
-        return prev.map((g) => (g.id === id ? { ...g, isActive: next } : g));
+        return prev.map((g) => {
+          if (g.id === id) return { ...g, isActive: next };
+          // Backend enforces single-active exclusivity: activating one
+          // group deactivates every other. Mirror that locally so the UI
+          // doesn't need a refresh to show the true state.
+          if (next && g.isActive) return { ...g, isActive: false };
+          return g;
+        });
       });
       setTogglingId(id);
 
