@@ -25,6 +25,28 @@ export const storeToken = (token: string) => {
   localStorage.setItem("authToken", token);
 };
 
+export const logoutUser = async (): Promise<{ message: string }> => {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+  const response = await axios.post(
+    `${API_URL}/api/auth/logout`,
+    {},
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const clearAuth = () => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("isAdmin");
+};
+
 export const storeIsAdmin = (isAdmin: boolean) => {
   if (isAdmin) {
     localStorage.setItem("isAdmin", "true");
