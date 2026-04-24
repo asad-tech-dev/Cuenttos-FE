@@ -95,3 +95,9 @@ export const updateQuestionGroup = async (
   );
   return response.data.questionGroup ?? response.data;
 };
+
+export const deleteQuestionGroup = async (id: number): Promise<void> => {
+  await axios.delete(`${API_URL}/api/question-groups/${id}`, {
+    headers: authHeaders(),
+  });
+};

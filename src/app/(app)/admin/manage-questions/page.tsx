@@ -8,11 +8,13 @@ import { Plus } from "lucide-react";
 import checkAdminAuth from "@/HOC/checkAdminAuth";
 import EmptyState from "@/app/components/ui/EmptyState";
 import QuestionGroupCard from "@/app/components/ui/questionGroups/QuestionGroupCard";
+import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
 import { SkeletonQuestionGroupGrid } from "@/app/components/skeletons/QuestionGroupCard";
 import { QuestionGroup } from "@/types/questionGroup";
 import {
   fetchQuestionGroups,
   toggleQuestionGroupActive,
+  deleteQuestionGroup,
 } from "@/lib/api/questionGroup";
 
 const SKELETON_COUNT_STORAGE_KEY = "manageQuestions:lastCount";
@@ -32,6 +34,10 @@ function ManageQuestionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<QuestionGroup | null>(
+    null
+  );
   const [skeletonCount, setSkeletonCount] = useState<number>(
     DEFAULT_SKELETON_COUNT
   );
@@ -69,6 +75,56 @@ function ManageQuestionsPage() {
   }, []);
 
   const goToCreate = () => router.push("/admin/manage-questions/create");
+
+  const requestDelete = useCallback(
+    (id: number) => {
+      const group = groups.find((g) => g.id === id);
+      if (group) setPendingDelete(group);
+    },
+    [groups]
+  );
+
+  const confirmDelete = useCallback(async () => {
+    if (!pendingDelete) return;
+    const id = pendingDelete.id;
+    let snapshot: QuestionGroup[] = [];
+    setDeletingId(id);
+    try {
+      await deleteQuestionGroup(id);
+      setGroups((prev) => {
+        snapshot = prev;
+        const next = prev.filter((g) => g.id !== id);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            SKELETON_COUNT_STORAGE_KEY,
+            String(next.length)
+          );
+        }
+        return next;
+      });
+      void snapshot;
+      toast.success("Question group deleted");
+      setPendingDelete(null);
+    } catch (err: unknown) {
+      console.error("Delete question group failed:", err);
+      let message = "Could not delete the question group. Please try again.";
+      if (axios.isAxiosError(err)) {
+        const data = err.response?.data as
+          | { message?: string; error?: string }
+          | undefined;
+        message =
+          data?.message ??
+          data?.error ??
+          (err.response?.status
+            ? `Request failed (${err.response.status})`
+            : err.message) ??
+          message;
+      }
+      toast.error(message);
+    } finally {
+      setDeletingId(null);
+    }
+  }, [pendingDelete]);
 
   const handleToggleActive = useCallback(
     async (id: number, next: boolean) => {
@@ -154,7 +210,9 @@ function ManageQuestionsPage() {
               key={group.id}
               group={group}
               toggling={togglingId === group.id}
+              deleting={deletingId === group.id}
               onToggleActive={handleToggleActive}
+              onDelete={requestDelete}
               onClick={() =>
                 router.push(`/admin/manage-questions/${group.id}`)
               }
@@ -162,6 +220,30 @@ function ManageQuestionsPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={(next) => {
+          if (!next) setPendingDelete(null);
+        }}
+        title="Delete question group?"
+        description={
+          pendingDelete ? (
+            <>
+              This will permanently delete{" "}
+              <span className="font-semibold text-subtle-black">
+                “{pendingDelete.title}”
+              </span>{" "}
+              and unlink its questions. This action cannot be undone.
+            </>
+          ) : null
+        }
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        loading={deletingId !== null}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

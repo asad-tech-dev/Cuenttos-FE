@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Trash2 } from "lucide-react";
 import { QuestionGroup } from "@/types/questionGroup";
 import Toggle from "../Toggle";
 
@@ -9,14 +9,18 @@ interface QuestionGroupCardProps {
   group: QuestionGroup;
   onClick?: () => void;
   onToggleActive?: (id: number, next: boolean) => void;
+  onDelete?: (id: number) => void;
   toggling?: boolean;
+  deleting?: boolean;
 }
 
 export default function QuestionGroupCard({
   group,
   onClick,
   onToggleActive,
+  onDelete,
   toggling = false,
+  deleting = false,
 }: QuestionGroupCardProps) {
   const questionCount =
     group._count?.questions ?? group.questions?.length ?? 0;
@@ -46,21 +50,39 @@ export default function QuestionGroupCard({
           <ClipboardList size={20} className="text-violet" />
         </div>
 
-        <div className="flex items-center gap-2">
-          <span
-            className={`text-[11px] font-semibold uppercase tracking-[0.06em] ${
-              isActive ? "text-violet" : "text-gray-7"
-            }`}
-          >
-            {isActive ? "Active" : "Inactive"}
-          </span>
-          <Toggle
-            checked={isActive}
-            loading={toggling}
-            size="sm"
-            ariaLabel={`Toggle ${group.title} active state`}
-            onChange={(next) => onToggleActive?.(group.id, next)}
-          />
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-[11px] font-semibold uppercase tracking-[0.06em] ${
+                isActive ? "text-violet" : "text-gray-7"
+              }`}
+            >
+              {isActive ? "Active" : "Inactive"}
+            </span>
+            <Toggle
+              checked={isActive}
+              loading={toggling}
+              size="sm"
+              ariaLabel={`Toggle ${group.title} active state`}
+              onChange={(next) => onToggleActive?.(group.id, next)}
+            />
+          </div>
+
+          {onDelete && (
+            <button
+              type="button"
+              disabled={deleting}
+              aria-label={`Delete ${group.title}`}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onDelete(group.id);
+              }}
+              className="flex h-[30px] w-[30px] items-center justify-center rounded-full text-gray-7 transition-colors duration-200 hover:bg-red/10 hover:text-red focus:outline-none focus-visible:ring-2 focus-visible:ring-red/30 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
         </div>
       </div>
 
