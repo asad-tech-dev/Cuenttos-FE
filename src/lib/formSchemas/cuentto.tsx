@@ -9,5 +9,6 @@ export const CuenttoSchema = z.object({
   moodId: z.coerce.number().min(1, "Select at least one emotion"),
   musicId: z.coerce.number().optional(),
   groupIds: z.array(z.number()).optional(),
+  isSelfShared: z.boolean().optional(),
 });
 export type CuenttoCreateData = z.infer<typeof CuenttoSchema>;

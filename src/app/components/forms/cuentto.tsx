@@ -591,24 +591,26 @@ export default function CuenttoForm() {
                   <CustomRadioButtonGroup
                     className="flex flex-col gap-4 w-full justify-start"
                     onChange={(values) => {
+                      const isSelfShared = values.includes("self");
                       let groupIds: number[] = [];
-                      if (values.includes("all")) {
-                        groupIds = [];
-                      } else {
+                      if (!isSelfShared && !values.includes("all")) {
                         groupIds = values.map((value) =>
                           parseInt(value.toString(), 10),
                         );
                       }
+                      setValue("isSelfShared", isSelfShared);
                       setValue("groupIds", groupIds);
                     }}
                     options={[
-                      { value: "all", label: "All" },
+                      { value: "all", label: "Public" },
+                      { value: "self", label: "Share to yourself" },
                       ...groups.map((group) => ({
                         value: group.id,
                         label: group.name,
                       })),
                     ]}
                     defaultValue={["all"]}
+                    exclusiveValues={["all", "self"]}
                   />
                 </div>
                 {error && (
