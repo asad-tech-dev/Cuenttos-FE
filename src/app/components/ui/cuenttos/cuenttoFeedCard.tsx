@@ -2,12 +2,7 @@
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-import {
-  FavouriteIcon,
-  CommentIcon,
-  ShareIcon,
-  MusicIcon,
-} from "../../icons";
+import { FavouriteIcon, CommentIcon, ShareIcon, MusicIcon } from "../../icons";
 import CustomToast from "../../toasts/comingSoon";
 import { Cuentto } from "@/types/cuentto";
 
@@ -20,11 +15,7 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
     <div className="bg-white w-full max-w-[984px] border border-light-gray rounded-[16px] p-6 sm:p-8 flex flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
         <div className="inline-flex items-center gap-2 bg-[#EEEAFE] text-[#6C5CE7] rounded-full px-3 py-1.5">
-          <ShareIcon
-            width={12}
-            height={14}
-            className="text-[#6C5CE7]"
-          />
+          <ShareIcon width={12} height={14} className="text-[#6C5CE7]" />
           <span className="text-[12px] font-semibold">
             {cuentto.user.username} shared with you
           </span>
@@ -77,6 +68,14 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
               : "—"}
           </span>
         </span>
+        {cuentto.mood?.title && (
+          <span
+            className="self-start rounded-full px-3 py-1 text-[12px] font-medium text-black"
+            style={{ backgroundColor: cuentto.mood.color || "#EEEAFE" }}
+          >
+            {cuentto.mood.title}
+          </span>
+        )}
         <h2 className="font-serif text-[22px] sm:text-[24px] leading-[1.3] font-bold text-black">
           {cuentto.title || "Untitled"}
         </h2>
@@ -88,11 +87,7 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
             className="flex items-center cursor-pointer gap-2"
             onClick={() => CustomToast()}
           >
-            <CommentIcon
-              width={18}
-              height={18}
-              className="text-subtle-black"
-            />
+            <CommentIcon width={18} height={18} className="text-subtle-black" />
             <span className="text-subtle-black text-[13px] font-medium">
               {cuentto._count.comments ?? 0}
             </span>
