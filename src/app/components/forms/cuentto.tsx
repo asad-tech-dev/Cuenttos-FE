@@ -15,14 +15,26 @@ import VioletButton from "../buttons/VioletButton";
 import { Mood } from "@/types/mood";
 import { Music, Durations } from "@/types/music";
 import { Group } from "@/types/group";
+import { Cuentto } from "@/types/cuentto";
 import { fetchMusics } from "@/lib/api/music";
 import { fetchGroups } from "@/lib/api/group";
 import { fetchMoods } from "@/lib/api/mood";
 import { CuenttoSchema, CuenttoCreateData } from "@/lib/formSchemas/cuentto";
-import { createCuentto } from "@/lib/api/cuentto";
+import { createCuentto, updateCuentto } from "@/lib/api/cuentto";
 import { getCurrentUserId } from "@/lib/api/auth";
 
-export default function CuenttoForm() {
+interface CuenttoFormProps {
+  mode?: "create" | "edit";
+  cuenttoId?: number;
+  initialData?: Cuentto;
+}
+
+export default function CuenttoForm({
+  mode = "create",
+  cuenttoId,
+  initialData,
+}: CuenttoFormProps = {}) {
+  const isEdit = mode === "edit";
   const {
     register,
     handleSubmit,
@@ -35,10 +47,26 @@ export default function CuenttoForm() {
     resolver: zodResolver(CuenttoSchema),
     mode: "onChange",
     defaultValues: {
-      description: "",
-      duration: 0,
+      title: initialData?.title ?? "",
+      description: initialData?.description ?? "",
+      duration: initialData?.duration ?? 0,
+      moodId: initialData?.moodId ?? initialData?.mood?.id ?? 0,
+      musicId: initialData?.musicId ?? initialData?.music?.id ?? 0,
+      isPublic: initialData?.isPublic ?? true,
+      isSelfShared: initialData?.isSelfShared ?? false,
+      groupIds: initialData?.groupIds ?? [],
     },
   });
+
+  const initialShareSelection: (string | number)[] = (() => {
+    if (!initialData) return ["all"];
+    if (initialData.isSelfShared) return ["self"];
+    const values: (string | number)[] = [];
+    if (initialData.isPublic) values.push("all");
+    if (initialData.groupIds && initialData.groupIds.length > 0)
+      values.push(...initialData.groupIds);
+    return values.length > 0 ? values : ["all"];
+  })();
 
   const [loading, setLoading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -180,6 +208,35 @@ export default function CuenttoForm() {
   }, []);
 
   useEffect(() => {
+    if (!initialData || moods.length === 0) return;
+    const targetId = initialData.moodId ?? initialData.mood?.id;
+    const match =
+      (targetId != null && moods.find((m) => m.id === targetId)) ||
+      moods.find((m) => m.title === initialData.mood?.title);
+    if (match) {
+      setSelectedMood(match.title);
+      setValue("moodId", match.id);
+    }
+  }, [initialData, moods, setValue]);
+
+  useEffect(() => {
+    if (!initialData || musics.length === 0) return;
+    const targetId = initialData.musicId ?? initialData.music?.id;
+    if (targetId == null) return;
+    const match = musics.find((m) => m.id === targetId);
+    if (match) {
+      setSelectedMusic({
+        id: match.id,
+        name: match.name,
+        musicFile: match.musicFile,
+        albumArt: match.albumArt,
+        artist: match.artist,
+      });
+      setValue("musicId", match.id);
+    }
+  }, [initialData, musics, setValue]);
+
+  useEffect(() => {
     const getMusics = async () => {
       try {
         const data = await fetchMusics();
@@ -208,27 +265,46 @@ export default function CuenttoForm() {
 
   const onSubmit = async (data: CuenttoCreateData) => {
     const { musicId, ...rest } = data;
-    const payload: CuenttoCreateData = musicId ? { ...rest, musicId } : rest;
 
     try {
       setLoading(true);
-      await createCuentto(payload);
+      setError(null);
+      if (isEdit && cuenttoId != null) {
+        await updateCuentto(cuenttoId, {
+          title: rest.title,
+          description: rest.description,
+          duration: rest.duration,
+          moodId: rest.moodId,
+          ...(musicId ? { musicId } : {}),
+          isPublic: rest.isPublic ?? false,
+          isSelfShared: rest.isSelfShared ?? false,
+          groupIds: rest.groupIds ?? [],
+        });
+      } else {
+        const payload: CuenttoCreateData = musicId
+          ? { ...rest, musicId }
+          : rest;
+        await createCuentto(payload);
+      }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
           err.response?.data?.message ||
-            "Cuentto creation failed. Please try again.",
+            (isEdit
+              ? "Cuentto update failed. Please try again."
+              : "Cuentto creation failed. Please try again."),
         );
       } else {
         setError("An unexpected error occurred. Please try again.");
       }
+      return;
     } finally {
       setLoading(false);
-      setStep(1);
-      setTimeout(() => {
-        setOpenDialog(true);
-      }, 500);
     }
+    setStep(1);
+    setTimeout(() => {
+      setOpenDialog(true);
+    }, 500);
   };
 
   return (
@@ -613,7 +689,7 @@ export default function CuenttoForm() {
                         label: group.name,
                       })),
                     ]}
-                    defaultValue={["all"]}
+                    defaultValue={initialShareSelection}
                     exclusiveValues={["self"]}
                   />
                 </div>
@@ -629,7 +705,7 @@ export default function CuenttoForm() {
                   previous step
                 </p>
                 <VioletButton
-                  text="Share"
+                  text={isEdit ? "Save" : "Share"}
                   className="w-[87px]"
                   loading={loading}
                   type="submit"
@@ -641,7 +717,15 @@ export default function CuenttoForm() {
         </SheetContent>
       </Sheet>
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <PublishCuentto />
+        <PublishCuentto
+          message={
+            isEdit ? (
+              <>
+                Your Cuentto has been <br></br>succesfully updated.
+              </>
+            ) : undefined
+          }
+        />
       </Dialog>
     </form>
   );

@@ -1,3 +1,14 @@
+export interface CuenttoGroup {
+  id: number;
+  name: string;
+  emoji?: string | null;
+  description?: string | null;
+  default?: boolean;
+  createdBy?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Cuentto {
   id: number;
   title: string;
@@ -5,7 +16,15 @@ export interface Cuentto {
   duration: number;
   createdAt: string;
   publicLink?: string | null;
+  isPublic?: boolean;
+  isSelfShared?: boolean;
+  isGroupCuentto?: boolean;
+  moodId?: number;
+  musicId?: number | null;
+  groupIds?: number[];
+  groups?: CuenttoGroup[];
   mood: {
+    id?: number;
     title: string;
     color: string;
   };
@@ -19,7 +38,7 @@ export interface Cuentto {
     id: number;
     name: string;
     musicFile: number;
-  };
+  } | null;
   _count: {
     comments: number;
   };

@@ -60,11 +60,14 @@ function LibraryPage() {
           </div>
         )}
       </div>
-      {loading2 ? (
-        <SkeletonCuenttoFeed />
-      ) : (
-        <>
-          <div className="flex flex-col gap-[20px] mt-[80px] ">
+      <div className="flex flex-col gap-[16px] mt-[80px]">
+        <h2 className="text-dark-gray text-[12px] font-medium flex items-center gap-1.5">
+          <span aria-hidden>💌</span> SHARED TO YOU
+        </h2>
+        {loading2 ? (
+          <SkeletonCuenttoFeed />
+        ) : (
+          <div className="flex flex-col gap-[20px]">
             {cuenttos.map((cuentto) => (
               <CuenttoFeedCard
                 key={cuentto.id}
@@ -75,8 +78,8 @@ function LibraryPage() {
               />
             ))}
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

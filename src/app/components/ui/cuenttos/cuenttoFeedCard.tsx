@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
@@ -33,6 +34,7 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
     : "Unknown time";
 
   const isOwnCuentto = getCurrentUserId() === cuentto.user.id;
+  const router = useRouter();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -114,7 +116,7 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
                     role="menuitem"
                     onClick={() => {
                       setMenuOpen(false);
-                      CustomToast();
+                      router.push(`/cuentto/edit/${cuentto.id}`);
                     }}
                     className="flex w-full items-center gap-3 px-4 py-3 text-[14px] font-medium text-subtle-black transition-colors duration-150 hover:bg-light-gray/60 cursor-pointer"
                   >
