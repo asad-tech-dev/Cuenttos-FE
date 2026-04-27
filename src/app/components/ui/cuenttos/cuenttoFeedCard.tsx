@@ -5,21 +5,28 @@ import Link from "next/link";
 import { FavouriteIcon, CommentIcon, ShareIcon, MusicIcon } from "../../icons";
 import CustomToast from "../../toasts/comingSoon";
 import { Cuentto } from "@/types/cuentto";
+import { getCurrentUserId } from "@/lib/api/auth";
 
 const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
   const relativeTime = cuentto.createdAt
     ? formatDistanceToNow(new Date(cuentto.createdAt), { addSuffix: true })
     : "Unknown time";
 
+  const isOwnCuentto = getCurrentUserId() === cuentto.user.id;
+
   return (
     <div className="bg-white w-full max-w-[984px] border border-light-gray rounded-[16px] p-6 sm:p-8 flex flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
-        <div className="inline-flex items-center gap-2 bg-[#EEEAFE] text-[#6C5CE7] rounded-full px-3 py-1.5">
-          <ShareIcon width={12} height={14} className="text-[#6C5CE7]" />
-          <span className="text-[12px] font-semibold">
-            {cuentto.user.username} shared with you
-          </span>
-        </div>
+        {!isOwnCuentto ? (
+          <div className="inline-flex items-center gap-2 bg-[#EEEAFE] text-[#6C5CE7] rounded-full px-3 py-1.5">
+            <ShareIcon width={12} height={14} className="text-[#6C5CE7]" />
+            <span className="text-[12px] font-semibold">
+              {cuentto.user.username} shared with you
+            </span>
+          </div>
+        ) : (
+          <span />
+        )}
         <span className="text-gray text-[12px] font-normal whitespace-nowrap">
           {relativeTime}
         </span>

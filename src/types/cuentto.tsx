@@ -10,6 +10,7 @@ export interface Cuentto {
     color: string;
   };
   user: {
+    id: number;
     username: string;
     profileName: string;
     profilePicture?: string;
