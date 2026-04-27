@@ -1,18 +1,79 @@
 "use client";
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-import { FavouriteIcon, CommentIcon, ShareIcon, MusicIcon } from "../../icons";
+import axios from "axios";
+import { toast } from "sonner";
+import { Pencil, Trash2 } from "lucide-react";
+import {
+  FavouriteIcon,
+  CommentIcon,
+  ShareIcon,
+  MusicIcon,
+  OptionIcon,
+} from "../../icons";
 import CustomToast from "../../toasts/comingSoon";
+import ConfirmDialog from "../ConfirmDialog";
 import { Cuentto } from "@/types/cuentto";
 import { getCurrentUserId } from "@/lib/api/auth";
+import { deleteCuentto } from "@/lib/api/cuentto";
 
-const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
+interface CuenttoFeedCardProps {
+  cuentto: Cuentto;
+  onDeleted?: (id: number) => void;
+}
+
+const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
+  cuentto,
+  onDeleted,
+}) => {
   const relativeTime = cuentto.createdAt
     ? formatDistanceToNow(new Date(cuentto.createdAt), { addSuffix: true })
     : "Unknown time";
 
   const isOwnCuentto = getCurrentUserId() === cuentto.user.id;
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handlePointer = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
+    };
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handlePointer);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handlePointer);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [menuOpen]);
+
+  const handleDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await deleteCuentto(cuentto.id);
+      toast.success("Cuentto deleted successfully");
+      setConfirmOpen(false);
+      onDeleted?.(cuentto.id);
+    } catch (error: unknown) {
+      let message = "Could not delete this Cuentto. Please try again.";
+      if (axios.isAxiosError(error)) {
+        const data = error.response?.data as { message?: string } | undefined;
+        message = data?.message ?? message;
+      }
+      toast.error(message);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="bg-white w-full max-w-[984px] border border-light-gray rounded-[16px] p-6 sm:p-8 flex flex-col gap-5">
@@ -27,9 +88,57 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
         ) : (
           <span />
         )}
-        <span className="text-gray text-[12px] font-normal whitespace-nowrap">
-          {relativeTime}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-gray text-[12px] font-normal whitespace-nowrap">
+            {relativeTime}
+          </span>
+          {isOwnCuentto && (
+            <div className="relative" ref={menuRef}>
+              <button
+                type="button"
+                aria-label="Cuentto actions"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((open) => !open)}
+                className="flex h-[28px] w-[28px] items-center justify-center rounded-full text-subtle-black transition-colors duration-200 hover:bg-light-gray cursor-pointer"
+              >
+                <OptionIcon width={4} height={16} />
+              </button>
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-[34px] z-20 min-w-[180px] overflow-hidden rounded-[12px] border border-light-gray bg-white shadow-[0_12px_32px_rgba(15,15,15,0.08)]"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      CustomToast();
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-[14px] font-medium text-subtle-black transition-colors duration-150 hover:bg-light-gray/60 cursor-pointer"
+                  >
+                    <Pencil size={16} className="text-subtle-black" />
+                    Edit Cuentto
+                  </button>
+                  <div className="h-px bg-light-gray" />
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setConfirmOpen(true);
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-[14px] font-medium text-subtle-black transition-colors duration-150 hover:bg-red/5 hover:text-red cursor-pointer"
+                  >
+                    <Trash2 size={16} />
+                    Delete Cuentto
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex items-start justify-between gap-3">
@@ -113,6 +222,28 @@ const CuenttoFeedCard: React.FC<{ cuentto: Cuentto }> = ({ cuentto }) => {
           onClick={() => CustomToast()}
         />
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={(next) => {
+          if (!deleting) setConfirmOpen(next);
+        }}
+        title="Delete Cuentto?"
+        description={
+          <>
+            This will permanently delete{" "}
+            <span className="font-semibold text-subtle-black">
+              “{cuentto.title || "Untitled"}”
+            </span>
+            . This action cannot be undone.
+          </>
+        }
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

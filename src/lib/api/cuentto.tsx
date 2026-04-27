@@ -44,3 +44,12 @@ export const fetchDetailCuentto = async (id: number): Promise<Cuentto> => {
   });
   return response.data.cuentto;
 };
+
+export const deleteCuentto = async (id: number): Promise<void> => {
+  const token = localStorage.getItem("authToken");
+  await axios.delete(`${API_URL}/api/cuentto/${id}`, {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  });
+};

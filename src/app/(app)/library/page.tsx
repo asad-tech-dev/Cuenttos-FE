@@ -66,7 +66,13 @@ function LibraryPage() {
         <>
           <div className="flex flex-col gap-[20px] mt-[80px] ">
             {cuenttos.map((cuentto) => (
-              <CuenttoFeedCard key={cuentto.id} cuentto={cuentto} />
+              <CuenttoFeedCard
+                key={cuentto.id}
+                cuentto={cuentto}
+                onDeleted={(id) =>
+                  setCuenttos((prev) => prev.filter((c) => c.id !== id))
+                }
+              />
             ))}
           </div>
         </>
