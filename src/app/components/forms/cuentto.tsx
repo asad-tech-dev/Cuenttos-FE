@@ -52,21 +52,11 @@ export default function CuenttoForm({
       duration: initialData?.duration ?? 0,
       moodId: initialData?.moodId ?? initialData?.mood?.id ?? 0,
       musicId: initialData?.musicId ?? initialData?.music?.id ?? 0,
-      isPublic: initialData?.isPublic ?? true,
+      isPublic: initialData?.isPublic ?? false,
       isSelfShared: initialData?.isSelfShared ?? false,
       groupIds: initialData?.groupIds ?? [],
     },
   });
-
-  const initialShareSelection: (string | number)[] = (() => {
-    if (!initialData) return ["all"];
-    if (initialData.isSelfShared) return ["self"];
-    const values: (string | number)[] = [];
-    if (initialData.isPublic) values.push("all");
-    if (initialData.groupIds && initialData.groupIds.length > 0)
-      values.push(...initialData.groupIds);
-    return values.length > 0 ? values : ["all"];
-  })();
 
   const [loading, setLoading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -91,6 +81,28 @@ export default function CuenttoForm({
   const [playingMusicId, setPlayingMusicId] = useState<number | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const innerCircleGroup = groups.find((g) => g.default);
+
+  const initialShareSelection: (string | number)[] = (() => {
+    if (!initialData) {
+      return innerCircleGroup ? [innerCircleGroup.id] : ["all"];
+    }
+    if (initialData.isSelfShared) return ["self"];
+    const values: (string | number)[] = [];
+    if (initialData.isPublic) values.push("all");
+    if (initialData.groupIds && initialData.groupIds.length > 0)
+      values.push(...initialData.groupIds);
+    if (values.length > 0) return values;
+    return innerCircleGroup ? [innerCircleGroup.id] : ["all"];
+  })();
+
+  useEffect(() => {
+    if (initialData || !innerCircleGroup) return;
+    setValue("groupIds", [innerCircleGroup.id]);
+    setValue("isPublic", false);
+    setValue("isSelfShared", false);
+  }, [initialData, innerCircleGroup, setValue]);
 
   const description = watch("description");
   useEffect(() => {
@@ -668,6 +680,7 @@ export default function CuenttoForm({
                 </p>
                 <div className="flex flex-col mt-[40px] gap-4 w-full justify-start">
                   <CustomRadioButtonGroup
+                    key={`share-radio-${innerCircleGroup?.id ?? "none"}`}
                     className="flex flex-col gap-4 w-full justify-start"
                     onChange={(values) => {
                       const isSelfShared = values.includes("self");
@@ -690,7 +703,11 @@ export default function CuenttoForm({
                       })),
                     ]}
                     defaultValue={initialShareSelection}
-                    exclusiveValues={["self"]}
+                    exclusiveValues={
+                      innerCircleGroup
+                        ? ["self", innerCircleGroup.id]
+                        : ["self"]
+                    }
                   />
                 </div>
                 {error && (
