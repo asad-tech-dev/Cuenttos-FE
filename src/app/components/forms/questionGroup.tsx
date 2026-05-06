@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FormField from "../ui/FormField";
+import Toggle from "../ui/Toggle";
 import VioletButton from "../buttons/VioletButton";
 import {
   QuestionGroupSchema,
@@ -31,6 +32,7 @@ const emptyValues: QuestionGroupFormData = {
   description: "",
   questions: Array.from({ length: QUESTIONS_PER_GROUP }, () => ({
     text: "",
+    isAnswer: true,
   })),
 };
 
@@ -47,6 +49,7 @@ export default function QuestionGroupForm({
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<QuestionGroupFormData>({
     resolver: zodResolver(QuestionGroupSchema),
@@ -63,7 +66,31 @@ export default function QuestionGroupForm({
 
   const isEdit = mode === "edit" && typeof groupId === "number";
 
+  const handleToggleIsAnswer = (index: number, next: boolean) => {
+    setValue(`questions.${index}.isAnswer`, next, { shouldDirty: true });
+  };
+
+  const hasChanges = (data: QuestionGroupFormData) => {
+    if (!initialValues) return true;
+    if (data.title !== (initialValues.title ?? "")) return true;
+    if ((data.description ?? "") !== (initialValues.description ?? ""))
+      return true;
+    return data.questions.some((q, i) => {
+      const initial = initialValues.questions?.[i];
+      return (
+        q.text !== (initial?.text ?? "") ||
+        (q.description ?? null) !== (initial?.description ?? null) ||
+        q.isAnswer !== (initial?.isAnswer ?? true)
+      );
+    });
+  };
+
   const onSubmit = async (data: QuestionGroupFormData) => {
+    if (isEdit && !hasChanges(data)) {
+      toast.info("No changes to save");
+      return;
+    }
+
     try {
       setLoading(true);
       setSubmitError(null);
@@ -140,13 +167,42 @@ export default function QuestionGroupForm({
               key={field.id}
               className="flex flex-col gap-3 rounded-[12px] border border-light-gray bg-gray-5 p-5 transition-colors duration-200 focus-within:border-violet focus-within:bg-white"
             >
-              <div className="flex items-center gap-3">
-                <span className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-violet text-[13px] font-semibold text-white">
-                  {index + 1}
-                </span>
-                <p className="text-[13px] font-medium uppercase tracking-[0.06em] text-dark-gray">
-                  Question {index + 1}
-                </p>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-violet text-[13px] font-semibold text-white">
+                    {index + 1}
+                  </span>
+                  <p className="text-[13px] font-medium uppercase tracking-[0.06em] text-dark-gray">
+                    Question {index + 1}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Controller
+                    control={control}
+                    name={`questions.${index}.isAnswer` as const}
+                    render={({ field: { value } }) => (
+                      <>
+                        <span
+                          className={`text-[11px] font-semibold uppercase tracking-[0.06em] ${
+                            value ? "text-violet" : "text-gray-7"
+                          }`}
+                        >
+                          Answer {value ? "On" : "Off"}
+                        </span>
+                        <Toggle
+                          checked={!!value}
+                          disabled={loading}
+                          size="sm"
+                          ariaLabel={`Toggle isAnswer for question ${index + 1}`}
+                          onChange={(next) =>
+                            handleToggleIsAnswer(index, next)
+                          }
+                        />
+                      </>
+                    )}
+                  />
+                </div>
               </div>
 
               <FormField

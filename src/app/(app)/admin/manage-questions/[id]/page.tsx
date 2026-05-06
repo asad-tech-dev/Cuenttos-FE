@@ -49,6 +49,7 @@ function EditQuestionGroupPage() {
               ...(q?.id != null ? { id: q.id } : {}),
               text: q?.text ?? "",
               description: q?.description ?? null,
+              isAnswer: q?.isAnswer ?? true,
             };
           }
         );
