@@ -36,10 +36,10 @@ function ManageQuestionsPage() {
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [pendingDelete, setPendingDelete] = useState<QuestionGroup | null>(
-    null
+    null,
   );
   const [skeletonCount, setSkeletonCount] = useState<number>(
-    DEFAULT_SKELETON_COUNT
+    DEFAULT_SKELETON_COUNT,
   );
 
   useEffect(() => {
@@ -54,10 +54,7 @@ function ManageQuestionsPage() {
         const data = await fetchQuestionGroups();
         setGroups(data);
         if (typeof window !== "undefined") {
-          localStorage.setItem(
-            SKELETON_COUNT_STORAGE_KEY,
-            String(data.length)
-          );
+          localStorage.setItem(SKELETON_COUNT_STORAGE_KEY, String(data.length));
         }
       } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response?.status === 404) {
@@ -81,7 +78,7 @@ function ManageQuestionsPage() {
       const group = groups.find((g) => g.id === id);
       if (group) setPendingDelete(group);
     },
-    [groups]
+    [groups],
   );
 
   const confirmDelete = useCallback(async () => {
@@ -95,10 +92,7 @@ function ManageQuestionsPage() {
         snapshot = prev;
         const next = prev.filter((g) => g.id !== id);
         if (typeof window !== "undefined") {
-          localStorage.setItem(
-            SKELETON_COUNT_STORAGE_KEY,
-            String(next.length)
-          );
+          localStorage.setItem(SKELETON_COUNT_STORAGE_KEY, String(next.length));
         }
         return next;
       });
@@ -126,43 +120,38 @@ function ManageQuestionsPage() {
     }
   }, [pendingDelete]);
 
-  const handleToggleActive = useCallback(
-    async (id: number, next: boolean) => {
-      let snapshot: QuestionGroup[] = [];
-      setGroups((prev) => {
-        snapshot = prev;
-        return prev.map((g) =>
-          g.id === id ? { ...g, isActive: next } : g
-        );
-      });
-      setTogglingId(id);
+  const handleToggleActive = useCallback(async (id: number, next: boolean) => {
+    let snapshot: QuestionGroup[] = [];
+    setGroups((prev) => {
+      snapshot = prev;
+      return prev.map((g) => (g.id === id ? { ...g, isActive: next } : g));
+    });
+    setTogglingId(id);
 
-      try {
-        await toggleQuestionGroupActive(id, next);
-      } catch (err: unknown) {
-        setGroups(snapshot);
-        console.error("Toggle question group failed:", err);
+    try {
+      await toggleQuestionGroupActive(id, next);
+    } catch (err: unknown) {
+      setGroups(snapshot);
+      console.error("Toggle question group failed:", err);
 
-        let message = "Could not update the question group. Please try again.";
-        if (axios.isAxiosError(err)) {
-          const data = err.response?.data as
-            | { message?: string; error?: string }
-            | undefined;
-          message =
-            data?.message ??
-            data?.error ??
-            (err.response?.status
-              ? `Request failed (${err.response.status})`
-              : err.message) ??
-            message;
-        }
-        toast.error(message);
-      } finally {
-        setTogglingId(null);
+      let message = "Could not update the question group. Please try again.";
+      if (axios.isAxiosError(err)) {
+        const data = err.response?.data as
+          | { message?: string; error?: string }
+          | undefined;
+        message =
+          data?.message ??
+          data?.error ??
+          (err.response?.status
+            ? `Request failed (${err.response.status})`
+            : err.message) ??
+          message;
       }
-    },
-    []
-  );
+      toast.error(message);
+    } finally {
+      setTogglingId(null);
+    }
+  }, []);
 
   return (
     <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-8 px-6 py-8 sm:px-10 lg:px-[60px]">
@@ -172,11 +161,11 @@ function ManageQuestionsPage() {
             Admin
           </p>
           <h1 className="text-[28px] font-semibold leading-[34px] text-subtle-black sm:text-[32px]">
-            Manage Questions
+            Question Management
           </h1>
           <p className="max-w-[640px] text-[14px] leading-[22px] text-gray">
-            Create and organize question groups that guide users through
-            writing their Cuenttos.
+            Create and organize question groups that guide users through writing
+            their Cuenttos.
           </p>
         </div>
 
@@ -187,7 +176,7 @@ function ManageQuestionsPage() {
             className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[10px] bg-violet px-5 text-[14px] font-semibold text-white transition-colors duration-200 hover:bg-violet-3 cursor-pointer"
           >
             <Plus size={18} />
-            New Question Group
+            Add Question
           </button>
         )}
       </header>
@@ -215,9 +204,7 @@ function ManageQuestionsPage() {
               deleting={deletingId === group.id}
               onToggleActive={handleToggleActive}
               onDelete={requestDelete}
-              onClick={() =>
-                router.push(`/admin/manage-questions/${group.id}`)
-              }
+              onClick={() => router.push(`/admin/manage-questions/${group.id}`)}
             />
           ))}
         </div>
