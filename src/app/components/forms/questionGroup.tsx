@@ -172,10 +172,7 @@ export default function QuestionGroupForm({
           const isActive = currentStep === step.number;
 
           return (
-            <div
-              key={step.number}
-              className="flex items-center gap-2 sm:gap-4"
-            >
+            <div key={step.number} className="flex items-center gap-2 sm:gap-4">
               <button
                 type="button"
                 onClick={() => goToStep(step.number)}
@@ -191,9 +188,7 @@ export default function QuestionGroupForm({
                       ? "bg-violet text-white"
                       : "bg-gray-6 text-gray-7 group-hover:bg-light-violet group-hover:text-violet"
                   } ${
-                    isActive
-                      ? "shadow-[0_8px_24px_rgba(93,77,190,0.35)]"
-                      : ""
+                    isActive ? "shadow-[0_8px_24px_rgba(93,77,190,0.35)]" : ""
                   }`}
                 >
                   {isActive && (
@@ -201,7 +196,7 @@ export default function QuestionGroupForm({
                       aria-hidden
                       className="absolute inset-0 rounded-full bg-violet/30"
                       initial={{ scale: 1, opacity: 0.6 }}
-                      animate={{ scale: 1.5, opacity: 0 }}
+                      animate={{ scale: 1.1, opacity: 0 }}
                       transition={{
                         duration: 1.6,
                         repeat: Infinity,
