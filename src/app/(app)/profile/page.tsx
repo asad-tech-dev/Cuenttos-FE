@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "motion/react";
@@ -37,6 +37,35 @@ function ProfileePage() {
   const [myCuenttos, setMyCuenttos] = useState<Cuentto[]>([]);
   const [cuenttosLoading, setCuenttosLoading] = useState(true);
   const [cuenttosError, setCuenttosError] = useState<string | null>(null);
+  const [selectedMoodId, setSelectedMoodId] = useState<number | null>(null);
+
+  const availableMoods = useMemo(() => {
+    const seen = new Map<
+      number,
+      { id: number; title: string; color: string }
+    >();
+    for (const c of myCuenttos) {
+      const m = c.mood;
+      if (m?.id != null && !seen.has(m.id)) {
+        seen.set(m.id, { id: m.id, title: m.title, color: m.color });
+      }
+    }
+    return Array.from(seen.values());
+  }, [myCuenttos]);
+
+  const filteredCuenttos = useMemo(() => {
+    if (selectedMoodId == null) return myCuenttos;
+    return myCuenttos.filter((c) => c.mood?.id === selectedMoodId);
+  }, [myCuenttos, selectedMoodId]);
+
+  useEffect(() => {
+    if (
+      selectedMoodId != null &&
+      !availableMoods.some((m) => m.id === selectedMoodId)
+    ) {
+      setSelectedMoodId(null);
+    }
+  }, [availableMoods, selectedMoodId]);
 
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
@@ -179,17 +208,76 @@ function ProfileePage() {
             You haven&apos;t created any cuenttos yet.
           </div>
         ) : (
-          <div className="flex flex-col gap-[20px]">
-            {myCuenttos.map((cuentto) => (
-              <CuenttoFeedCard
-                key={cuentto.id}
-                cuentto={cuentto}
-                onDeleted={(id) =>
-                  setMyCuenttos((prev) => prev.filter((c) => c.id !== id))
-                }
-              />
-            ))}
-          </div>
+          <>
+            <div
+              role="tablist"
+              aria-label="Filter cuenttos by mood"
+              className="flex flex-wrap items-center gap-2"
+            >
+              <motion.button
+                type="button"
+                role="tab"
+                aria-selected={selectedMoodId == null}
+                onClick={() => setSelectedMoodId(null)}
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.95 }}
+                className={`rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors duration-200 cursor-pointer ${
+                  selectedMoodId == null
+                    ? "border-violet bg-violet text-white shadow-[0_4px_12px_rgba(93,77,190,0.25)]"
+                    : "border-light-gray bg-white text-subtle-black hover:border-violet/60 hover:text-violet"
+                }`}
+              >
+                All
+              </motion.button>
+              {availableMoods.map((mood) => {
+                const isActive = selectedMoodId === mood.id;
+                return (
+                  <motion.button
+                    key={mood.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setSelectedMoodId(mood.id)}
+                    whileHover={{ y: -1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors duration-200 cursor-pointer ${
+                      isActive
+                        ? "border-transparent text-subtle-black shadow-[0_4px_12px_rgba(15,15,15,0.08)]"
+                        : "border-light-gray bg-white text-subtle-black hover:border-subtle-black"
+                    }`}
+                    style={
+                      isActive ? { backgroundColor: mood.color } : undefined
+                    }
+                  >
+                    {mood.title}
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedMoodId ?? "all"}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="flex flex-col gap-[20px]"
+              >
+                {filteredCuenttos.map((cuentto) => (
+                  <CuenttoFeedCard
+                    key={cuentto.id}
+                    cuentto={cuentto}
+                    onDeleted={(id) =>
+                      setMyCuenttos((prev) =>
+                        prev.filter((c) => c.id !== id)
+                      )
+                    }
+                  />
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </>
         )}
       </section>
 
