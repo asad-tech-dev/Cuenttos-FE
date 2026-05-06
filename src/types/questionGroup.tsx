@@ -3,6 +3,7 @@ export interface Question {
   text: string;
   description?: string | null;
   order?: number;
+  isAnswer?: boolean;
 }
 
 export interface QuestionGroup {

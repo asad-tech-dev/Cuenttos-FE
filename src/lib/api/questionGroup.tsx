@@ -69,6 +69,7 @@ const buildGroupPayload = (data: QuestionGroupFormData) => ({
     ...(q.id != null ? { id: q.id } : {}),
     text: q.text,
     ...(q.description != null ? { description: q.description } : {}),
+    isAnswer: q.isAnswer,
     order: index,
   })),
 });

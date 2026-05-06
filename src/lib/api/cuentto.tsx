@@ -25,6 +25,19 @@ export const fetchAllCuenttos = async (): Promise<Cuentto[]> => {
   return response.data.cuenttos;
 };
 
+export const fetchMyCuenttos = async (
+  moodId?: number
+): Promise<Cuentto[]> => {
+  const token = localStorage.getItem("authToken");
+  const response = await axios.get(`${API_URL}/api/feed/me`, {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+    params: moodId != null ? { moodId } : undefined,
+  });
+  return response.data.cuenttos ?? [];
+};
+
 export const fetchFeaturedCuenttos = async (): Promise<FeaturedCuentto[]> => {
   const token = localStorage.getItem("authToken");
   const response = await axios.get(`${API_URL}/api/feed/featured`, {
