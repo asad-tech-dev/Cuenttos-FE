@@ -76,8 +76,9 @@ export default function Sidebar() {
     {
       name: "Write",
       href: "/write",
-      icon: () => <WriteIcon className="text-white" />,
-      special: true,
+      icon: (isActive: boolean) => (
+        <WriteIcon className={isActive ? "text-black" : "text-gray"} />
+      ),
     },
     {
       name: "Saved Cuentto",
@@ -137,23 +138,13 @@ export default function Sidebar() {
             <Link key={item.href} href={item.href}>
               <div
                 className={`relative flex items-center gap-4 px-4 w-[200px] h-[56px] transition-all duration-300 rounded-[100px] cursor-pointer
-                ${
-                  item.special
-                    ? "bg-violet text-white mt-[8px] mb-[8px]"
-                    : isActive
-                      ? "text-black font-semibold"
-                      : "text-gray"
-                }
+                ${isActive ? "text-black font-semibold" : "text-gray"}
               `}
               >
                 {item.icon(isActive)}
                 <p className="text-[14px] font-semibold">{item.name}</p>
                 {isActive && (
-                  <div
-                    className={`absolute right-[30px] w-2 h-2 rounded-full ${
-                      item.special ? "bg-white" : "bg-violet"
-                    }`}
-                  ></div>
+                  <div className="absolute right-[30px] w-2 h-2 rounded-full bg-violet"></div>
                 )}
               </div>
             </Link>
