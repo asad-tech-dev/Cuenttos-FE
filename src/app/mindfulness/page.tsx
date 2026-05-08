@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import checkAuth from "@/HOC/checkAuth";
+import axios from "axios";
 import { fetchActiveQuestionGroups } from "@/lib/api/questionGroup";
+import { submitAnswer } from "@/lib/api/answer";
 import { Question, QuestionGroup } from "@/types/questionGroup";
+import CustomToast from "@/app/components/toasts/toast";
 
 const LAST_GROUP_KEY = "mindfulness:lastGroupId";
 
@@ -26,6 +29,10 @@ function MindfulnessPage() {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submittedQuestionIds, setSubmittedQuestionIds] = useState<
+    Record<number, string>
+  >({});
 
   const questions = useMemo(
     () => sortQuestions(group?.questions ?? []),
@@ -69,6 +76,7 @@ function MindfulnessPage() {
       }
 
       setGroup(next);
+      setSubmittedQuestionIds({});
     } catch (e) {
       if (signal?.aborted) return;
       console.error(e);
@@ -98,13 +106,51 @@ function MindfulnessPage() {
     };
   }, [loadRandomGroup]);
 
-  const goNext = () => {
-    if (!current) return;
+  const advanceStep = useCallback(() => {
     if (isLast) {
       router.push("/cuentto/create");
       return;
     }
     setStep((s) => s + 1);
+  }, [isLast, router]);
+
+  const goNext = async () => {
+    if (!current || submitting) return;
+
+    const trimmed = (currentValue ?? "").trim();
+    const canSubmit =
+      showInput &&
+      trimmed.length > 0 &&
+      current.id != null &&
+      submittedQuestionIds[current.id] !== trimmed;
+
+    if (!canSubmit) {
+      advanceStep();
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await submitAnswer({
+        questionId: current.id as number,
+        text: trimmed,
+      });
+      setSubmittedQuestionIds((prev) => ({
+        ...prev,
+        [current.id as number]: trimmed,
+      }));
+      advanceStep();
+    } catch (err) {
+      const message =
+        (axios.isAxiosError(err) &&
+          (err.response?.data?.message ||
+            err.response?.data?.errors?.[0]?.msg)) ||
+        "Couldn't save your answer. Please try again.";
+      console.error(err);
+      CustomToast({ title: message });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const goSkip = () => router.push("/cuentto/create");
@@ -186,11 +232,19 @@ function MindfulnessPage() {
               onChange={(e) => onAnswerChange(e.target.value)}
               placeholder="Write your thoughts... (optional)"
               rows={1}
-              className="w-full px-4 py-3.5 rounded-[12px] bg-white/[0.07] text-white placeholder-white/50 text-[14px] md:text-[15px] outline-none transition-all duration-200 resize-none min-h-[52px] max-h-[180px] backdrop-blur-sm"
+              maxLength={2000}
+              disabled={submitting}
+              className="w-full px-4 py-3.5 rounded-[12px] bg-white/[0.07] text-white placeholder-white/50 text-[14px] md:text-[15px] outline-none transition-all duration-200 resize-none min-h-[52px] max-h-[180px] backdrop-blur-sm disabled:opacity-70 disabled:cursor-not-allowed"
               onInput={(e) => {
                 const el = e.currentTarget;
                 el.style.height = "auto";
                 el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  goNext();
+                }
               }}
             />
           </div>
@@ -239,7 +293,8 @@ function MindfulnessPage() {
             <button
               type="button"
               onClick={goSkip}
-              className="text-white/85 hover:text-white text-[13px] md:text-[14px] font-medium tracking-wide cursor-pointer transition-colors duration-200"
+              disabled={submitting}
+              className="text-white/85 hover:text-white text-[13px] md:text-[14px] font-medium tracking-wide cursor-pointer transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Skip
             </button>
@@ -258,7 +313,8 @@ function MindfulnessPage() {
               <button
                 type="button"
                 onClick={goCancel}
-                className="h-[42px] px-5 sm:px-6 inline-flex items-center justify-center text-white/85 hover:text-white bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.16] border border-white/20 hover:border-white/35 text-[13px] md:text-[14px] rounded-[10px] font-medium cursor-pointer transition-all duration-200"
+                disabled={submitting}
+                className="h-[42px] px-5 sm:px-6 inline-flex items-center justify-center text-white/85 hover:text-white bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.16] border border-white/20 hover:border-white/35 text-[13px] md:text-[14px] rounded-[10px] font-medium cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/[0.06] disabled:hover:border-white/20"
               >
                 Cancel
               </button>
@@ -267,9 +323,21 @@ function MindfulnessPage() {
                 <button
                   type="button"
                   onClick={goNext}
-                  className="h-[42px] min-w-[112px] sm:min-w-[128px] px-5 sm:px-6 inline-flex items-center justify-center text-white bg-violet hover:bg-dark-violet active:scale-[0.98] text-[13px] md:text-[14px] rounded-[10px] font-semibold cursor-pointer shadow-[0_8px_24px_rgba(93,77,190,0.35)] hover:shadow-[0_10px_30px_rgba(93,77,190,0.5)] transition-all duration-200"
+                  disabled={submitting}
+                  aria-busy={submitting}
+                  className="h-[42px] min-w-[112px] sm:min-w-[128px] px-5 sm:px-6 inline-flex items-center justify-center gap-2 text-white bg-violet hover:bg-dark-violet active:scale-[0.98] text-[13px] md:text-[14px] rounded-[10px] font-semibold cursor-pointer shadow-[0_8px_24px_rgba(93,77,190,0.35)] hover:shadow-[0_10px_30px_rgba(93,77,190,0.5)] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-violet disabled:active:scale-100"
                 >
-                  {isLast ? "Start Writing" : "Next"}
+                  {submitting && (
+                    <span
+                      className="inline-block h-3.5 w-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin"
+                      aria-hidden="true"
+                    />
+                  )}
+                  {submitting
+                    ? "Saving..."
+                    : isLast
+                      ? "Start Writing"
+                      : "Next"}
                 </button>
               </div>
             </div>
