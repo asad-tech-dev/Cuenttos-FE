@@ -1,103 +1,262 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import checkAuth from "@/HOC/checkAuth";
-import dynamic from "next/dynamic";
-import { Skeleton } from "@/components/ui/skeleton";
-import Image from "next/image";
-const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
- function MindfulnessPage() {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [secondsLeft, setSecondsLeft] = useState(60);
-  const [animationData, setAnimationData] = useState(null);
-  const [showContinue, setShowContinue] = useState(true);
-  const quotes = [
-    "Relax Your Mind For a Bit.",
-    "Let your body settle into stillness.",
-    "Feel the natural rhythm within you.",
-    "Notice the air around you.",
-    "Allow yourself to arrive in this moment.",
-    "Let your thoughts pass by like clouds.",
-    "Sense the space between movement and stillness.",
-    "Gently bring your awareness to your center.",
-    "Allow distractions to fade into the background.",
-    "Tune in to the quiet beneath the noise.",
-    "Be with what is, just as it is.",
-    "Let your attention rest softly.",
-    "Feel the present moment unfold.",
-    "There is nothing to do, nowhere to go.",
-    "Every moment is enough.",
-    "Stay connected to the stillness within.",
-    "Observe without needing to change anything.",
-    "Let calm expand from the inside out.",
-    "Feel grounded, steady, and supported.",
-    "Trust in the quiet strength of now.",
-    "Simply remain here, fully aware.",
-  ];
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
-  const [fade, setFade] = useState(true);
-  useEffect(() => {
-    if (secondsLeft <= 0) {
-      setTimeout(() => {
-        setShowContinue(false);
-      }, 800);
-    }
-  }, [secondsLeft]);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length);
-        setFade(true);
-      }, 500);
-    }, 7000);
-    return () => clearInterval(interval);
-  }, []);
-  useEffect(() => {
-    fetch("/breathing-animation.json")
-      .then((res) => res.json())
-      .then(setAnimationData);
-  }, []);
-  useEffect(() => {
-    let countdownInterval: NodeJS.Timeout;
+import axios from "axios";
+import { fetchActiveQuestionGroups } from "@/lib/api/questionGroup";
+import { submitAnswer } from "@/lib/api/answer";
+import { Question, QuestionGroup } from "@/types/questionGroup";
+import CustomToast from "@/app/components/toasts/toast";
 
-    if (secondsLeft > 0) {
-      countdownInterval = setInterval(() => {
-        setSecondsLeft((prev) => prev - 1);
-      }, 1000);
-    }
+const LAST_GROUP_KEY = "mindfulness:lastGroupId";
 
-    return () => clearInterval(countdownInterval);
-  }, [secondsLeft]);
-  useEffect(() => {
-    const playAudio = async () => {
-      if (audioRef.current) {
-        try {
-          await audioRef.current.play();
-        } catch (e) {
-          console.log("Autoplay prevented. User interaction is needed.", e);
+function pickRandom<T>(items: T[]): T | null {
+  if (!items.length) return null;
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function sortQuestions(questions: Question[] = []): Question[] {
+  return [...questions].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
+
+function MindfulnessPage() {
+  const router = useRouter();
+  const [group, setGroup] = useState<QuestionGroup | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submittedQuestionIds, setSubmittedQuestionIds] = useState<
+    Record<number, string>
+  >({});
+
+  const questions = useMemo(
+    () => sortQuestions(group?.questions ?? []),
+    [group],
+  );
+  const total = questions.length;
+  const current = questions[step];
+  const showInput = current ? current.isAnswer !== false : false;
+  const isLast = step >= total - 1;
+
+  const loadRandomGroup = useCallback(async (signal?: AbortSignal) => {
+    try {
+      setLoading(true);
+      setError(null);
+      setGroup(null);
+      setStep(0);
+      setAnswers({});
+
+      const groups = await fetchActiveQuestionGroups();
+      if (signal?.aborted) return;
+
+      const valid = groups.filter((g) => (g.questions?.length ?? 0) > 0);
+      const previousId =
+        typeof window !== "undefined"
+          ? Number(sessionStorage.getItem(LAST_GROUP_KEY)) || null
+          : null;
+      const pool =
+        valid.length > 1 && previousId != null
+          ? valid.filter((g) => g.id !== previousId)
+          : valid;
+      const next = pickRandom(pool.length > 0 ? pool : valid);
+
+      if (signal?.aborted) return;
+
+      if (typeof window !== "undefined") {
+        if (next?.id != null) {
+          sessionStorage.setItem(LAST_GROUP_KEY, String(next.id));
+        } else {
+          sessionStorage.removeItem(LAST_GROUP_KEY);
         }
       }
-    };
 
-    const timeout = setTimeout(() => {
-      playAudio();
-    }, 1000);
-
-    return () => {
-      clearTimeout(timeout);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    };
+      setGroup(next);
+      setSubmittedQuestionIds({});
+    } catch (e) {
+      if (signal?.aborted) return;
+      console.error(e);
+      setError("Couldn't load questions. Please try again.");
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
   }, []);
 
-  return (
-    <div className="relative h-screen overflow-hidden">
-      <audio ref={audioRef} src="/medidation.mp3" loop />
+  useEffect(() => {
+    const controller = new AbortController();
+    loadRandomGroup(controller.signal);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        loadRandomGroup();
+      }
+    };
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) loadRandomGroup();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pageshow", onPageShow);
+    return () => {
+      controller.abort();
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pageshow", onPageShow);
+    };
+  }, [loadRandomGroup]);
 
+  const advanceStep = useCallback(() => {
+    if (isLast) {
+      router.push("/cuentto/create");
+      return;
+    }
+    setStep((s) => s + 1);
+  }, [isLast, router]);
+
+  const goNext = async () => {
+    if (!current || submitting) return;
+
+    const trimmed = (currentValue ?? "").trim();
+    const canSubmit =
+      showInput &&
+      trimmed.length > 0 &&
+      current.id != null &&
+      submittedQuestionIds[current.id] !== trimmed;
+
+    if (!canSubmit) {
+      advanceStep();
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await submitAnswer({
+        questionId: current.id as number,
+        text: trimmed,
+      });
+      setSubmittedQuestionIds((prev) => ({
+        ...prev,
+        [current.id as number]: trimmed,
+      }));
+      advanceStep();
+    } catch (err) {
+      const message =
+        (axios.isAxiosError(err) &&
+          (err.response?.data?.message ||
+            err.response?.data?.errors?.[0]?.msg)) ||
+        "Couldn't save your answer. Please try again.";
+      console.error(err);
+      CustomToast({ title: message });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const goSkip = () => router.push("/cuentto/create");
+  const goCancel = () => router.push("/write");
+
+  const onAnswerChange = (value: string) => {
+    if (!current?.id && current?.id !== 0) return;
+    setAnswers((prev) => ({ ...prev, [current.id as number]: value }));
+  };
+
+  const currentValue =
+    current && current.id != null ? (answers[current.id] ?? "") : "";
+
+  const renderBody = () => {
+    if (loading) {
+      return (
+        <div className="flex flex-col items-center gap-5 text-center w-full">
+          <div className="h-3 w-28 rounded-full bg-white/15 animate-pulse" />
+          <div className="h-7 w-[80%] max-w-[480px] rounded-md bg-white/15 animate-pulse" />
+          <div className="h-7 w-[60%] max-w-[360px] rounded-md bg-white/15 animate-pulse" />
+          <div className="h-[60px] w-full max-w-[520px] rounded-[14px] bg-white/10 animate-pulse mt-2" />
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="flex flex-col items-center gap-5 text-center">
+          <p className="text-white/90 text-[15px]">{error}</p>
+          <Link
+            href="/write"
+            className="px-5 h-[40px] inline-flex items-center justify-center text-white bg-violet hover:bg-dark-violet text-[13px] rounded-[10px] font-medium transition-colors"
+          >
+            Back to Write
+          </Link>
+        </div>
+      );
+    }
+
+    if (!group || !current) {
+      return (
+        <div className="flex flex-col items-center gap-5 text-center">
+          <p className="text-white/90 text-[15px]">
+            No active question group is available right now.
+          </p>
+          <Link
+            href="/cuentto/create"
+            className="px-5 h-[40px] inline-flex items-center justify-center text-white bg-violet hover:bg-dark-violet text-[13px] rounded-[10px] font-medium transition-colors"
+          >
+            Continue to writing
+          </Link>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        key={current.id ?? step}
+        className="flex flex-col w-full items-center text-center gap-5 md:gap-6 animate-[fadeIn_.45s_ease-out]"
+      >
+        <p className="text-white/70 text-[11px] md:text-[12px] font-semibold tracking-[0.22em] uppercase">
+          Question {step + 1} of {total}
+        </p>
+
+        <h1 className="text-white font-medium leading-[1.22] tracking-[-0.01em] text-[24px] sm:text-[28px] md:text-[34px] lg:text-[38px] max-w-[700px]">
+          {current.text}
+        </h1>
+
+        {current.description && (
+          <p className="text-white/70 text-[14px] md:text-[15px] max-w-[560px] leading-[1.55]">
+            {current.description}
+          </p>
+        )}
+
+        {showInput ? (
+          <div className="w-full max-w-[560px] mt-2 md:mt-3">
+            <textarea
+              value={currentValue}
+              onChange={(e) => onAnswerChange(e.target.value)}
+              placeholder="Write your thoughts... (optional)"
+              rows={1}
+              maxLength={2000}
+              disabled={submitting}
+              className="w-full px-4 py-3.5 rounded-[12px] bg-white/[0.07] text-white placeholder-white/50 text-[14px] md:text-[15px] outline-none transition-all duration-200 resize-none min-h-[52px] max-h-[180px] backdrop-blur-sm disabled:opacity-70 disabled:cursor-not-allowed"
+              onInput={(e) => {
+                const el = e.currentTarget;
+                el.style.height = "auto";
+                el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  goNext();
+                }
+              }}
+            />
+          </div>
+        ) : (
+          <div className="h-1" />
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="relative min-h-[100dvh] w-full overflow-hidden">
       <Image
         src="/onboard-cover.png"
         alt="cover background"
@@ -106,70 +265,100 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
         priority
         quality={100}
       />
-      <div className="absolute inset-0 bg-gradient-to-l h-screen from-darkpurple-grad to-purple-grad z-0"></div>
-      <div className="absolute inset-0 z-1"></div>
+      {/* <div className="absolute inset-0 bg-gradient-to-b from-darkpurple-grad/95 via-darkpurple-grad/85 to-darkpurple-grad/95 z-0" /> */}
+      {/* <div className="absolute inset-0 bg-gradient-to-l from-darkpurple-grad to-purple-grad z-0" /> */}
 
-      <div className="relative z-10">
-        <div className="flex items-start mt-[200px] h-screen justify-center w-full">
-          <div className="flex flex-col text-center md:px-0 px-[20px]">
-            <h1
-              className={`md:text-[32px] text-[26px] text-white font-medium md:leading-[40px] leading-[30px] transition-opacity duration-500 ${
-                fade ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              {quotes[currentQuoteIndex]}
-            </h1>
-
-            <div className="mt-[40px] flex justify-center">
-              {animationData ? (
-                <Lottie
-                  animationData={animationData}
-                  loop={true}
-                  autoplay={true}
-                  style={{ width: 300, height: 300 }}
+      <div className="relative z-10 flex flex-col min-h-[100dvh] px-5 sm:px-8 md:px-10 lg:px-16 py-5 md:py-8">
+        <div className="flex flex-row items-center justify-between gap-4 w-full max-w-[860px] mx-auto">
+          <div className="flex flex-row items-center gap-1.5">
+            {Array.from({ length: Math.max(total, 0) }).map((_, i) => {
+              const isActive = i === step;
+              const isDone = i < step;
+              return (
+                <span
+                  key={i}
+                  className={`h-[3px] rounded-full transition-all duration-500 ease-out ${
+                    isActive
+                      ? "w-[28px] md:w-[34px] bg-white"
+                      : isDone
+                        ? "w-[18px] md:w-[22px] bg-white/65"
+                        : "w-[18px] md:w-[22px] bg-white/25"
+                  }`}
                 />
-              ) : (
-                <Skeleton className="w-[300px] h-[300px] rounded-full bg-violet/20" />
-              )}
-            </div>
+              );
+            })}
+          </div>
 
-            {secondsLeft > 0 && (
-              <div className="mt-[30px] transition-all duration-1000 ease-in-out flex justify-center">
-                <p className="text-white text-md font-medium opacity-100 scale-100 transition-all duration-1000">
-                  {secondsLeft} seconds left
-                </p>
-              </div>
-            )}
+          {!loading && group && (
+            <button
+              type="button"
+              onClick={goSkip}
+              disabled={submitting}
+              className="text-white/85 hover:text-white text-[13px] md:text-[14px] font-medium tracking-wide cursor-pointer transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Skip
+            </button>
+          )}
+        </div>
 
-            {secondsLeft <= 0 && (
-              <div className="mt-[30px] flex justify-center transition-all duration-1000 ease-in-out opacity-100 scale-100">
-                <Link href="/cuentto/create">
-                  <button className="w-[120px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer transition-all duration-1000">
-                    Start Writing
-                  </button>
-                </Link>
-              </div>
-            )}
-
-            {showContinue && (
-              <div
-                className={`flex flex-row gap-4 md:px-0 items-center justify-center mt-[80px] transition-all duration-0 ease-in-out ${
-                  secondsLeft > 0
-                    ? "opacity-100 scale-100"
-                    : "opacity-0 scale-95"
-                }`}
-              >
-                <Link href="/cuentto/create">
-                  <button className="w-[150px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer">
-                    Continue Anyway
-                  </button>
-                </Link>
-              </div>
-            )}
+        <div className="flex-1 flex items-center justify-center w-full">
+          <div className="w-full max-w-[720px] mx-auto py-6 md:py-10">
+            {renderBody()}
           </div>
         </div>
+
+        {!loading && group && current && (
+          <div className="w-full max-w-[560px] mx-auto pb-2">
+            <div className="flex flex-row items-center justify-between gap-3 sm:gap-4">
+              <button
+                type="button"
+                onClick={goCancel}
+                disabled={submitting}
+                className="h-[42px] px-5 sm:px-6 inline-flex items-center justify-center text-white/85 hover:text-white bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.16] border border-white/20 hover:border-white/35 text-[13px] md:text-[14px] rounded-[10px] font-medium cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/[0.06] disabled:hover:border-white/20"
+              >
+                Cancel
+              </button>
+
+              <div className="flex flex-row items-center gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  onClick={goNext}
+                  disabled={submitting}
+                  aria-busy={submitting}
+                  className="h-[42px] min-w-[112px] sm:min-w-[128px] px-5 sm:px-6 inline-flex items-center justify-center gap-2 text-white bg-violet hover:bg-dark-violet active:scale-[0.98] text-[13px] md:text-[14px] rounded-[10px] font-semibold cursor-pointer shadow-[0_8px_24px_rgba(93,77,190,0.35)] hover:shadow-[0_10px_30px_rgba(93,77,190,0.5)] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-violet disabled:active:scale-100"
+                >
+                  {submitting && (
+                    <span
+                      className="inline-block h-3.5 w-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin"
+                      aria-hidden="true"
+                    />
+                  )}
+                  {submitting
+                    ? "Saving..."
+                    : isLast
+                      ? "Start Writing"
+                      : "Next"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }
+
 export default checkAuth(MindfulnessPage);
