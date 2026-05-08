@@ -25,6 +25,22 @@ export const fetchQuestionGroups = async (): Promise<QuestionGroup[]> => {
   );
 };
 
+export const fetchActiveQuestionGroups = async (): Promise<QuestionGroup[]> => {
+  const response = await axios.get(`${API_URL}/api/question-groups/active`, {
+    headers: {
+      ...authHeaders(),
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+    },
+    params: { _: Date.now() },
+  });
+  const payload = response.data;
+  if (Array.isArray(payload)) return payload;
+  return (
+    payload?.questionGroups ?? payload?.groups ?? payload?.data ?? []
+  );
+};
+
 export const fetchQuestionGroupById = async (
   id: number
 ): Promise<QuestionGroup> => {
