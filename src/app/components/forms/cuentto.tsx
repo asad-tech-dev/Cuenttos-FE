@@ -703,11 +703,7 @@ export default function CuenttoForm({
                       })),
                     ]}
                     defaultValue={initialShareSelection}
-                    exclusiveValues={
-                      innerCircleGroup
-                        ? ["self", innerCircleGroup.id]
-                        : ["self"]
-                    }
+                    exclusiveValues={["self"]}
                   />
                 </div>
                 {error && (
