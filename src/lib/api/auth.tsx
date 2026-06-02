@@ -68,6 +68,21 @@ export const getIsAdmin = (): boolean => {
   }
 };
 
+export const isAuthenticated = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const token = localStorage.getItem("authToken");
+  if (!token) return false;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (typeof payload.exp === "number") {
+      return payload.exp * 1000 >= Date.now();
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export const getCurrentUserId = (): number | null => {
   if (typeof window === "undefined") return null;
   const token = localStorage.getItem("authToken");

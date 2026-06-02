@@ -16,10 +16,12 @@ import {
   ProfileActive,
 } from "../icons";
 import { getIsAdmin, logoutUser, clearAuth } from "@/lib/api/auth";
+import { useMobileNav } from "../context/MobileNavContext";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { isOpen, close } = useMobileNav();
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -126,16 +128,28 @@ export default function Sidebar() {
   }, [isAdminSectionActive]);
 
   return (
-    <div
-      className="flex flex-col w-[256px] fixed left-0 top-[20px] justify-center pl-8 bg-white border-r border-light-gray overflow-y-auto"
-      style={{ height: "calc(100vh - 55px)" }}
-    >
+    <>
+      <div
+        className={`fixed inset-x-0 bottom-0 top-[55px] z-30 bg-black/40 transition-opacity duration-300 lg:hidden ${
+          isOpen
+            ? "opacity-100"
+            : "pointer-events-none opacity-0"
+        }`}
+        onClick={close}
+        aria-hidden="true"
+      />
+      <div
+        className={`flex flex-col w-[256px] fixed left-0 top-[55px] lg:top-[20px] z-40 justify-center pl-8 bg-white border-r border-light-gray overflow-y-auto transition-transform duration-300 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0`}
+        style={{ height: "calc(100vh - 55px)" }}
+      >
       <div className="mt-[10px]">
         {menuItems.map((item) => {
           const isActive = pathname === item.href;
 
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} onClick={close}>
               <div
                 className={`relative flex items-center gap-4 px-4 w-[200px] h-[56px] transition-all duration-300 rounded-[100px] cursor-pointer
                 ${isActive ? "text-black font-semibold" : "text-gray"}
@@ -192,7 +206,7 @@ export default function Sidebar() {
                   {adminItems.map((item) => {
                     const isActive = pathname.startsWith(item.href);
                     return (
-                      <Link key={item.href} href={item.href}>
+                      <Link key={item.href} href={item.href} onClick={close}>
                         <div
                           className={`relative flex items-center gap-3 px-3 w-[188px] h-[44px] rounded-[100px] transition-all duration-300 cursor-pointer ${
                             isActive
@@ -239,6 +253,7 @@ export default function Sidebar() {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

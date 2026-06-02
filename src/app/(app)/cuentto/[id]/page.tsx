@@ -1,6 +1,7 @@
 "use client";
 import { Pause } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SkeletonCuenttoDetail } from "@/app/components/skeletons/CuenttoDetail";
@@ -31,9 +32,22 @@ function CuenttoDetailPageContent() {
   const [loading, setLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [needsAuth, setNeedsAuth] = useState<boolean | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     if (!id) return;
+
+    const isTokenValid = () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) return false;
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        return payload.exp * 1000 >= Date.now();
+      } catch {
+        return false;
+      }
+    };
+
     const getCuentto = async () => {
       try {
         setLoading(true);
@@ -63,6 +77,7 @@ function CuenttoDetailPageContent() {
             return;
           }
         }
+        setIsAuthenticated(isTokenValid());
         setNeedsAuth(false);
       } catch (error) {
         console.log(error);
@@ -105,14 +120,14 @@ function CuenttoDetailPageContent() {
 
   if (needsAuth === null || loading) {
     return (
-      <div className="flex flex-col gap-[30px] w-full py-[60px] px-[110px]">
+      <div className="flex flex-col gap-6 md:gap-[30px] w-full py-8 md:py-[60px] px-4 sm:px-6 md:px-[110px]">
         <SkeletonCuenttoDetail />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-[30px] w-full py-[60px] px-[110px]">
+    <div className="flex flex-col gap-6 md:gap-[30px] w-full py-8 md:py-[60px] px-4 sm:px-6 md:px-[110px]">
       <div className="flex flex-row justify-between">
         <BackIcon
           width={10}
@@ -129,13 +144,13 @@ function CuenttoDetailPageContent() {
         />
       </div>
       <div
-        className="relative flex flex-col mt-[30px] justify-between rounded-[24px] bg-gray-5 h-[370px] p-[60px]"
+        className="relative overflow-hidden flex flex-col gap-8 md:gap-0 mt-2 md:mt-[30px] justify-between rounded-[24px] bg-gray-5 min-h-[260px] md:h-[370px] p-6 sm:p-10 md:p-[60px]"
         style={{
           backgroundColor: isFeatured ? cuentto?.mood.color : "bg-gray-5",
         }}
       >
         <div className="flex flex-col gap-[16px]">
-          <h2 className=" text-[45px] leading-[52px] font-normal text-dark-violet">
+          <h2 className="text-[28px] leading-[34px] sm:text-[36px] sm:leading-[42px] md:text-[45px] md:leading-[52px] font-normal text-dark-violet break-words">
             {cuentto?.title}
           </h2>
           <span
@@ -149,7 +164,7 @@ function CuenttoDetailPageContent() {
             {cuentto?.mood.title}
           </span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="relative z-10 flex items-center gap-4">
           <div className="w-[40px] h-[40px]">
             <Image
               src={
@@ -178,13 +193,13 @@ function CuenttoDetailPageContent() {
         </div>
         {!isFeatured && (
           <div
-            className="absolute bottom-0 right-0 w-[276px] h-[158px] rounded-tl-[90px]"
+            className="absolute bottom-0 right-0 w-[160px] h-[90px] md:w-[276px] md:h-[158px] rounded-tl-[60px] md:rounded-tl-[90px]"
             style={{ backgroundColor: cuentto?.mood.color }}
           ></div>
         )}
       </div>
-      <div className="flex flex-row justify-between items-center mt-[20px] border-b border-light-gray pb-[30px]">
-        <div className="flex flex-row items-center gap-[40px]">
+      <div className="flex flex-row flex-wrap gap-y-3 justify-between items-center mt-2 md:mt-[20px] border-b border-light-gray pb-5 md:pb-[30px]">
+        <div className="flex flex-row items-center gap-5 sm:gap-[40px]">
           <p className="text-[16px] font-medium text-black">
             {cuentto?.duration} min read
           </p>
@@ -234,9 +249,9 @@ function CuenttoDetailPageContent() {
           </div>
         )}
       </div>
-      <div className="pt-[40px] flex flex-col gap-[50px] ">
+      <div className="pt-6 md:pt-[40px] flex flex-col gap-8 md:gap-[50px] ">
         <div
-          className="text-[16px] leading-[30x] font-normal text-black"
+          className="text-[15px] sm:text-[16px] leading-[28px] sm:leading-[30px] font-normal text-black break-words"
           dangerouslySetInnerHTML={{ __html: cuentto?.description ?? "" }}
         />
         <span
@@ -254,7 +269,7 @@ function CuenttoDetailPageContent() {
           />
         </span>
       </div>
-      <div className="flex flex-row justify-between items-center mt-[20px]">
+      <div className="flex flex-row justify-between items-center mt-2 md:mt-[20px]">
         <div
           className="flex items-center cursor-pointer gap-[15px]"
           onClick={() => CustomToast()}
@@ -265,11 +280,11 @@ function CuenttoDetailPageContent() {
             color="black"
             className="cursor-pointer"
           />
-          <span className="text-black text-[16px] font-medium">
+          <span className="text-black text-[14px] sm:text-[16px] font-medium">
             {cuentto?._count.comments ?? 0} comments
           </span>
         </div>
-        <div className="flex flex-row gap-[40px]" onClick={() => CustomToast()}>
+        <div className="flex flex-row gap-7 sm:gap-[40px]" onClick={() => CustomToast()}>
           <CupIcon
             width={18}
             height={18}
@@ -290,6 +305,33 @@ function CuenttoDetailPageContent() {
           />
         </div>
       </div>
+
+      {!isAuthenticated && (
+        <div className="mt-4 md:mt-[20px] flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-[20px] bg-light-violet px-6 py-6 sm:py-5">
+          <div className="flex flex-col gap-1">
+            <p className="text-[16px] sm:text-[18px] font-semibold text-dark-violet">
+              Join Cuentto
+            </p>
+            <p className="text-[13px] sm:text-[14px] font-normal text-dark-violet/70">
+              Free your mind. Read, write and share more cuenttos.
+            </p>
+          </div>
+          <div className="flex flex-row gap-3 shrink-0">
+            <Link
+              href="/register"
+              className="flex items-center justify-center h-[40px] px-5 rounded-[100px] bg-violet text-white text-[14px] font-medium cursor-pointer whitespace-nowrap"
+            >
+              Join Cuentto
+            </Link>
+            <Link
+              href={`/login?redirect=${encodeURIComponent(`/cuentto/${id}`)}`}
+              className="flex items-center justify-center h-[40px] px-5 rounded-[100px] border border-violet text-violet text-[14px] font-medium cursor-pointer whitespace-nowrap"
+            >
+              Sign in
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
