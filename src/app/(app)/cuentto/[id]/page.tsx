@@ -1,5 +1,6 @@
 "use client";
-import { Pause } from "lucide-react";
+import axios from "axios";
+import { Pause, FileQuestion } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
@@ -33,6 +34,7 @@ function CuenttoDetailPageContent() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [needsAuth, setNeedsAuth] = useState<boolean | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -48,10 +50,18 @@ function CuenttoDetailPageContent() {
       }
     };
 
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+      setIsAuthenticated(isTokenValid());
+      setNotFound(true);
+      setNeedsAuth(false);
+      return;
+    }
+
     const getCuentto = async () => {
       try {
         setLoading(true);
-        const data = await fetchDetailCuentto(Number(id));
+        const data = await fetchDetailCuentto(numericId);
         setCuentto(data);
 
         if (!data.publicLink) {
@@ -81,6 +91,15 @@ function CuenttoDetailPageContent() {
         setNeedsAuth(false);
       } catch (error) {
         console.log(error);
+        const status = axios.isAxiosError(error)
+          ? error.response?.status
+          : undefined;
+        if (status === 404 || status === 400) {
+          setIsAuthenticated(isTokenValid());
+          setNotFound(true);
+          setNeedsAuth(false);
+          return;
+        }
         router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
       } finally {
         setLoading(false);
@@ -117,6 +136,33 @@ function CuenttoDetailPageContent() {
       setIsPlaying(false);
     }
   };
+
+  if (notFound) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center text-center w-full min-h-[calc(100vh-110px)] px-6 py-16">
+        <div className="flex flex-col items-center gap-6 max-w-[440px]">
+          <div className="flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-light-violet">
+            <FileQuestion className="text-violet w-9 h-9 sm:w-11 sm:h-11" />
+          </div>
+          <div className="flex flex-col gap-3">
+            <h1 className="text-[26px] sm:text-[32px] leading-tight font-semibold text-dark-violet">
+              Cuentto Not Found
+            </h1>
+            <p className="text-[15px] sm:text-[16px] leading-[24px] text-gray">
+              The Cuentto you are looking for does not exist or may have been
+              removed.
+            </p>
+          </div>
+          <Link
+            href={isAuthenticated ? "/library" : "/"}
+            className="flex items-center justify-center h-[44px] px-6 rounded-[100px] bg-violet text-white text-[14px] font-medium cursor-pointer whitespace-nowrap"
+          >
+            Go to Cuenttos
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (needsAuth === null || loading) {
     return (
