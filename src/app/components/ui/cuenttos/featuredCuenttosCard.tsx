@@ -1,8 +1,10 @@
 "use client";
+import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Bookmark, TrendingUp } from "lucide-react";
 import { FeaturedCuentto } from "@/types/cuentto";
+import { moodGradient } from "@/lib/utils";
 import CustomToast from "../../toasts/comingSoon";
 
 const GRADIENTS = [
@@ -34,7 +36,10 @@ const FeaturedCuenttoFeedCard: React.FC<{
   cuentto: FeaturedCuentto;
   index?: number;
 }> = ({ cuentto, index = 0 }) => {
-  const gradient = GRADIENTS[index % GRADIENTS.length];
+  const gradient = useMemo(
+    () => moodGradient(cuentto.mood?.color) ?? GRADIENTS[index % GRADIENTS.length],
+    [cuentto.mood?.color, index]
+  );
   const avatarColor = AVATAR_COLORS[index % AVATAR_COLORS.length];
   const displayName = cuentto.user.profileName || cuentto.user.username;
 
