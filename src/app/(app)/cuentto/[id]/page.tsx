@@ -11,10 +11,8 @@ import { fetchDetailCuentto } from "@/lib/api/cuentto";
 import {
   FavouriteIcon,
   CommentIcon,
-  CupIcon,
   OptionIcon,
   BackIcon,
-  EmojiIcon,
   ShareIcon,
   MusicIcon,
   VolumeIcon,
@@ -300,20 +298,6 @@ function CuenttoDetailPageContent() {
           className="text-[15px] sm:text-[16px] leading-[28px] sm:leading-[30px] font-normal text-black break-words"
           dangerouslySetInnerHTML={{ __html: cuentto?.description ?? "" }}
         />
-        <span
-          className="w-[236px] h-[40px] rounded-[200px] bg-light-violet flex flex-row justify-center items-center gap-[10px] cursor-pointer"
-          onClick={() => CustomToast()}
-        >
-          <p className="text-[14px] font-medium text-black">
-            This cuentto makes me...
-          </p>
-          <EmojiIcon
-            width={16}
-            height={15}
-            color="black"
-            className="cursor-pointer"
-          />
-        </span>
       </div>
       <div className="flex flex-row justify-between items-center mt-2 md:mt-[20px]">
         <div
@@ -331,12 +315,6 @@ function CuenttoDetailPageContent() {
           </span>
         </div>
         <div className="flex flex-row gap-7 sm:gap-[40px]" onClick={() => CustomToast()}>
-          <CupIcon
-            width={18}
-            height={18}
-            color="black"
-            className="cursor-pointer"
-          />
           <FavouriteIcon
             width={14}
             height={17}
