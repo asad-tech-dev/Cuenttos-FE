@@ -18,8 +18,23 @@ function pickRandom<T>(items: T[]): T | null {
   return items[Math.floor(Math.random() * items.length)];
 }
 
-function sortQuestions(questions: Question[] = []): Question[] {
-  return [...questions].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+// A question is only shown when it is answerable and has real text.
+// Excludes: null/undefined/non-string text, empty or whitespace-only text,
+// and questions explicitly flagged isAnswer: false.
+function isValidQuestion(question: Question | null | undefined): boolean {
+  if (!question) return false;
+  if (question.isAnswer === false) return false;
+  if (typeof question.text !== "string") return false;
+  return question.text.trim().length > 0;
+}
+
+// Returns a new, sorted array of only the valid questions.
+// Never mutates the source array (safe against malformed/non-array data).
+function getValidQuestions(questions?: Question[] | null): Question[] {
+  if (!Array.isArray(questions)) return [];
+  return questions
+    .filter(isValidQuestion)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
 function MindfulnessPage() {
@@ -35,7 +50,7 @@ function MindfulnessPage() {
   >({});
 
   const questions = useMemo(
-    () => sortQuestions(group?.questions ?? []),
+    () => getValidQuestions(group?.questions),
     [group],
   );
   const total = questions.length;
@@ -54,7 +69,9 @@ function MindfulnessPage() {
       const groups = await fetchActiveQuestionGroups();
       if (signal?.aborted) return;
 
-      const valid = groups.filter((g) => (g.questions?.length ?? 0) > 0);
+      const valid = groups.filter(
+        (g) => getValidQuestions(g.questions).length > 0,
+      );
       const previousId =
         typeof window !== "undefined"
           ? Number(sessionStorage.getItem(LAST_GROUP_KEY)) || null
