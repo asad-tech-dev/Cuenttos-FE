@@ -7,6 +7,10 @@ export const QuestionGroupSchema = z.object({
     .string()
     .min(3, "Title must be at least 3 characters")
     .max(120, "Title cannot be longer than 120 characters"),
+  moodId: z.coerce
+    .number({ invalid_type_error: "Please select a mood" })
+    .int()
+    .min(1, "Please select a mood"),
   description: z
     .string()
     .max(500, "Description cannot be longer than 500 characters")

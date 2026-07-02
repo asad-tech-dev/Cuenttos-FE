@@ -57,6 +57,7 @@ function EditQuestionGroupPage() {
         setInitialValues({
           title: group.title,
           description: group.description ?? "",
+          moodId: group.moodId ?? group.mood?.id ?? 0,
           questions,
         });
       } catch (err: unknown) {

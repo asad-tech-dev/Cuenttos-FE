@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { ChevronDown } from "lucide-react";
 
 type BaseProps = {
   label: string;
@@ -18,13 +19,20 @@ type TextareaProps = BaseProps &
     as: "textarea";
   };
 
-type FormFieldProps = InputProps | TextareaProps;
+type SelectProps = BaseProps &
+  React.SelectHTMLAttributes<HTMLSelectElement> & {
+    as: "select";
+    options: { value: string | number; label: string }[];
+    placeholder?: string;
+  };
+
+type FormFieldProps = InputProps | TextareaProps | SelectProps;
 
 const baseFieldClasses =
   "w-full rounded-[10px] border bg-white px-4 py-3 text-[15px] text-subtle-black placeholder-gray-7 outline-none transition-colors duration-200 focus:border-violet focus:ring-2 focus:ring-violet/15 disabled:bg-gray-6 disabled:text-gray-8";
 
 const FormField = forwardRef<
-  HTMLInputElement | HTMLTextAreaElement,
+  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
   FormFieldProps
 >(function FormField(
   { label, optional, error, hint, containerClassName = "", ...rest },
@@ -52,6 +60,49 @@ const FormField = forwardRef<
             (rest as TextareaProps).className ?? ""
           }`}
         />
+      ) : rest.as === "select" ? (
+        (() => {
+          const {
+            options,
+            placeholder,
+            className,
+            as: _as,
+            ...selectRest
+          } = rest as SelectProps;
+          void _as;
+          const isPlaceholderSelected =
+            selectRest.value === "" ||
+            selectRest.value === undefined ||
+            selectRest.value === 0 ||
+            selectRest.defaultValue === "" ||
+            selectRest.defaultValue === undefined;
+          return (
+            <div className="relative">
+              <select
+                ref={ref as React.Ref<HTMLSelectElement>}
+                {...selectRest}
+                className={`${baseFieldClasses} ${borderClass} h-[48px] cursor-pointer appearance-none pr-11 ${
+                  isPlaceholderSelected ? "text-gray-7" : ""
+                } ${className ?? ""}`}
+              >
+                {placeholder && (
+                  <option value="" disabled>
+                    {placeholder}
+                  </option>
+                )}
+                {options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={18}
+                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-7"
+              />
+            </div>
+          );
+        })()
       ) : (
         <input
           ref={ref as React.Ref<HTMLInputElement>}
