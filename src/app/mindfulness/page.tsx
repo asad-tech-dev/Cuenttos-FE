@@ -18,6 +18,18 @@ function pickRandom<T>(items: T[]): T | null {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+// Detects whether a string contains HTML markup (tags or entities) so we can
+// render rich content (lists, paragraphs, bold, links) instead of plain text.
+const HTML_PATTERN = /<\/?[a-z][\s\S]*>|&[a-z]+;|&#\d+;/i;
+function looksLikeHtml(value?: string | null): boolean {
+  return typeof value === "string" && HTML_PATTERN.test(value);
+}
+
+// Restores list markers / spacing that Tailwind's preflight strips, so any
+// HTML formatting coming from the API renders correctly.
+const HTML_FORMAT_CLASSES =
+  "text-left mx-auto space-y-2 [&_ol]:list-decimal [&_ul]:list-disc [&_ol]:pl-5 [&_ul]:pl-5 [&_ol]:space-y-1 [&_ul]:space-y-1 [&_p]:mb-2 [&_p:last-child]:mb-0 [&_a]:underline [&_strong]:font-semibold [&_b]:font-semibold [&_em]:italic [&_i]:italic";
+
 // A question is only shown when it is answerable and has real text.
 // Excludes: null/undefined/non-string text, empty or whitespace-only text,
 // and questions explicitly flagged isAnswer: false.
@@ -232,15 +244,28 @@ function MindfulnessPage() {
           Question {step + 1} of {total}
         </p>
 
-        <h1 className="text-white font-medium leading-[1.22] tracking-[-0.01em] text-[24px] sm:text-[28px] md:text-[34px] lg:text-[38px] max-w-[700px]">
-          {current.text}
-        </h1>
-
-        {current.description && (
-          <p className="text-white/70 text-[14px] md:text-[15px] max-w-[560px] leading-[1.55]">
-            {current.description}
-          </p>
+        {looksLikeHtml(current.text) ? (
+          <div
+            className={`text-white font-medium leading-[1.3] tracking-[-0.01em] text-[20px] sm:text-[24px] md:text-[28px] lg:text-[30px] max-w-[700px] break-words ${HTML_FORMAT_CLASSES}`}
+            dangerouslySetInnerHTML={{ __html: current.text }}
+          />
+        ) : (
+          <h1 className="text-white font-medium leading-[1.22] tracking-[-0.01em] text-[24px] sm:text-[28px] md:text-[34px] lg:text-[38px] max-w-[700px] whitespace-pre-line break-words">
+            {current.text.trim()}
+          </h1>
         )}
+
+        {current.description &&
+          (looksLikeHtml(current.description) ? (
+            <div
+              className={`text-white/70 text-[14px] md:text-[15px] max-w-[560px] leading-[1.55] break-words ${HTML_FORMAT_CLASSES}`}
+              dangerouslySetInnerHTML={{ __html: current.description }}
+            />
+          ) : (
+            <p className="text-white/70 text-[14px] md:text-[15px] max-w-[560px] leading-[1.55] whitespace-pre-line break-words">
+              {current.description}
+            </p>
+          ))}
 
         {showInput ? (
           <div className="w-full max-w-[560px] mt-2 md:mt-3">
