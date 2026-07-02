@@ -10,6 +10,8 @@ export interface QuestionGroup {
   id: number;
   title: string;
   description?: string | null;
+  moodId?: number | null;
+  mood?: { id: number; title?: string; color?: string } | null;
   questions?: Question[];
   isActive?: boolean;
   createdBy?: number;

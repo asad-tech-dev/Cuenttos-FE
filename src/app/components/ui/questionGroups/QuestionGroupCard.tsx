@@ -4,6 +4,7 @@ import React from "react";
 import { ClipboardList, Trash2 } from "lucide-react";
 import { QuestionGroup } from "@/types/questionGroup";
 import Toggle from "../Toggle";
+import MoodTag from "../MoodTag";
 
 interface QuestionGroupCardProps {
   group: QuestionGroup;
@@ -69,6 +70,13 @@ export default function QuestionGroupCard({
       </div>
 
       <div className="mt-5 flex flex-col gap-2">
+        {group.mood?.title && (
+          <MoodTag
+            title={group.mood.title}
+            color={group.mood.color}
+            className="w-fit"
+          />
+        )}
         <h3 className="line-clamp-2 text-[18px] font-semibold text-subtle-black group-hover:text-dark-violet">
           {group.title}
         </h3>

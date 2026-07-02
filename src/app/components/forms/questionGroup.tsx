@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, RefreshCw } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,8 @@ import {
   createQuestionGroup,
   updateQuestionGroup,
 } from "@/lib/api/questionGroup";
+import { fetchMoods } from "@/lib/api/mood";
+import { Mood } from "@/types/mood";
 
 type QuestionGroupFormMode = "create" | "edit";
 type Step = 1 | 2;
@@ -38,6 +40,7 @@ const STEPS: { number: Step; label: string }[] = [
 const emptyValues: QuestionGroupFormData = {
   title: "",
   description: "",
+  moodId: 0,
   questions: Array.from({ length: QUESTIONS_PER_GROUP }, () => ({
     text: "",
     isAnswer: true,
@@ -70,6 +73,10 @@ export default function QuestionGroupForm({
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [direction, setDirection] = useState<1 | -1>(1);
 
+  const [moods, setMoods] = useState<Mood[]>([]);
+  const [moodsLoading, setMoodsLoading] = useState(true);
+  const [moodsError, setMoodsError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -82,6 +89,24 @@ export default function QuestionGroupForm({
     mode: "onChange",
     defaultValues: initialValues ?? emptyValues,
   });
+
+  const loadMoods = async () => {
+    try {
+      setMoodsLoading(true);
+      setMoodsError(null);
+      const data = await fetchMoods();
+      setMoods(data ?? []);
+    } catch (err) {
+      console.error("Failed to load moods:", err);
+      setMoodsError("Could not load moods. Please try again.");
+    } finally {
+      setMoodsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMoods();
+  }, []);
 
   const { fields } = useFieldArray({
     control,
@@ -99,7 +124,7 @@ export default function QuestionGroupForm({
   const goToStep = async (target: Step) => {
     if (target === currentStep || loading) return;
     if (target > currentStep) {
-      const valid = await trigger(["title", "description"]);
+      const valid = await trigger(["title", "description", "moodId"]);
       if (!valid) return;
     }
     setDirection(target > currentStep ? 1 : -1);
@@ -111,6 +136,7 @@ export default function QuestionGroupForm({
     if (data.title !== (initialValues.title ?? "")) return true;
     if ((data.description ?? "") !== (initialValues.description ?? ""))
       return true;
+    if (Number(data.moodId) !== Number(initialValues.moodId ?? 0)) return true;
     return data.questions.some((q, i) => {
       const initial = initialValues.questions?.[i];
       return (
@@ -154,7 +180,7 @@ export default function QuestionGroupForm({
   };
 
   const onError = () => {
-    if (errors.title || errors.description) {
+    if (errors.title || errors.description || errors.moodId) {
       setDirection(-1);
       setCurrentStep(1);
     }
@@ -300,6 +326,76 @@ export default function QuestionGroupForm({
                   error={errors.title?.message}
                   {...register("title")}
                 />
+
+                {moodsLoading ? (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[13px] font-medium text-dark-gray">
+                      Mood
+                    </label>
+                    <div className="flex h-[48px] w-full items-center rounded-[10px] border border-light-gray bg-gray-6 px-4">
+                      <span className="h-3 w-32 animate-pulse rounded-full bg-light-gray" />
+                    </div>
+                    <p className="text-[12px] text-gray-7">Loading moods…</p>
+                  </div>
+                ) : moodsError ? (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[13px] font-medium text-dark-gray">
+                      Mood
+                    </label>
+                    <div className="flex items-center justify-between gap-3 rounded-[10px] border border-red/40 bg-red/5 px-4 py-3">
+                      <p className="text-[12px] text-red">{moodsError}</p>
+                      <button
+                        type="button"
+                        onClick={loadMoods}
+                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-violet transition-colors hover:text-dark-violet"
+                      >
+                        <RefreshCw size={13} />
+                        Retry
+                      </button>
+                    </div>
+                  </div>
+                ) : moods.length === 0 ? (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[13px] font-medium text-dark-gray">
+                      Mood
+                    </label>
+                    <div className="flex items-center justify-between gap-3 rounded-[10px] border border-light-gray bg-gray-5 px-4 py-3">
+                      <p className="text-[12px] text-gray-7">
+                        No moods available yet.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={loadMoods}
+                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-violet transition-colors hover:text-dark-violet"
+                      >
+                        <RefreshCw size={13} />
+                        Refresh
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <Controller
+                    control={control}
+                    name="moodId"
+                    render={({ field }) => (
+                      <FormField
+                        as="select"
+                        label="Mood"
+                        placeholder="Select a mood"
+                        error={errors.moodId?.message}
+                        disabled={loading}
+                        options={moods.map((mood) => ({
+                          value: mood.id,
+                          label: mood.title,
+                        }))}
+                        value={field.value ? String(field.value) : ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                      />
+                    )}
+                  />
+                )}
 
                 <FormField
                   as="textarea"

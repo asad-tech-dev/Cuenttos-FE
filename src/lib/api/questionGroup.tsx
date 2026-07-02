@@ -81,6 +81,7 @@ export const toggleQuestionGroupActive = async (
 const buildGroupPayload = (data: QuestionGroupFormData) => ({
   title: data.title,
   description: data.description || "",
+  moodId: data.moodId,
   questions: data.questions.map((q, index) => ({
     ...(q.id != null ? { id: q.id } : {}),
     text: q.text,
