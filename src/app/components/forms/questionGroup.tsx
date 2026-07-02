@@ -326,16 +326,6 @@ export default function QuestionGroupForm({
                   {...register("title")}
                 />
 
-                <FormField
-                  as="textarea"
-                  label="Description"
-                  optional
-                  placeholder="Briefly describe what this group of questions is for."
-                  rows={3}
-                  error={errors.description?.message}
-                  {...register("description")}
-                />
-
                 {moodsLoading ? (
                   <div className="flex flex-col gap-2">
                     <label className="text-[13px] font-medium text-dark-gray">
@@ -405,6 +395,16 @@ export default function QuestionGroupForm({
                     )}
                   />
                 )}
+
+                <FormField
+                  as="textarea"
+                  label="Description"
+                  optional
+                  placeholder="Briefly describe what this group of questions is for."
+                  rows={3}
+                  error={errors.description?.message}
+                  {...register("description")}
+                />
               </section>
             ) : (
               <section className="flex flex-col gap-5 rounded-[16px] border border-light-gray bg-white p-6 shadow-[0_4px_24px_rgba(15,15,15,0.04)] sm:p-8">
