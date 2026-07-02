@@ -16,7 +16,7 @@ export default function MoodTag({ title, color, className = "" }: MoodTagProps) 
 
   return (
     <span
-      className={`inline-flex max-w-full items-center truncate rounded-full px-3 py-1 text-[11px] font-semibold leading-none text-black ${className}`}
+      className={`inline-flex max-w-full items-center truncate rounded-full px-3 py-1.5 text-[11px] font-semibold leading-none text-black/80 ${className}`}
       style={{ backgroundColor: color || "#E5E5E5" }}
       title={title}
     >
