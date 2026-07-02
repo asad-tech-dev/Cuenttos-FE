@@ -136,6 +136,7 @@ export default function QuestionGroupForm({
     if (data.title !== (initialValues.title ?? "")) return true;
     if ((data.description ?? "") !== (initialValues.description ?? ""))
       return true;
+    if (Number(data.moodId) !== Number(initialValues.moodId ?? 0)) return true;
     return data.questions.some((q, i) => {
       const initial = initialValues.questions?.[i];
       return (
