@@ -30,6 +30,61 @@ function looksLikeHtml(value?: string | null): boolean {
 const HTML_FORMAT_CLASSES =
   "text-left mx-auto space-y-2 [&_ol]:list-decimal [&_ul]:list-disc [&_ol]:pl-5 [&_ul]:pl-5 [&_ol]:space-y-1 [&_ul]:space-y-1 [&_p]:mb-2 [&_p:last-child]:mb-0 [&_a]:underline [&_strong]:font-semibold [&_b]:font-semibold [&_em]:italic [&_i]:italic";
 
+// Matches a plain-text numbered list line, e.g. "1. Put up a song".
+const ORDERED_ITEM = /^\s*(\d+)[.)]\s+(.*)$/;
+const hasOrderedList = (text: string): boolean =>
+  text.split("\n").some((line) => ORDERED_ITEM.test(line));
+
+// Renders plain text that contains a numbered list. Non-list lines stay
+// centered (title, intro); consecutive numbered items are grouped into a
+// centered-but-left-aligned list so every number shares the same left edge,
+// with wrapped text hanging under the item body.
+function renderOrderedText(text: string) {
+  const lines = text.replace(/\r\n/g, "\n").split("\n");
+  const blocks: React.ReactNode[] = [];
+  let listItems: { num: string; body: string }[] = [];
+
+  const flushList = () => {
+    if (!listItems.length) return;
+    const items = listItems;
+    listItems = [];
+    blocks.push(
+      <ol
+        key={`ol-${blocks.length}`}
+        className="mx-auto flex w-fit max-w-full flex-col gap-1 text-left"
+      >
+        {items.map((item, i) => (
+          <li key={i} className="flex gap-2">
+            <span className="shrink-0 tabular-nums">{item.num}.</span>
+            <span className="min-w-0">{item.body}</span>
+          </li>
+        ))}
+      </ol>,
+    );
+  };
+
+  lines.forEach((line) => {
+    const match = line.match(ORDERED_ITEM);
+    if (match) {
+      listItems.push({ num: match[1], body: match[2] });
+      return;
+    }
+    flushList();
+    if (line.trim() === "") {
+      blocks.push(<div key={`sp-${blocks.length}`} className="h-2" />);
+    } else {
+      blocks.push(
+        <p key={`p-${blocks.length}`} className="text-center break-words">
+          {line}
+        </p>,
+      );
+    }
+  });
+  flushList();
+
+  return blocks;
+}
+
 // A question is only shown when it is answerable and has real text.
 // Excludes: null/undefined/non-string text, empty or whitespace-only text,
 // and questions explicitly flagged isAnswer: false.
@@ -249,6 +304,10 @@ function MindfulnessPage() {
             className={`text-white font-medium leading-[1.3] tracking-[-0.01em] text-[20px] sm:text-[24px] md:text-[28px] lg:text-[30px] max-w-[700px] break-words ${HTML_FORMAT_CLASSES}`}
             dangerouslySetInnerHTML={{ __html: current.text }}
           />
+        ) : hasOrderedList(current.text) ? (
+          <div className="text-white font-medium leading-[1.3] tracking-[-0.01em] text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] max-w-[700px] flex flex-col gap-2">
+            {renderOrderedText(current.text.trim())}
+          </div>
         ) : (
           <h1 className="text-white font-medium leading-[1.22] tracking-[-0.01em] text-[24px] sm:text-[28px] md:text-[34px] lg:text-[38px] max-w-[700px] whitespace-pre-line break-words">
             {current.text.trim()}
