@@ -363,10 +363,10 @@ function CuenttoDetailPageContent() {
           </div>
           <div className="flex flex-row gap-3 shrink-0">
             <Link
-              href="/register"
+              href="#"
               className="flex items-center justify-center h-[40px] px-5 rounded-[100px] bg-violet text-white text-[14px] font-medium cursor-pointer whitespace-nowrap"
             >
-              Join Cuentto
+              Download App
             </Link>
             <Link
               href={`/login?redirect=${encodeURIComponent(`/cuentto/${id}`)}`}
