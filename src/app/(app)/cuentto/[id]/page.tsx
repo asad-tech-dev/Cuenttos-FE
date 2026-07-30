@@ -21,6 +21,11 @@ import {
 import Image from "next/image";
 import { Cuentto } from "@/types/cuentto";
 
+const HTML_PATTERN = /<\/?[a-z][\s\S]*>|&[a-z]+;|&#\d+;/i;
+function looksLikeHtml(value?: string | null): boolean {
+  return typeof value === "string" && HTML_PATTERN.test(value);
+}
+
 function CuenttoDetailPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -65,7 +70,9 @@ function CuenttoDetailPageContent() {
         if (!data.publicLink) {
           const token = localStorage.getItem("authToken");
           if (!token) {
-            router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+            router.replace(
+              `/login?redirect=${encodeURIComponent(window.location.pathname)}`,
+            );
             return;
           }
           try {
@@ -81,7 +88,9 @@ function CuenttoDetailPageContent() {
           } catch (error) {
             console.error("Invalid token", error);
             localStorage.removeItem("authToken");
-            router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+            router.replace(
+              `/login?redirect=${encodeURIComponent(window.location.pathname)}`,
+            );
             return;
           }
         }
@@ -98,7 +107,9 @@ function CuenttoDetailPageContent() {
           setNeedsAuth(false);
           return;
         }
-        router.replace(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        router.replace(
+          `/login?redirect=${encodeURIComponent(window.location.pathname)}`,
+        );
       } finally {
         setLoading(false);
       }
@@ -293,11 +304,18 @@ function CuenttoDetailPageContent() {
           </div>
         )}
       </div>
-      <div className="pt-6 md:pt-[40px] flex flex-col gap-8 md:gap-[50px] ">
-        <div
-          className="text-[15px] sm:text-[16px] leading-[28px] sm:leading-[30px] font-normal text-black break-words"
-          dangerouslySetInnerHTML={{ __html: cuentto?.description ?? "" }}
-        />
+      <div className="flex flex-col gap-8 md:gap-[50px] ">
+        {cuentto?.description &&
+          (looksLikeHtml(cuentto.description) ? (
+            <div
+              className="text-[15px] sm:text-[16px] leading-[28px] sm:leading-[30px] font-normal text-black break-words"
+              dangerouslySetInnerHTML={{ __html: cuentto.description }}
+            />
+          ) : (
+            <div className="text-[15px] sm:text-[16px] leading-[28px] sm:leading-[30px] font-normal text-black break-words whitespace-pre-line">
+              {cuentto.description}
+            </div>
+          ))}
       </div>
       <div className="flex flex-row justify-between items-center mt-2 md:mt-[20px]">
         <div
@@ -314,7 +332,10 @@ function CuenttoDetailPageContent() {
             {cuentto?._count.comments ?? 0} comments
           </span>
         </div>
-        <div className="flex flex-row gap-7 sm:gap-[40px]" onClick={() => CustomToast()}>
+        <div
+          className="flex flex-row gap-7 sm:gap-[40px]"
+          onClick={() => CustomToast()}
+        >
           <FavouriteIcon
             width={14}
             height={17}
