@@ -341,41 +341,80 @@ export default function CuenttoForm({
             className="cursor-pointer text-gray-9"
           />
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-              <button type="button" onClick={() => setSidebarContent("music")}>
-                {selectedMusic ? (
-                  <span className="w-fit px-4 h-[32px] rounded-[100px] cursor-pointer bg-white border border-violet flex flex-row justify-center items-center gap-[10px]">
-                    <MusicIcon
-                      width={9}
-                      height={13}
-                      className="cursor-pointer text-violet"
+            <div className="flex flex-row items-center gap-[15px]">
+              <SheetTrigger asChild>
+                <button type="button" onClick={() => setSidebarContent("music")}>
+                  {selectedMusic ? (
+                    <span className="w-fit px-4 h-[32px] rounded-[100px] cursor-pointer bg-white border border-violet flex flex-row justify-center items-center gap-[10px]">
+                      <MusicIcon
+                        width={9}
+                        height={13}
+                        className="cursor-pointer text-violet"
+                      />
+                      <p className="text-[14px] font-medium text-violet">
+                        {selectedMusic.name}
+                      </p>
+                    </span>
+                  ) : (
+                    <Image
+                      src="/media.svg"
+                      alt="Music Icon"
+                      width={24}
+                      height={24}
+                      className="cursor-pointer"
                     />
-                    <p className="text-[14px] font-medium text-violet">
-                      {selectedMusic.name}
-                    </p>
-                  </span>
-                ) : (
-                  <Image
-                    src="/media.svg"
-                    alt="Music Icon"
-                    width={24}
-                    height={24}
-                    className="cursor-pointer"
+                  )}
+                </button>
+              </SheetTrigger>
+              {selectedMusic && (
+                <>
+                  <div
+                    className="w-[20px] h-[20px] flex justify-center rounded-full border-[2px] border-violet cursor-pointer items-center"
+                    onClick={() =>
+                      togglePlayPause(selectedMusic.id, selectedMusic.musicFile)
+                    }
+                  >
+                    {playingMusicId === selectedMusic.id ? (
+                      <Pause
+                        size={10}
+                        stroke="none"
+                        className="fill-current text-violet"
+                      />
+                    ) : (
+                      <PlayIcon
+                        width={7}
+                        height={7}
+                        className="cursor-pointer text-violet"
+                      />
+                    )}
+                  </div>
+                  <CloseIcon
+                    width={14}
+                    height={14}
+                    className="cursor-pointer text-red animate-none"
+                    onClick={() => {
+                      setValue("musicId", 0);
+                      setSelectedMusic(null);
+                      if (playingMusicId === selectedMusic.id) {
+                        audioRef.current?.pause();
+                        setPlayingMusicId(null);
+                      }
+                    }}
                   />
-                )}
-              </button>
-            </SheetTrigger>
-            <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-[588px] border-l px-[50px] py-[60px] border-light-gray">
+                </>
+              )}
+            </div>
+            <SheetContent className="bg-white flex flex-col border-none !max-w-none !w-[588px] border-l px-[50px] py-[60px] border-light-gray overflow-hidden">
               {sidebarContent === "music" && (
                 <>
-                  <div className="flex flex-col justify-start items-start">
+                  <div className="flex flex-col justify-start items-start flex-1 min-h-0">
                     <p className="text-[14px] font-medium text-gray">
                       Add music
                     </p>
                     <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
                       Select a background music
                     </p>
-                    <div className=" flex flex-col !max-h-[548px] mt-[40px] gap-4 w-[500px] justify-start overflow-y-auto pr-4 ">
+                    <div className=" flex flex-col flex-1 min-h-0 mt-[40px] gap-4 w-[500px] justify-start overflow-y-auto pr-4 ">
                       {musics.map((music, index) => (
                         <div
                           key={music.id}
@@ -455,7 +494,7 @@ export default function CuenttoForm({
                     </div>
                     <input type="hidden" {...register("musicId")} />
                   </div>
-                  <div>
+                  <div className="flex-shrink-0 mt-[20px]">
                     {selectedMusic && (
                       <div className="flex flex-row">
                         <img
@@ -474,7 +513,14 @@ export default function CuenttoForm({
                             width={23}
                             height={23}
                             className="cursor-pointer absolute -right-3 -top-3 text-red"
-                            onClick={() => setSelectedMusic(null)}
+                            onClick={() => {
+                              setValue("musicId", 0);
+                              setSelectedMusic(null);
+                              if (playingMusicId === selectedMusic.id) {
+                                audioRef.current?.pause();
+                                setPlayingMusicId(null);
+                              }
+                            }}
                           />
                           <div className="w-full h-[6px] bg-violet-2 overflow-hidden rounded-br-[4px] absolute bottom-0 left-0">
                             <div
@@ -519,25 +565,12 @@ export default function CuenttoForm({
                                 />
                               )}
                             </button>
-
-                            <audio
-                              ref={audioRef}
-                              onTimeUpdate={() =>
-                                setCurrentTime(
-                                  audioRef.current?.currentTime || 0,
-                                )
-                              }
-                              onLoadedMetadata={() =>
-                                setDuration(audioRef.current?.duration || 0)
-                              }
-                              onEnded={() => setPlayingMusicId(null)}
-                            />
                           </div>
                         </div>
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-row justify-end items-center">
+                  <div className="flex-shrink-0 flex flex-row justify-end items-center mt-[20px]">
                     <VioletButton
                       text="Add Music"
                       className="w-[120px]"
@@ -740,6 +773,18 @@ export default function CuenttoForm({
           }
         />
       </Dialog>
+      <audio
+        ref={audioRef}
+        onTimeUpdate={() =>
+          setCurrentTime(
+            audioRef.current?.currentTime || 0,
+          )
+        }
+        onLoadedMetadata={() =>
+          setDuration(audioRef.current?.duration || 0)
+        }
+        onEnded={() => setPlayingMusicId(null)}
+      />
     </form>
   );
 }
