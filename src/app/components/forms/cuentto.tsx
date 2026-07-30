@@ -341,30 +341,69 @@ export default function CuenttoForm({
             className="cursor-pointer text-gray-9"
           />
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-              <button type="button" onClick={() => setSidebarContent("music")}>
-                {selectedMusic ? (
-                  <span className="w-fit px-4 h-[32px] rounded-[100px] cursor-pointer bg-white border border-violet flex flex-row justify-center items-center gap-[10px]">
-                    <MusicIcon
-                      width={9}
-                      height={13}
-                      className="cursor-pointer text-violet"
+            <div className="flex flex-row items-center gap-[15px]">
+              <SheetTrigger asChild>
+                <button type="button" onClick={() => setSidebarContent("music")}>
+                  {selectedMusic ? (
+                    <span className="w-fit px-4 h-[32px] rounded-[100px] cursor-pointer bg-white border border-violet flex flex-row justify-center items-center gap-[10px]">
+                      <MusicIcon
+                        width={9}
+                        height={13}
+                        className="cursor-pointer text-violet"
+                      />
+                      <p className="text-[14px] font-medium text-violet">
+                        {selectedMusic.name}
+                      </p>
+                    </span>
+                  ) : (
+                    <Image
+                      src="/media.svg"
+                      alt="Music Icon"
+                      width={24}
+                      height={24}
+                      className="cursor-pointer"
                     />
-                    <p className="text-[14px] font-medium text-violet">
-                      {selectedMusic.name}
-                    </p>
-                  </span>
-                ) : (
-                  <Image
-                    src="/media.svg"
-                    alt="Music Icon"
-                    width={24}
-                    height={24}
-                    className="cursor-pointer"
+                  )}
+                </button>
+              </SheetTrigger>
+              {selectedMusic && (
+                <>
+                  <div
+                    className="w-[20px] h-[20px] flex justify-center rounded-full border-[2px] border-violet cursor-pointer items-center"
+                    onClick={() =>
+                      togglePlayPause(selectedMusic.id, selectedMusic.musicFile)
+                    }
+                  >
+                    {playingMusicId === selectedMusic.id ? (
+                      <Pause
+                        size={10}
+                        stroke="none"
+                        className="fill-current text-violet"
+                      />
+                    ) : (
+                      <PlayIcon
+                        width={7}
+                        height={7}
+                        className="cursor-pointer text-violet"
+                      />
+                    )}
+                  </div>
+                  <CloseIcon
+                    width={14}
+                    height={14}
+                    className="cursor-pointer text-red animate-none"
+                    onClick={() => {
+                      setValue("musicId", 0);
+                      setSelectedMusic(null);
+                      if (playingMusicId === selectedMusic.id) {
+                        audioRef.current?.pause();
+                        setPlayingMusicId(null);
+                      }
+                    }}
                   />
-                )}
-              </button>
-            </SheetTrigger>
+                </>
+              )}
+            </div>
             <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-[588px] border-l px-[50px] py-[60px] border-light-gray">
               {sidebarContent === "music" && (
                 <>
@@ -474,7 +513,14 @@ export default function CuenttoForm({
                             width={23}
                             height={23}
                             className="cursor-pointer absolute -right-3 -top-3 text-red"
-                            onClick={() => setSelectedMusic(null)}
+                            onClick={() => {
+                              setValue("musicId", 0);
+                              setSelectedMusic(null);
+                              if (playingMusicId === selectedMusic.id) {
+                                audioRef.current?.pause();
+                                setPlayingMusicId(null);
+                              }
+                            }}
                           />
                           <div className="w-full h-[6px] bg-violet-2 overflow-hidden rounded-br-[4px] absolute bottom-0 left-0">
                             <div
@@ -519,19 +565,6 @@ export default function CuenttoForm({
                                 />
                               )}
                             </button>
-
-                            <audio
-                              ref={audioRef}
-                              onTimeUpdate={() =>
-                                setCurrentTime(
-                                  audioRef.current?.currentTime || 0,
-                                )
-                              }
-                              onLoadedMetadata={() =>
-                                setDuration(audioRef.current?.duration || 0)
-                              }
-                              onEnded={() => setPlayingMusicId(null)}
-                            />
                           </div>
                         </div>
                       </div>
@@ -740,6 +773,18 @@ export default function CuenttoForm({
           }
         />
       </Dialog>
+      <audio
+        ref={audioRef}
+        onTimeUpdate={() =>
+          setCurrentTime(
+            audioRef.current?.currentTime || 0,
+          )
+        }
+        onLoadedMetadata={() =>
+          setDuration(audioRef.current?.duration || 0)
+        }
+        onEnded={() => setPlayingMusicId(null)}
+      />
     </form>
   );
 }
