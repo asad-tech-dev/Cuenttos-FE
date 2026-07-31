@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SkeletonCuenttoDetail } from "@/app/components/skeletons/CuenttoDetail";
+import { OpenInAppButton } from "@/app/components/buttons/OpenInAppButton";
 import CustomToast from "@/app/components/toasts/comingSoon";
 import { fetchDetailCuentto } from "@/lib/api/cuentto";
 import {
@@ -362,12 +363,10 @@ function CuenttoDetailPageContent() {
             </p>
           </div>
           <div className="flex flex-row gap-3 shrink-0">
-            <Link
-              href="#"
+            <OpenInAppButton
+              id={String(id)}
               className="flex items-center justify-center h-[40px] px-5 rounded-[100px] bg-violet text-white text-[14px] font-medium cursor-pointer whitespace-nowrap"
-            >
-              Download App
-            </Link>
+            />
             <Link
               href={`/login?redirect=${encodeURIComponent(`/cuentto/${id}`)}`}
               className="flex items-center justify-center h-[40px] px-5 rounded-[100px] border border-violet text-violet text-[14px] font-medium cursor-pointer whitespace-nowrap"
