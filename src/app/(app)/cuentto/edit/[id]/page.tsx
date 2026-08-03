@@ -10,6 +10,7 @@ import { SkeletonCuenttoDetail } from "@/app/components/skeletons/CuenttoDetail"
 import { Cuentto } from "@/types/cuentto";
 import { fetchDetailCuentto } from "@/lib/api/cuentto";
 import { getCurrentUserId } from "@/lib/api/auth";
+import { getCuenttoPath } from "@/lib/cuenttoLink";
 
 function EditCuenttoPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ function EditCuenttoPage() {
         const currentUserId = getCurrentUserId();
         if (currentUserId !== data.user.id) {
           toast.error("You can only edit your own Cuenttos.");
-          router.replace(`/cuentto/${cuenttoId}`);
+          router.replace(getCuenttoPath(data));
           return;
         }
         setCuentto(data);

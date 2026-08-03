@@ -8,7 +8,14 @@ const APPLE_APP_SITE_ASSOCIATION = {
       {
         appIDs: ["SKDAHC6ZN2.com.storycollc.cuentto"],
         components: [
-          { "/": "/cuentto/*", comment: "Shared cuentto links" },
+          {
+            "/": "/*/cuentto/*",
+            comment: "Shared cuentto links (username/slug format)",
+          },
+          {
+            "/": "/cuentto/*",
+            comment: "Legacy shared cuentto links (id format)",
+          },
           {
             "/": "//cuentto/*",
             comment: "Legacy links shared with a double slash",

@@ -74,6 +74,27 @@ export const fetchDetailCuentto = async (id: number): Promise<Cuentto> => {
   };
 };
 
+export const fetchDetailCuenttoBySlug = async (
+  usernameSlug: string,
+  slug: string
+): Promise<Cuentto> => {
+  const token = localStorage.getItem("authToken");
+  const response = await axios.get(
+    `${API_URL}/api/cuentto/${encodeURIComponent(usernameSlug)}/${encodeURIComponent(slug)}`,
+    {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    }
+  );
+  const cuentto = response.data.cuentto as Cuentto;
+  return {
+    ...cuentto,
+    groupIds:
+      cuentto.groupIds ?? cuentto.groups?.map((group) => group.id) ?? [],
+  };
+};
+
 export const deleteCuentto = async (id: number): Promise<void> => {
   const token = localStorage.getItem("authToken");
   await axios.delete(`${API_URL}/api/cuentto/${id}`, {
