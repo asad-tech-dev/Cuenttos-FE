@@ -2,20 +2,20 @@
 import { useCallback } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import CuenttoDetailView from "@/app/components/ui/cuenttos/CuenttoDetailView";
-import { fetchDetailCuentto } from "@/lib/api/cuentto";
+import { fetchDetailCuenttoBySlug } from "@/lib/api/cuentto";
 
-function CuenttoDetailPageContent() {
+function CuenttoBySlugPage() {
   const searchParams = useSearchParams();
-  const { id } = useParams();
+  const { username, slug } = useParams();
   const isFeatured = searchParams.get("featured") === "true";
 
-  const rawId = Array.isArray(id) ? id[0] : id;
-  const numericId = Number(rawId);
-  const paramsValid = Boolean(rawId) && Number.isInteger(numericId) && numericId > 0;
+  const usernameSlug = Array.isArray(username) ? username[0] : username;
+  const cuenttoSlug = Array.isArray(slug) ? slug[0] : slug;
+  const paramsValid = Boolean(usernameSlug && cuenttoSlug);
 
   const fetchCuentto = useCallback(
-    () => fetchDetailCuentto(numericId),
-    [numericId],
+    () => fetchDetailCuenttoBySlug(usernameSlug as string, cuenttoSlug as string),
+    [usernameSlug, cuenttoSlug],
   );
 
   return (
@@ -26,4 +26,4 @@ function CuenttoDetailPageContent() {
     />
   );
 }
-export default CuenttoDetailPageContent;
+export default CuenttoBySlugPage;

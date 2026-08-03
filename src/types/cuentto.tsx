@@ -15,6 +15,7 @@ export interface Cuentto {
   description: string;
   duration: number;
   createdAt: string;
+  slug?: string | null;
   publicLink?: string | null;
   isPublic?: boolean;
   isSelfShared?: boolean;
@@ -31,6 +32,7 @@ export interface Cuentto {
   user: {
     id: number;
     username: string;
+    usernameSlug?: string | null;
     profileName: string;
     profilePicture?: string;
   };
@@ -49,12 +51,14 @@ export interface FeaturedCuentto {
   title: string;
   duration: number;
   createdAt: string;
+  slug?: string | null;
   mood: {
     title: string;
     color: string;
   };
   user: {
     username: string;
+    usernameSlug?: string | null;
     profileName: string;
     profilePicture?: string;
   };

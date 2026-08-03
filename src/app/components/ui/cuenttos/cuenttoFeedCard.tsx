@@ -19,6 +19,7 @@ import ConfirmDialog from "../ConfirmDialog";
 import { Cuentto } from "@/types/cuentto";
 import { getCurrentUserId } from "@/lib/api/auth";
 import { deleteCuentto } from "@/lib/api/cuentto";
+import { getCuenttoPath } from "@/lib/cuenttoLink";
 
 interface CuenttoFeedCardProps {
   cuentto: Cuentto;
@@ -177,7 +178,7 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
         )}
       </div>
 
-      <Link href={`/cuentto/${cuentto.id}`} className="flex flex-col gap-3">
+      <Link href={getCuenttoPath(cuentto)} className="flex flex-col gap-3">
         <span className="text-gray text-[12px] font-normal">
           Reading time ·{" "}
           <span className="text-black font-semibold">

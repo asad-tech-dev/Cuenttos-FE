@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Bookmark, TrendingUp } from "lucide-react";
 import { FeaturedCuentto } from "@/types/cuentto";
 import { moodGradient } from "@/lib/utils";
+import { getCuenttoPath } from "@/lib/cuenttoLink";
 import CustomToast from "../../toasts/comingSoon";
 
 const GRADIENTS = [
@@ -69,7 +70,7 @@ const FeaturedCuenttoFeedCard: React.FC<{
       </div>
 
       <Link
-        href={`/cuentto/${cuentto.id}?featured=true`}
+        href={`${getCuenttoPath(cuentto)}?featured=true`}
         className="flex-1 flex items-end mt-4"
       >
         <h2 className="text-[22px] leading-[1.15] font-bold text-subtle-black line-clamp-3">
