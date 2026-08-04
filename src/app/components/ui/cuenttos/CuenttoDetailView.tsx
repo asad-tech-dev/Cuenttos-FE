@@ -26,6 +26,12 @@ function looksLikeHtml(value?: string | null): boolean {
   return typeof value === "string" && HTML_PATTERN.test(value);
 }
 
+// `prose` (Tailwind Typography) restyles whatever tags the rich text editor
+// produces — headings, lists, blockquotes, tables, code, images, etc. —
+// instead of us hand-listing each tag Tailwind's preflight strips styling from.
+const HTML_FORMAT_CLASSES =
+  "prose max-w-none text-[15px] sm:text-[16px] leading-[28px] sm:leading-[30px] text-black prose-headings:text-black prose-p:text-black prose-li:text-black prose-strong:text-black prose-blockquote:text-black prose-blockquote:border-violet prose-a:text-violet prose-a:break-words";
+
 interface CuenttoDetailViewProps {
   // Fetches the cuentto for whichever URL shape the caller resolved
   // (numeric id, or username/slug) — this view doesn't know or care which.
@@ -316,7 +322,7 @@ function CuenttoDetailView({
         {cuentto?.description &&
           (looksLikeHtml(cuentto.description) ? (
             <div
-              className="text-[15px] sm:text-[16px] leading-[28px] sm:leading-[30px] font-normal text-black break-words"
+              className={`font-normal break-words ${HTML_FORMAT_CLASSES}`}
               dangerouslySetInnerHTML={{ __html: cuentto.description }}
             />
           ) : (
