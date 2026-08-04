@@ -131,32 +131,70 @@ function CuenttoDetailView({
     getCuentto();
   }, [paramsValid, fetchCuentto, router, isTokenValid]);
 
+  // Browsers block unmuted autoplay until the user has interacted with the
+  // page, so a shared link opened in a fresh tab cannot make sound on its
+  // own. Try as soon as the track is rendered; if the browser refuses,
+  // start at the earliest moment it allows: the first interaction anywhere
+  // on the page (pointer, touch, key), or the tab becoming visible/focused
+  // (covers links opened in a background tab). All auto-start machinery is
+  // torn down after the first successful start or the first use of the
+  // play/pause button, so it can never override a manual pause.
   useEffect(() => {
-    const playAudio = async () => {
-      if (!loading && audioRef.current) {
-        try {
-          await audioRef.current.play();
-          setIsPlaying(true);
-        } catch (err) {
-          console.error("Autoplay blocked", err);
-          setIsPlaying(false);
-        }
+    const audio = audioRef.current;
+    if (loading || !cuentto?.music || !audio) return;
+
+    let cancelled = false;
+    const gestureEvents = ["pointerdown", "touchend", "keydown", "click"];
+
+    function disarm() {
+      gestureEvents.forEach((name) =>
+        document.removeEventListener(name, startOnGesture),
+      );
+      document.removeEventListener("visibilitychange", retryWhenVisible);
+      window.removeEventListener("focus", retryWhenVisible);
+    }
+
+    function startOnGesture(event: Event) {
+      // The play/pause button handles its own gesture — hand control over
+      // to it instead of double-firing.
+      if ((event.target as HTMLElement | null)?.closest("[data-play-toggle]")) {
+        disarm();
+        return;
       }
+      // Keep listeners armed until a play attempt actually succeeds; some
+      // browsers only accept certain gesture types as activation.
+      audio?.play().then(disarm).catch(() => {});
+    }
+
+    function retryWhenVisible() {
+      if (document.visibilityState !== "visible") return;
+      audio?.play().then(disarm).catch(() => {});
+    }
+
+    audio.play().catch(() => {
+      if (cancelled) return;
+      setIsPlaying(false);
+      gestureEvents.forEach((name) =>
+        document.addEventListener(name, startOnGesture),
+      );
+      document.addEventListener("visibilitychange", retryWhenVisible);
+      window.addEventListener("focus", retryWhenVisible);
+    });
+
+    return () => {
+      cancelled = true;
+      disarm();
+      audio.pause();
     };
-    const timeout = setTimeout(() => {
-      playAudio();
-    }, 1000);
-    return () => clearTimeout(timeout);
-  }, [loading]);
+  }, [loading, cuentto]);
 
   const togglePlayPause = () => {
-    if (!audioRef.current) return;
-    if (audioRef.current.paused) {
-      audioRef.current.play();
-      setIsPlaying(true);
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play().catch(() => {});
     } else {
-      audioRef.current.pause();
-      setIsPlaying(false);
+      audio.pause();
     }
   };
 
@@ -292,6 +330,7 @@ function CuenttoDetailView({
               </p>
             </span>
             <div
+              data-play-toggle
               className="w-[20px] h-[20px] flex justify-center rounded-full border-[2px] border-violet cursor-pointer items-center"
               onClick={togglePlayPause}
             >
@@ -313,7 +352,10 @@ function CuenttoDetailView({
             <audio
               ref={audioRef}
               src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/music/${cuentto?.music.musicFile}`}
-              onEnded={() => audioRef.current?.play()}
+              loop
+              preload="auto"
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
             />
           </div>
         )}
