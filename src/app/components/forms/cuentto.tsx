@@ -659,7 +659,7 @@ export default function CuenttoForm({
               <div className="flex flex-col justify-start items start">
                 <p className="text-[14px] font-medium text-gray">Emotions</p>
                 <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
-                  Select an emotion for your <br></br>Cuentto:
+                  How did you feel writing <br></br>this story?
                 </p>
                 <div className=" flex flex-row flex-wrap  mt-[40px] gap-4 w-full justify-start ">
                   {moods.map((moods) => (
@@ -729,11 +729,19 @@ export default function CuenttoForm({
                     }}
                     options={[
                       { value: "all", label: "Public" },
-                      { value: "self", label: "Share to yourself" },
-                      ...groups.map((group) => ({
-                        value: group.id,
-                        label: group.name,
-                      })),
+                      ...(innerCircleGroup
+                        ? [{ value: innerCircleGroup.id, label: innerCircleGroup.name }]
+                        : []),
+                      {
+                        value: "self",
+                        label: "My Journal (for content you're not ready to share)",
+                      },
+                      ...groups
+                        .filter((group) => group.id !== innerCircleGroup?.id)
+                        .map((group) => ({
+                          value: group.id,
+                          label: group.name,
+                        })),
                     ]}
                     defaultValue={initialShareSelection}
                     exclusiveValues={["self"]}

@@ -3,14 +3,11 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import { GoogleIcon } from "../icons";
 import { Eye, EyeOff, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Checkbox } from "@radix-ui/react-checkbox";
-import CustomToast from "@/app/components/toasts/comingSoon";
 import VioletButton from "../buttons/VioletButton";
-import GoogleButton from "../buttons/GoogleButton";
 import { RegisterFormData,registerSchema } from "@/lib/formSchemas/auth";
 import { registerUser } from "@/lib/api/auth";
 
@@ -123,14 +120,6 @@ const onSubmit = async (data: RegisterFormData) => {
           className="w-[154px] text-[14px]"
           loading={loading}
           type="submit"
-        />
-
-        <GoogleButton
-          text="Continue with Google"
-          type="button"
-          className=""
-          icon={<GoogleIcon width={20} height={20} className="text-black" />}
-          onClick={() => CustomToast()}
         />
       </div>
 

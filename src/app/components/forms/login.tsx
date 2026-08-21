@@ -1,13 +1,10 @@
 "use client";
 import Link from "next/link";
 import axios from "axios";
-import CustomToast from "@/app/components/toasts/comingSoon";
 import VioletButton from "../buttons/VioletButton";
-import GoogleButton from "../buttons/GoogleButton";
 
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import { GoogleIcon } from "../icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Eye, EyeOff } from "lucide-react";
@@ -103,14 +100,6 @@ export default function LoginForm() {
           className="w-[92px] text-[14px]"
           loading={loading}
           type="submit"
-        />
-
-        <GoogleButton
-          text="Continue with Google"
-          type="button"
-          className=""
-          icon={<GoogleIcon width={20} height={20} className="text-black" />}
-          onClick={() => CustomToast()}
         />
       </div>
       <p className="text-white mt-[16px] text-[14px] font-normal w-full text-left">
