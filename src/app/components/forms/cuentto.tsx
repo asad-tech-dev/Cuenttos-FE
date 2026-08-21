@@ -343,7 +343,10 @@ export default function CuenttoForm({
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <div className="flex flex-row items-center gap-[15px]">
               <SheetTrigger asChild>
-                <button type="button" onClick={() => setSidebarContent("music")}>
+                <button
+                  type="button"
+                  onClick={() => setSidebarContent("music")}
+                >
                   {selectedMusic ? (
                     <span className="w-fit px-4 h-[32px] rounded-[100px] cursor-pointer bg-white border border-violet flex flex-row justify-center items-center gap-[10px]">
                       <MusicIcon
@@ -730,11 +733,16 @@ export default function CuenttoForm({
                     options={[
                       { value: "all", label: "Public" },
                       ...(innerCircleGroup
-                        ? [{ value: innerCircleGroup.id, label: innerCircleGroup.name }]
+                        ? [
+                            {
+                              value: innerCircleGroup.id,
+                              label: innerCircleGroup.name,
+                            },
+                          ]
                         : []),
                       {
                         value: "self",
-                        label: "My Journal (for content you're not ready to share)",
+                        label: "My Journal",
                       },
                       ...groups
                         .filter((group) => group.id !== innerCircleGroup?.id)
@@ -783,14 +791,8 @@ export default function CuenttoForm({
       </Dialog>
       <audio
         ref={audioRef}
-        onTimeUpdate={() =>
-          setCurrentTime(
-            audioRef.current?.currentTime || 0,
-          )
-        }
-        onLoadedMetadata={() =>
-          setDuration(audioRef.current?.duration || 0)
-        }
+        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
+        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
         onEnded={() => setPlayingMusicId(null)}
       />
     </form>
