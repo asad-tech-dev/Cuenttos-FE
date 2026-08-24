@@ -6,7 +6,10 @@ import Image from "next/image";
 import Link from "next/link";
 import checkAuth from "@/HOC/checkAuth";
 import axios from "axios";
-import { fetchActiveQuestionGroups } from "@/lib/api/questionGroup";
+import {
+  fetchActiveQuestionGroups,
+  fetchQuestionGroupById,
+} from "@/lib/api/questionGroup";
 import { submitAnswer } from "@/lib/api/answer";
 import { Question, QuestionGroup } from "@/types/questionGroup";
 import CustomToast from "@/app/components/toasts/toast";
@@ -125,13 +128,29 @@ function MindfulnessPage() {
   const showInput = current ? current.isAnswer !== false : false;
   const isLast = step >= total - 1;
 
-  const loadRandomGroup = useCallback(async (signal?: AbortSignal) => {
+  // A specific prompt selected on /think (e.g. the daily pick, or a card in
+  // the mood-filtered grid) is opened here via ?groupId=, bypassing the
+  // random pick below so the user lands on the exact prompt they chose.
+  const loadGroup = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
       setGroup(null);
       setStep(0);
       setAnswers({});
+
+      const requestedId =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("groupId")
+          : null;
+
+      if (requestedId) {
+        const specific = await fetchQuestionGroupById(Number(requestedId));
+        if (signal?.aborted) return;
+        setGroup(specific);
+        setSubmittedQuestionIds({});
+        return;
+      }
 
       const groups = await fetchActiveQuestionGroups();
       if (signal?.aborted) return;
@@ -172,14 +191,14 @@ function MindfulnessPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    loadRandomGroup(controller.signal);
+    loadGroup(controller.signal);
     const onVisibility = () => {
       if (document.visibilityState === "visible") {
-        loadRandomGroup();
+        loadGroup();
       }
     };
     const onPageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) loadRandomGroup();
+      if (event.persisted) loadGroup();
     };
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("pageshow", onPageShow);
@@ -188,7 +207,7 @@ function MindfulnessPage() {
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pageshow", onPageShow);
     };
-  }, [loadRandomGroup]);
+  }, [loadGroup]);
 
   const advanceStep = useCallback(() => {
     if (isLast) {

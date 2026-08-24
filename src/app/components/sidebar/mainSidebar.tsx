@@ -5,16 +5,16 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, ClipboardList, ChevronDown, LogOut } from "lucide-react";
 import {
-  LibraryIcon,
-  WriteIcon,
-  FavouriteIcon,
-  ProfileIcon,
-  LibraryActive,
-  FavouriteActive,
-  ProfileActive,
-} from "../icons";
+  ShieldCheck,
+  ClipboardList,
+  ChevronDown,
+  LogOut,
+  Lightbulb,
+  Pencil,
+  Share2,
+} from "lucide-react";
+import { ProfileIcon, ProfileActive } from "../icons";
 import { getIsAdmin, logoutUser, clearAuth } from "@/lib/api/auth";
 import { useMobileNav } from "../context/MobileNavContext";
 
@@ -66,31 +66,28 @@ export default function Sidebar() {
 
   const menuItems = [
     {
-      name: "Library",
-      href: "/library",
-      icon: (isActive: boolean) =>
-        isActive ? (
-          <LibraryActive className="text-black" />
-        ) : (
-          <LibraryIcon className="text-gray" />
-        ),
+      name: "Think",
+      href: "/think",
+      icon: (isActive: boolean) => (
+        <Lightbulb
+          size={18}
+          className={isActive ? "text-black" : "text-gray"}
+        />
+      ),
     },
     {
       name: "Write",
       href: "/write",
       icon: (isActive: boolean) => (
-        <WriteIcon className={isActive ? "text-black" : "text-gray"} />
+        <Pencil size={18} className={isActive ? "text-black" : "text-gray"} />
       ),
     },
     {
-      name: "Saved Cuentto",
-      href: "/saved",
-      icon: (isActive: boolean) =>
-        isActive ? (
-          <FavouriteActive className="text-black" />
-        ) : (
-          <FavouriteIcon className="text-gray" />
-        ),
+      name: "Share",
+      href: "/library",
+      icon: (isActive: boolean) => (
+        <Share2 size={18} className={isActive ? "text-black" : "text-gray"} />
+      ),
     },
     {
       name: "Profile",
@@ -103,6 +100,9 @@ export default function Sidebar() {
         ),
     },
   ];
+  // "Saved Cuentto" (href "/saved") is intentionally omitted from the nav —
+  // the route and its FavouriteIcon/FavouriteActive icons stay wired up
+  // (still reachable at /saved) so nothing underneath was removed.
 
   const adminItems = [
     {
