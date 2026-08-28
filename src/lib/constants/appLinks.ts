@@ -11,11 +11,25 @@ export const APP_STORE_URL = IOS_APP_STORE_ID
   ? `https://apps.apple.com/app/id${IOS_APP_STORE_ID}`
   : null;
 
-export function getCuenttoDeepLink(id: number | string): string {
-  return `${APP_SCHEME}://cuentto/${id}`;
+// The app dropped id-addressed cuentto links — a slug is only unique per
+// author, so both username and slug are required to resolve one. Prompt
+// links carry the question id too (?q=), since a group's default question
+// can change and the exact one that was shared must survive the round trip.
+export type OpenInAppTarget =
+  | { kind: "cuentto"; username: string; slug: string }
+  | { kind: "prompt"; slug: string; questionId: number };
+
+function getDeepLinkPath(target: OpenInAppTarget): string {
+  return target.kind === "cuentto"
+    ? `cuentto/${target.username}/${target.slug}`
+    : `prompt/${target.slug}?q=${target.questionId}`;
 }
 
-export function getAndroidIntentUrl(id: number | string): string {
+export function getAppDeepLink(target: OpenInAppTarget): string {
+  return `${APP_SCHEME}://${getDeepLinkPath(target)}`;
+}
+
+export function getAndroidIntentUrl(target: OpenInAppTarget): string {
   const fallback = encodeURIComponent(PLAY_STORE_URL);
-  return `intent://cuentto/${id}#Intent;scheme=${APP_SCHEME};package=${ANDROID_PACKAGE_NAME};S.browser_fallback_url=${fallback};end`;
+  return `intent://${getDeepLinkPath(target)}#Intent;scheme=${APP_SCHEME};package=${ANDROID_PACKAGE_NAME};S.browser_fallback_url=${fallback};end`;
 }

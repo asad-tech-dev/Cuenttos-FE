@@ -20,6 +20,10 @@ const APPLE_APP_SITE_ASSOCIATION = {
             "/": "//cuentto/*",
             comment: "Legacy links shared with a double slash",
           },
+          {
+            "/": "/prompt/*",
+            comment: "Shared prompt links",
+          },
         ],
       },
     ],

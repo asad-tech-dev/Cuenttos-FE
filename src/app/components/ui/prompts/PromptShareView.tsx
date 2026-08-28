@@ -4,17 +4,22 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FileQuestion, PenLine, Sparkles } from "lucide-react";
 import { isAuthenticated } from "@/lib/api/auth";
+import { OpenInAppButton } from "@/app/components/buttons/OpenInAppButton";
 
 interface PromptShareViewProps {
   groupId: number;
   groupTitle: string | null;
   questionText: string | null;
+  groupSlug: string | null;
+  questionId: number | null;
 }
 
 export default function PromptShareView({
   groupId,
   groupTitle,
   questionText,
+  groupSlug,
+  questionId,
 }: PromptShareViewProps) {
   const router = useRouter();
   const [authed, setAuthed] = useState(false);
@@ -94,6 +99,13 @@ export default function PromptShareView({
           <PenLine size={16} />
           Start Writing
         </button>
+
+        {!authed && groupSlug && questionId != null && (
+          <OpenInAppButton
+            target={{ kind: "prompt", slug: groupSlug, questionId }}
+            className="inline-flex items-center gap-2 h-[44px] px-6 rounded-[100px] border border-violet text-violet text-[14px] font-medium cursor-pointer whitespace-nowrap"
+          />
+        )}
       </div>
     </div>
   );

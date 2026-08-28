@@ -60,6 +60,8 @@ export default async function PromptPage({ params }: PromptPageProps) {
       groupId={group?.id ?? 0}
       groupTitle={group?.title ?? null}
       questionText={question?.text ?? null}
+      groupSlug={group?.slug ?? null}
+      questionId={question?.id ?? null}
     />
   );
 }

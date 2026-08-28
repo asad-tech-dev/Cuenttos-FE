@@ -6,7 +6,8 @@ import {
   APP_STORE_URL,
   PLAY_STORE_URL,
   getAndroidIntentUrl,
-  getCuenttoDeepLink,
+  getAppDeepLink,
+  OpenInAppTarget,
 } from "@/lib/constants/appLinks";
 import {
   isAndroidDevice,
@@ -29,11 +30,11 @@ const TOAST_OPTIONS = {
 };
 
 interface OpenInAppButtonProps {
-  id: number | string;
+  target: OpenInAppTarget;
   className?: string;
 }
 
-export function OpenInAppButton({ id, className }: OpenInAppButtonProps) {
+export function OpenInAppButton({ target, className }: OpenInAppButtonProps) {
   const cleanupRef = useRef<(() => void) | null>(null);
 
   // If the user navigates away while a fallback timer is pending, don't let
@@ -77,7 +78,7 @@ export function OpenInAppButton({ id, className }: OpenInAppButtonProps) {
     try {
       // Must run synchronously inside the click handler — iOS silently
       // blocks scheme navigation if it's deferred (e.g. behind a promise).
-      window.location.href = getCuenttoDeepLink(id);
+      window.location.href = getAppDeepLink(target);
     } catch (error) {
       console.error("Failed to open Cuentto via custom scheme", error);
       cleanup();
@@ -103,7 +104,7 @@ export function OpenInAppButton({ id, className }: OpenInAppButtonProps) {
 
       if (isAndroidDevice(ua)) {
         if (isChromeOnAndroid(ua)) {
-          window.location.href = getAndroidIntentUrl(id);
+          window.location.href = getAndroidIntentUrl(target);
         } else {
           // Firefox / Samsung Internet don't reliably support intent://.
           openViaSchemeWithFallback(() => {
