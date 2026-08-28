@@ -418,10 +418,16 @@ function CuenttoDetailView({
             </p>
           </div>
           <div className="flex flex-row gap-3 shrink-0">
-            <OpenInAppButton
-              id={cuentto.id}
-              className="flex items-center justify-center h-[40px] px-5 rounded-[100px] bg-violet text-white text-[14px] font-medium cursor-pointer whitespace-nowrap"
-            />
+            {cuentto.slug && (
+              <OpenInAppButton
+                target={{
+                  kind: "cuentto",
+                  username: cuentto.user.username,
+                  slug: cuentto.slug,
+                }}
+                className="flex items-center justify-center h-[40px] px-5 rounded-[100px] bg-violet text-white text-[14px] font-medium cursor-pointer whitespace-nowrap"
+              />
+            )}
             <Link
               href={`/login?redirect=${encodeURIComponent(window.location.pathname)}`}
               className="flex items-center justify-center h-[40px] px-5 rounded-[100px] border border-violet text-violet text-[14px] font-medium cursor-pointer whitespace-nowrap"
