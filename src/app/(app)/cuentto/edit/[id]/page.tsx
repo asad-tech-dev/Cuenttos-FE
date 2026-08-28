@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import checkAuth from "@/HOC/checkAuth";
 import CuenttoForm from "@/app/components/forms/cuentto";
 import { BackIcon } from "@/app/components/icons";
+import Spinner from "@/app/components/ui/Spinner";
 import { SkeletonCuenttoDetail } from "@/app/components/skeletons/CuenttoDetail";
 import { Cuentto } from "@/types/cuentto";
 import { fetchDetailCuentto } from "@/lib/api/cuentto";
@@ -67,11 +68,19 @@ function EditCuenttoPage() {
       ) : error ? (
         <p className="text-red-400 text-[14px]">{error}</p>
       ) : cuentto ? (
-        <CuenttoForm
-          mode="edit"
-          cuenttoId={cuentto.id}
-          initialData={cuentto}
-        />
+        <Suspense
+          fallback={
+            <div className="flex justify-center items-center w-full h-[200px]">
+              <Spinner size="w-10 h-10" borderSize="border-4" color="border-violet" />
+            </div>
+          }
+        >
+          <CuenttoForm
+            mode="edit"
+            cuenttoId={cuentto.id}
+            initialData={cuentto}
+          />
+        </Suspense>
       ) : null}
     </div>
   );

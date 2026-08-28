@@ -9,7 +9,7 @@ interface PublishCuenttoProps {
 
 function PublishCuentto({
   message,
-  redirectHref = "/library",
+  redirectHref = "/share",
 }: PublishCuenttoProps) {
   return (
     <DialogContent className="bg-white z-100 border-none w-[408px] h-[340px] p-[30px] rounded-[16px]">

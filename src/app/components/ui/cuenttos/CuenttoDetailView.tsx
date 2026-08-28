@@ -215,7 +215,7 @@ function CuenttoDetailView({
             </p>
           </div>
           <Link
-            href={isAuthenticated ? "/library" : "/"}
+            href={isAuthenticated ? "/share" : "/"}
             className="flex items-center justify-center h-[44px] px-6 rounded-[100px] bg-violet text-white text-[14px] font-medium cursor-pointer whitespace-nowrap"
           >
             Go to Cuenttos

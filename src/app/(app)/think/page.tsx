@@ -5,19 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Zap, PenLine, ArrowRight } from "lucide-react";
 import { fetchActiveQuestionGroups } from "@/lib/api/questionGroup";
-import { Question, QuestionGroup } from "@/types/questionGroup";
-
-// Same "is this question worth showing" rule /mindfulness uses, so a card
-// never opens into a prompt with nothing to answer.
-function firstValidQuestion(questions?: Question[] | null): Question | null {
-  if (!Array.isArray(questions)) return null;
-  const valid = questions
-    .filter(
-      (q) => q && q.isAnswer !== false && typeof q.text === "string" && q.text.trim().length > 0,
-    )
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  return valid[0] ?? null;
-}
+import { QuestionGroup } from "@/types/questionGroup";
+import { firstValidQuestion } from "@/lib/questionPrompt";
 
 // There's no "daily pick" flag in the backend, so today's pick is derived
 // deterministically from today's date — stable all day, different tomorrow —
@@ -170,8 +159,11 @@ function ThinkPage() {
     [groups, selectedMoodId],
   );
 
+  // Unlike /write's "random prompt" entry into /mindfulness, a prompt picked
+  // here is a specific choice — it goes straight to Create Cuentto with that
+  // prompt shown at the top, matching the mobile app's behavior.
   const openPrompt = (groupId: number) => {
-    router.push(`/mindfulness?groupId=${groupId}`);
+    router.push(`/cuentto/create?promptGroupId=${groupId}`);
   };
 
   return (
@@ -254,7 +246,7 @@ function ThinkPage() {
               </div>
               <button
                 type="button"
-                onClick={() => router.push("/cuentto/create")}
+                onClick={() => router.push("/cuentto/create?challenge=5min")}
                 className="shrink-0 inline-flex items-center justify-center h-[38px] px-5 rounded-[100px] bg-violet text-white text-[14px] font-semibold cursor-pointer"
               >
                 Go

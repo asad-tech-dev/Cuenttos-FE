@@ -39,7 +39,7 @@ export default function LoginForm() {
       if (token) {
         storeToken(token);
         storeIsAdmin(Boolean(isAdmin));
-        router.push(redirect || "/library");
+        router.push(redirect || "/share");
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {

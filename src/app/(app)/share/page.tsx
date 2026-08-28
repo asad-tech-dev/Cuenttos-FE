@@ -8,7 +8,7 @@ import { SkeletonCuenttoFeed } from "@/app/components/skeletons/CuenttoFeed";
 import { Cuentto, FeaturedCuentto } from "@/types/cuentto";
 import { fetchAllCuenttos, fetchFeaturedCuenttos } from "@/lib/api/cuentto";
 
-function LibraryPage() {
+function SharePage() {
   const [cuenttos, setCuenttos] = useState<Cuentto[]>([]);
   const [featured, setFeatured] = useState<FeaturedCuentto[]>([]);
   const [loading1, setLoading1] = useState(false);
@@ -83,4 +83,4 @@ function LibraryPage() {
     </div>
   );
 }
-export default checkAuth(LibraryPage);
+export default checkAuth(SharePage);

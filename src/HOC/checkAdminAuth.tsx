@@ -33,7 +33,7 @@ const checkAdminAuth = <P extends object>(
           Boolean(payload.isAdmin);
 
         if (!isAdmin) {
-          router.replace("/library");
+          router.replace("/share");
           return;
         }
 

@@ -84,7 +84,7 @@ export default function Sidebar() {
     },
     {
       name: "Share",
-      href: "/library",
+      href: "/share",
       icon: (isActive: boolean) => (
         <Share2 size={18} className={isActive ? "text-black" : "text-gray"} />
       ),

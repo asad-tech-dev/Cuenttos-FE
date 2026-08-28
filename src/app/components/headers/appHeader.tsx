@@ -21,7 +21,7 @@ export default function AppHeader({ showSidebar = false }: { showSidebar?: boole
             <Menu size={22} />
           </button>
         )}
-        <Link href="/library">
+        <Link href="/share">
           <Image
             src="/dark-logo.png"
             alt="Logo"

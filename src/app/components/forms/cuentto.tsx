@@ -1,8 +1,9 @@
 "use client";
 import { useForm, Controller } from "react-hook-form";
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pause } from "lucide-react";
+import { Pause, Sparkles, Timer } from "lucide-react";
 import axios from "axios";
 import PublishCuentto from "../popups/publishCuentto";
 import Image from "next/image";
@@ -16,9 +17,12 @@ import { Mood } from "@/types/mood";
 import { Music, Durations } from "@/types/music";
 import { Group } from "@/types/group";
 import { Cuentto } from "@/types/cuentto";
+import { Question } from "@/types/questionGroup";
 import { fetchMusics } from "@/lib/api/music";
 import { fetchGroups } from "@/lib/api/group";
 import { fetchMoods } from "@/lib/api/mood";
+import { fetchQuestionGroupById } from "@/lib/api/questionGroup";
+import { firstValidQuestion } from "@/lib/questionPrompt";
 import { CuenttoSchema, CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 import { createCuentto, updateCuentto } from "@/lib/api/cuentto";
 import { getCurrentUserId } from "@/lib/api/auth";
@@ -27,6 +31,14 @@ interface CuenttoFormProps {
   mode?: "create" | "edit";
   cuenttoId?: number;
   initialData?: Cuentto;
+}
+
+const CHALLENGE_DURATION_SECONDS = 5 * 60;
+
+function formatChallengeTime(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 export default function CuenttoForm({
@@ -81,6 +93,50 @@ export default function CuenttoForm({
   const [playingMusicId, setPlayingMusicId] = useState<number | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // A prompt picked on /think (?promptGroupId=) is shown at the top of the
+  // writing step, matching the mobile app — it never applies in edit mode.
+  const searchParams = useSearchParams();
+  const promptGroupId = !isEdit ? searchParams.get("promptGroupId") : null;
+  const [prompt, setPrompt] = useState<{
+    groupTitle: string;
+    question: Question;
+  } | null>(null);
+  const [promptDismissed, setPromptDismissed] = useState(false);
+
+  useEffect(() => {
+    if (!promptGroupId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const group = await fetchQuestionGroupById(Number(promptGroupId));
+        const question = firstValidQuestion(group.questions);
+        if (!cancelled && question) {
+          setPrompt({ groupTitle: group.title, question });
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [promptGroupId]);
+
+  // The "5-min sprint" challenge on /think (?challenge=5min) opens straight
+  // into Create Cuentto with a live countdown, matching the mobile app.
+  const isChallenge = !isEdit && searchParams.get("challenge") === "5min";
+  const [challengeSecondsLeft, setChallengeSecondsLeft] = useState(
+    CHALLENGE_DURATION_SECONDS,
+  );
+
+  useEffect(() => {
+    if (!isChallenge) return;
+    const interval = setInterval(() => {
+      setChallengeSecondsLeft((prev) => Math.max(prev - 1, 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isChallenge]);
 
   const innerCircleGroup = groups.find((g) => g.default);
 
@@ -325,14 +381,22 @@ export default function CuenttoForm({
       className="flex flex-col w-full mt-10"
     >
       <div className="flex w-full justify-between pb-[20px] border-b border-light-gray">
-        <div className="flex flex-row gap-[5px] items-center">
-          <input
-            {...register("duration")}
-            type="number"
-            className="text-dark-violet font-medium w-[10px] text-[16px] bg-none outline-none  placeholder-black no-spinner"
-            readOnly
-          />
-          <p className="text-dark-violet text-[16px] font-medium">min read</p>
+        <div className="flex flex-row gap-3 items-center">
+          {isChallenge && (
+            <span className="inline-flex items-center gap-1.5 h-[32px] px-3 rounded-[100px] bg-light-violet text-violet text-[14px] font-semibold tabular-nums">
+              <Timer size={14} />
+              {formatChallengeTime(challengeSecondsLeft)}
+            </span>
+          )}
+          <div className="flex flex-row gap-[5px] items-center">
+            <input
+              {...register("duration")}
+              type="number"
+              className="text-dark-violet font-medium w-[10px] text-[16px] bg-none outline-none  placeholder-black no-spinner"
+              readOnly
+            />
+            <p className="text-dark-violet text-[16px] font-medium">min read</p>
+          </div>
         </div>
         <div className="flex flex-row items-center gap-[40px]">
           <MicIcon
@@ -587,6 +651,28 @@ export default function CuenttoForm({
           </Sheet>
         </div>
       </div>
+
+      {prompt && !promptDismissed && (
+        <div className="w-full mt-[30px] rounded-[16px] bg-light-violet px-6 py-5 flex flex-col gap-3">
+          <div className="flex flex-row items-center justify-between gap-4">
+            <span className="inline-flex items-center gap-1.5 text-violet text-[12px] font-semibold tracking-[0.1em] uppercase">
+              <Sparkles size={14} className="text-violet" />
+              {prompt.groupTitle}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPromptDismissed(true)}
+              aria-label="Dismiss prompt"
+              className="cursor-pointer"
+            >
+              <CloseIcon width={12} height={12} className="text-violet" />
+            </button>
+          </div>
+          <p className="text-subtle-black text-[18px] font-semibold italic leading-[26px]">
+            &quot;{prompt.question.text.trim()}&quot;
+          </p>
+        </div>
+      )}
 
       <div className="w-full pt-[70px] pb-[40px] border-gray-7 border-b">
         <input
