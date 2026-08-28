@@ -4,12 +4,13 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { Eye, EyeOff, Check } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import VioletButton from "../buttons/VioletButton";
 import { RegisterFormData,registerSchema } from "@/lib/formSchemas/auth";
 import { registerUser } from "@/lib/api/auth";
+import { isSafeRedirectPath } from "@/lib/safeRedirect";
 
 export default function RegisterForm() {
   const {
@@ -24,15 +25,23 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawRedirect = searchParams.get("redirect");
+  const redirect = isSafeRedirectPath(rawRedirect) ? rawRedirect : null;
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-const onSubmit = async (data: RegisterFormData) => {
+  // Registration doesn't return a token (unlike login), so a shared-prompt
+  // signup still needs a real login step — carry the destination through it
+  // instead of dropping into the (unrelated) default onboarding flow.
+  const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
     setError(null);
     try {
       await registerUser(data);
-      router.push("/interest");
+      router.push(
+        redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/interest",
+      );
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(

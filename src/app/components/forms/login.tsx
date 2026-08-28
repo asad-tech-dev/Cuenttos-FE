@@ -11,6 +11,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { loginUser, storeToken, storeIsAdmin } from "@/lib/api/auth";
 import { useSearchParams, useRouter } from "next/navigation";
 import { LoginFormData, loginSchema } from "@/lib/formSchemas/auth";
+import { isSafeRedirectPath } from "@/lib/safeRedirect";
 
 export default function LoginForm() {
   const {
@@ -27,7 +28,8 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect");
+  const rawRedirect = searchParams.get("redirect");
+  const redirect = isSafeRedirectPath(rawRedirect) ? rawRedirect : null;
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -104,7 +106,13 @@ export default function LoginForm() {
       </div>
       <p className="text-white mt-[16px] text-[14px] font-normal w-full text-left">
         Don’t have an account?{" "}
-        <Link href="/register">
+        <Link
+          href={
+            redirect
+              ? `/register?redirect=${encodeURIComponent(redirect)}`
+              : "/register"
+          }
+        >
           <span className="text-violet cursor-pointer">Register here </span>
         </Link>
       </p>

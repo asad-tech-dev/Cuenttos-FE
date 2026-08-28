@@ -1,7 +1,7 @@
 "use client";
 import { useForm, Controller } from "react-hook-form";
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pause, Sparkles, Timer } from "lucide-react";
 import axios from "axios";
@@ -25,12 +25,16 @@ import { fetchQuestionGroupById } from "@/lib/api/questionGroup";
 import { firstValidQuestion } from "@/lib/questionPrompt";
 import { CuenttoSchema, CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 import { createCuentto, updateCuentto } from "@/lib/api/cuentto";
-import { getCurrentUserId } from "@/lib/api/auth";
+import { getCurrentUserId, isAuthenticated } from "@/lib/api/auth";
+import { saveCuenttoDraft } from "@/lib/cuenttoDraft";
 
 interface CuenttoFormProps {
   mode?: "create" | "edit";
   cuenttoId?: number;
-  initialData?: Cuentto;
+  // Partial rather than Cuentto: edit mode passes a full, already-published
+  // Cuentto, but a restored guest draft (see saveCuenttoDraft) only ever has
+  // the CuenttoCreateData fields — every read below is already optional-safe.
+  initialData?: Partial<Cuentto>;
 }
 
 const CHALLENGE_DURATION_SECONDS = 5 * 60;
@@ -93,6 +97,7 @@ export default function CuenttoForm({
   const [playingMusicId, setPlayingMusicId] = useState<number | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const router = useRouter();
 
   // A prompt picked on /think (?promptGroupId=) is shown at the top of the
   // writing step, matching the mobile app — it never applies in edit mode.
@@ -332,6 +337,17 @@ export default function CuenttoForm({
   }, []);
 
   const onSubmit = async (data: CuenttoCreateData) => {
+    // A guest writing from a shared prompt link can fill out the whole form
+    // — login is only required at Publish. Save what they've written so it
+    // survives the login/register round trip, and send them there instead
+    // of letting the API call 401.
+    if (!isEdit && !isAuthenticated()) {
+      saveCuenttoDraft(promptGroupId, data);
+      const target = `/cuentto/create${promptGroupId ? `?promptGroupId=${promptGroupId}` : ""}`;
+      router.push(`/login?redirect=${encodeURIComponent(target)}`);
+      return;
+    }
+
     const { musicId, ...rest } = data;
 
     try {

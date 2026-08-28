@@ -3,10 +3,11 @@
 import checkAuth from "@/HOC/checkAuth";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Star, Zap, PenLine, ArrowRight } from "lucide-react";
+import { Star, Zap, PenLine, ArrowRight, Share2 } from "lucide-react";
 import { fetchActiveQuestionGroups } from "@/lib/api/questionGroup";
 import { QuestionGroup } from "@/types/questionGroup";
 import { firstValidQuestion } from "@/lib/questionPrompt";
+import CustomToast from "@/app/components/toasts/toast";
 
 // There's no "daily pick" flag in the backend, so today's pick is derived
 // deterministically from today's date — stable all day, different tomorrow —
@@ -166,6 +167,24 @@ function ThinkPage() {
     router.push(`/cuentto/create?promptGroupId=${groupId}`);
   };
 
+  // Copies a public, no-login-required link to this specific prompt
+  // (/prompt/[slug]) — separate from openPrompt above, which stays the
+  // one-click "start writing now" fast path for the person already here.
+  // Prefers the backend's ready-made shareLink; falls back to building the
+  // path by hand from slug, then id, if an older backend response doesn't
+  // have shareLink/slug yet — never produces a broken link.
+  const sharePrompt = async (group: QuestionGroup) => {
+    const path = group.shareLink || `/prompt/${group.slug || group.id}`;
+    const url = `${window.location.origin}${path}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      CustomToast({ title: "Prompt link copied!" });
+    } catch (error) {
+      console.error(error);
+      CustomToast({ title: "Couldn't copy the link. Please try again." });
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8 px-4 sm:px-6 md:px-[60px] lg:px-[90px] py-2">
       <div className="flex flex-col gap-2">
@@ -212,14 +231,24 @@ function ThinkPage() {
                   </p>
                 </div>
                 <div className="relative z-10 flex flex-row flex-wrap items-center justify-between gap-4">
-                  <button
-                    type="button"
-                    onClick={() => openPrompt(dailyGroup.id)}
-                    className="inline-flex items-center gap-2 h-[44px] px-6 rounded-[100px] bg-white text-violet text-[14px] font-semibold cursor-pointer whitespace-nowrap"
-                  >
-                    <PenLine size={16} />
-                    Start writing
-                  </button>
+                  <div className="flex flex-row items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => openPrompt(dailyGroup.id)}
+                      className="inline-flex items-center gap-2 h-[44px] px-6 rounded-[100px] bg-white text-violet text-[14px] font-semibold cursor-pointer whitespace-nowrap"
+                    >
+                      <PenLine size={16} />
+                      Start writing
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => sharePrompt(dailyGroup)}
+                      aria-label="Share prompt"
+                      className="shrink-0 w-[38px] h-[38px] rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white cursor-pointer transition-colors"
+                    >
+                      <Share2 size={16} />
+                    </button>
+                  </div>
                   <span className="text-white/70 text-[14px]">
                     {estimateReadMinutes(dailyText)} min read
                   </span>
@@ -322,15 +351,26 @@ function ThinkPage() {
                         {question.text}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => openPrompt(group.id)}
-                      aria-label={`Start writing: ${group.title}`}
-                      className="self-end w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"
-                      style={{ backgroundColor: `${accent}26` }}
-                    >
-                      <ArrowRight size={16} style={{ color: accent }} />
-                    </button>
+                    <div className="self-end flex flex-row items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => sharePrompt(group)}
+                        aria-label={`Share prompt: ${group.title}`}
+                        className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"
+                        style={{ backgroundColor: `${accent}26` }}
+                      >
+                        <Share2 size={14} style={{ color: accent }} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openPrompt(group.id)}
+                        aria-label={`Start writing: ${group.title}`}
+                        className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"
+                        style={{ backgroundColor: `${accent}26` }}
+                      >
+                        <ArrowRight size={16} style={{ color: accent }} />
+                      </button>
+                    </div>
                   </div>
                 );
               })}
