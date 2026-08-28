@@ -10,9 +10,14 @@ const checkAuth = <P extends object>(WrappedComponent: ComponentType<P>) => {
 
     useEffect(() => {
       const token = localStorage.getItem("authToken");
+      // Preserve where the user was headed (e.g. a shared prompt's
+      // /cuentto/create?promptGroupId=...) so login can send them back.
+      const loginTarget = `/login?redirect=${encodeURIComponent(
+        window.location.pathname + window.location.search,
+      )}`;
 
       if (!token) {
-        router.replace("/login");
+        router.replace(loginTarget);
         return}
         try {
           const payloadBase64 = token.split(".")[1];
@@ -21,14 +26,14 @@ const checkAuth = <P extends object>(WrappedComponent: ComponentType<P>) => {
           const isExpired = payload.exp * 1000 < Date.now();
           if (isExpired) {
             localStorage.removeItem("authToken");
-            router.replace("/login");
+            router.replace(loginTarget);
           } else {
             setIsAuthenticated(true);
           }
         } catch (error) {
           console.error("Invalid token", error);
           localStorage.removeItem("authToken");
-          router.replace("/login");
+          router.replace(loginTarget);
         }
       }, [router]);
 
