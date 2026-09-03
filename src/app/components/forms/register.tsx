@@ -64,7 +64,7 @@ export default function RegisterForm() {
       <input
         {...register("username")}
         placeholder="Username"
-        className="border border-white border-[1px] text-[16px] text-white bg-none outline-none w-[360px] h-[56px] rounded-[8px] px-4 placeholder-white"
+        className="border border-white border-[1px] text-[16px] text-white bg-none outline-none w-full h-[56px] rounded-[8px] px-4 placeholder-white"
       />
       {errors.username && (
         <p className="text-red-400 text-left w-full">
@@ -75,18 +75,18 @@ export default function RegisterForm() {
       <input
         {...register("email")}
         placeholder="Email"
-        className="border border-white border-[1px] text-[16px] text-white bg-none outline-none w-[360px] h-[56px] rounded-[8px] px-4 placeholder-white"
+        className="border border-white border-[1px] text-[16px] text-white bg-none outline-none w-full h-[56px] rounded-[8px] px-4 placeholder-white"
       />
       {errors.email && (
         <p className="text-red-400 text-left w-full">{errors.email.message}</p>
       )}
 
-      <div className="relative w-[360px]">
+      <div className="relative w-full">
         <input
           {...register("password")}
           type={showPassword ? "text" : "password"}
           placeholder="Password"
-          className="border border-white border-[1px] text-[16px] text-white bg-none outline-none w-[360px] h-[56px] rounded-[8px] px-4 placeholder-white"
+          className="border border-white border-[1px] text-[16px] text-white bg-none outline-none w-full h-[56px] rounded-[8px] px-4 placeholder-white"
         />
         <button
           type="button"

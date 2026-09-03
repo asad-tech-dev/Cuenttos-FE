@@ -3,8 +3,8 @@ import Spinner from "@/app/components/ui/Spinner";
 import { Suspense } from "react";
 export default function RegisterPage() {
   return (
-    <div className="flex flex-col gap-[20px] w-[389px] h-[504px]">
-      <h1 className="text-[45px] text-white font-normal leading-[52px]">
+    <div className="flex flex-col gap-[20px] w-full max-w-[389px] h-fit">
+      <h1 className="text-[32px] sm:text-[45px] text-white font-normal leading-[38px] sm:leading-[52px]">
         Register
       </h1>
       <p className="text-[16px] text-offwhite font-normal leading-[24px]">

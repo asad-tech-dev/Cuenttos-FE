@@ -104,8 +104,8 @@ function VerifyOTPContent() {
   };
 
   return (
-    <div className="flex flex-col gap-[20px] w-[360px] h-fit min-h-[480px]">
-      <h1 className="text-[45px] text-white font-normal leading-[52px]">
+    <div className="flex flex-col gap-[20px] w-full max-w-[360px] h-fit">
+      <h1 className="text-[32px] sm:text-[45px] text-white font-normal leading-[38px] sm:leading-[52px]">
         Verify OTP
       </h1>
       <p className="text-[16px] text-white font-normal leading-[24px]">
@@ -120,7 +120,7 @@ function VerifyOTPContent() {
         onSubmit={onSubmit}
         className="flex flex-col w-full gap-4 mt-[16px]"
       >
-        <div className="flex justify-between gap-2">
+        <div className="flex justify-between gap-1.5 sm:gap-2">
           {otp.map((data, index) => (
             <input
               key={index}
@@ -133,7 +133,7 @@ function VerifyOTPContent() {
               onChange={(e) => handleChange(e.target, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onPaste={handlePaste}
-              className="w-[50px] h-[56px] border border-white text-white text-[20px] text-center bg-transparent outline-none rounded-[8px] focus:border-violet"
+              className="w-[42px] h-[52px] sm:w-[50px] sm:h-[56px] border border-white text-white text-[20px] text-center bg-transparent outline-none rounded-[8px] focus:border-violet"
             />
           ))}
         </div>

@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 import VioletButton from "@/app/components/buttons/VioletButton";
 import { z } from "zod";
 import { BackIcon } from "@/app/components/icons";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { ResponsiveSheetDialog } from "@/components/ui/responsive-sheet-dialog";
 import { ChevronDown, Eye, EyeOff, Trash2, UserCog } from "lucide-react";
 import CustomToast from "@/app/components/toasts/toast";
 import CuenttoFeedCard from "@/app/components/ui/cuenttos/cuenttoFeedCard";
@@ -137,7 +137,7 @@ function ProfileePage() {
   };
 
   return (
-    <div className="flex flex-col gap-[30px] w-full py-[60px] px-[110px]">
+    <div className="flex flex-col gap-[30px] w-full px-4 sm:px-6 md:px-[60px] lg:px-[110px] py-8 md:py-[60px]">
       <div className="flex flex-row items-center justify-between">
         <BackIcon
           width={10}
@@ -281,21 +281,25 @@ function ProfileePage() {
         )}
       </section>
 
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-[488px] border-l px-[50px] py-[60px] border-light-gray">
+      <ResponsiveSheetDialog
+        title="Delete account"
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+      >
+        <div className="flex flex-col gap-6">
           <div className="flex flex-col justify-start items-start">
             <p className="text-[14px] font-medium text-gray">Delete Account</p>
-            <p className="text-[22px] font-normal text-subtle-black mt-[10px] w-[340px]">
+            <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
               Are you sure you want to delete your account?
             </p>
-            <p className="text-[16px] font-normal text-gray mt-[40px]">
-              Your profile, cuenttos, comments and followers<br></br> will be
+            <p className="text-[16px] font-normal text-gray mt-[20px]">
+              Your profile, cuenttos, comments and followers will be
               permanently deleted.
             </p>
           </div>
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col w-full gap-4 -mt-[300px]"
+            className="flex flex-col w-full gap-4"
           >
             <input
               {...register("email")}
@@ -343,9 +347,8 @@ function ProfileePage() {
               />
             </div>
           </form>
-          <div></div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      </ResponsiveSheetDialog>
     </div>
   );
 }

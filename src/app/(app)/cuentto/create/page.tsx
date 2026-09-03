@@ -5,14 +5,17 @@ import CuenttoForm from "@/app/components/forms/cuentto";
 import { BackIcon } from "@/app/components/icons";
 import Spinner from "@/app/components/ui/Spinner";
 import Link from "next/link";
-import { isAuthenticated } from "@/lib/api/auth";
+import { dmSans } from "@/lib/fonts";
+import { getCurrentUserId, isAuthenticated } from "@/lib/api/auth";
 import { readCuenttoDraft, clearCuenttoDraft } from "@/lib/cuenttoDraft";
+import { getLocalDraft } from "@/lib/localDrafts";
 import { CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 
 function CreateCuenttoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const promptGroupId = searchParams.get("promptGroupId");
+  const localDraftId = searchParams.get("draftId");
   const [ready, setReady] = useState(false);
   const [draft, setDraft] = useState<CuenttoCreateData | undefined>(undefined);
 
@@ -37,17 +40,23 @@ function CreateCuenttoContent() {
       if (restored) {
         setDraft(restored);
         clearCuenttoDraft(promptGroupId);
+      } else if (localDraftId) {
+        const userId = getCurrentUserId();
+        const local = userId != null ? getLocalDraft(userId, localDraftId) : null;
+        if (local) setDraft(local);
       }
     }
 
     setReady(true);
-  }, [router, promptGroupId]);
+  }, [router, promptGroupId, localDraftId]);
 
   if (!ready) return null;
 
   return (
-    <div className="flex flex-col gap-[30px] w-full py-[60px] px-[110px]">
-      <div className="flex flex-row justify-between">
+    <div
+      className={`${dmSans.className} flex flex-col gap-[30px] w-full max-w-[720px] mx-auto px-4 sm:px-6 md:px-[60px] py-8 md:py-[60px]`}
+    >
+      <div className="flex flex-row items-center gap-4">
         <Link href="/write">
           <BackIcon
             width={10}
@@ -55,9 +64,12 @@ function CreateCuenttoContent() {
             className="cursor-pointer text-subtle-black"
           />
         </Link>
+        <span className="text-[16px] font-semibold text-black">
+          New cuentto
+        </span>
       </div>
 
-      <CuenttoForm initialData={draft} />
+      <CuenttoForm initialData={draft} localDraftId={localDraftId ?? undefined} />
     </div>
   );
 }

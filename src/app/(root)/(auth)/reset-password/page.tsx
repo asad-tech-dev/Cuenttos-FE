@@ -79,8 +79,8 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="flex flex-col gap-[20px] w-[360px] h-fit min-h-[480px]">
-      <h1 className="text-[45px] text-white font-normal leading-[52px]">
+    <div className="flex flex-col gap-[20px] w-full max-w-[360px] h-fit">
+      <h1 className="text-[32px] sm:text-[45px] text-white font-normal leading-[38px] sm:leading-[52px]">
         Reset Password
       </h1>
       <p className="text-[16px] text-white font-normal leading-[24px]">

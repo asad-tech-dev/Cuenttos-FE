@@ -9,21 +9,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="relative h-screen overflow-hidden">
+      <body className="relative min-h-screen overflow-y-auto overflow-x-hidden">
         <Image
           src="/onboard-cover.png"
           alt="cover background"
           fill
-          className="absolute inset-0 object-cover"
+          className="fixed inset-0 object-cover -z-10"
           priority
           quality={100}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-l h-screen from-darkpurple-grad to-purple-grad z-0"></div>
+        <div className="fixed inset-0 bg-gradient-to-l from-darkpurple-grad to-purple-grad -z-10"></div>
 
         <div className="relative z-10">
           <OnboardHeader />
-          <main className="flex items-center h-screen md:justify-end justify-center w-full -mt-[55px] md:pr-[280px] pr-[20px] md:pl-[0px] pl-[20px]">
+          <main className="flex items-center min-h-screen md:justify-end justify-center w-full py-10 md:pr-[280px] pr-[20px] md:pl-[0px] pl-[20px]">
             {children}
           </main>
         </div>

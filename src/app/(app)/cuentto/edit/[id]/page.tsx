@@ -12,6 +12,7 @@ import { Cuentto } from "@/types/cuentto";
 import { fetchDetailCuentto } from "@/lib/api/cuentto";
 import { getCurrentUserId } from "@/lib/api/auth";
 import { getCuenttoPath } from "@/lib/cuenttoLink";
+import { dmSans } from "@/lib/fonts";
 
 function EditCuenttoPage() {
   const router = useRouter();
@@ -53,14 +54,19 @@ function EditCuenttoPage() {
   }, [cuenttoId, router]);
 
   return (
-    <div className="flex flex-col gap-[30px] w-full py-[60px] px-[110px]">
-      <div className="flex flex-row justify-between">
+    <div
+      className={`${dmSans.className} flex flex-col gap-[30px] w-full max-w-[720px] mx-auto px-4 sm:px-6 md:px-[60px] py-8 md:py-[60px]`}
+    >
+      <div className="flex flex-row items-center gap-4">
         <BackIcon
           width={10}
           height={18}
           className="cursor-pointer text-subtle-black"
           onClick={() => router.back()}
         />
+        <span className="text-[16px] font-semibold text-black">
+          Update cuentto
+        </span>
       </div>
 
       {loading ? (

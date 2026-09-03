@@ -8,9 +8,9 @@ import axios from "axios";
 import PublishCuentto from "../popups/publishCuentto";
 import Image from "next/image";
 import { CheckIcon, CloseIcon, MicIcon, MusicIcon, PlayIcon } from "../icons";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import CustomToast from "../toasts/comingSoon";
+import { ResponsiveSheetDialog } from "@/components/ui/responsive-sheet-dialog";
 import CustomRadioButtonGroup from "../ui/CustomRadioButtonGroup";
-import { Dialog } from "@/components/ui/dialog";
 import { Editor } from "@tinymce/tinymce-react";
 import VioletButton from "../buttons/VioletButton";
 import { Mood } from "@/types/mood";
@@ -27,6 +27,7 @@ import { CuenttoSchema, CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 import { createCuentto, updateCuentto } from "@/lib/api/cuentto";
 import { getCurrentUserId, isAuthenticated } from "@/lib/api/auth";
 import { saveCuenttoDraft } from "@/lib/cuenttoDraft";
+import { saveLocalDraft, deleteLocalDraft } from "@/lib/localDrafts";
 
 interface CuenttoFormProps {
   mode?: "create" | "edit";
@@ -35,6 +36,10 @@ interface CuenttoFormProps {
   // Cuentto, but a restored guest draft (see saveCuenttoDraft) only ever has
   // the CuenttoCreateData fields — every read below is already optional-safe.
   initialData?: Partial<Cuentto>;
+  // Set when this form was opened from a local (device-only) draft, so
+  // "Save as draft" updates it in place instead of creating a duplicate,
+  // and it's removed once the cuentto is actually published.
+  localDraftId?: string;
 }
 
 const CHALLENGE_DURATION_SECONDS = 5 * 60;
@@ -49,6 +54,7 @@ export default function CuenttoForm({
   mode = "create",
   cuenttoId,
   initialData,
+  localDraftId,
 }: CuenttoFormProps = {}) {
   const isEdit = mode === "edit";
   const {
@@ -56,6 +62,7 @@ export default function CuenttoForm({
     handleSubmit,
     setValue,
     watch,
+    getValues,
     control,
     trigger,
     formState: { errors },
@@ -75,6 +82,7 @@ export default function CuenttoForm({
   });
 
   const [loading, setLoading] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [step, setStep] = useState(1);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -268,6 +276,17 @@ export default function CuenttoForm({
       setStep(3);
     }
   };
+  const handleSaveAsDraft = () => {
+    const userId = getCurrentUserId();
+    if (userId == null) return;
+    setSavingDraft(true);
+    try {
+      saveLocalDraft(userId, getValues(), localDraftId);
+      router.push("/write");
+    } finally {
+      setSavingDraft(false);
+    }
+  };
   useEffect(() => {
     const getMoods = async () => {
       try {
@@ -385,6 +404,10 @@ export default function CuenttoForm({
     } finally {
       setLoading(false);
     }
+    if (localDraftId) {
+      const userId = getCurrentUserId();
+      if (userId != null) deleteLocalDraft(userId, localDraftId);
+    }
     setStep(1);
     setTimeout(() => {
       setOpenDialog(true);
@@ -419,252 +442,75 @@ export default function CuenttoForm({
             width={14}
             height={19}
             className="cursor-pointer text-gray-9"
+            onClick={() => CustomToast()}
           />
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <div className="flex flex-row items-center gap-[15px]">
-              <SheetTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => setSidebarContent("music")}
+          <div className="flex flex-row items-center gap-[15px]">
+            <button
+              type="button"
+              onClick={() => {
+                setSidebarContent("music");
+                setIsSheetOpen(true);
+              }}
+            >
+              {selectedMusic ? (
+                <span className="w-fit px-4 h-[32px] rounded-[100px] cursor-pointer bg-white border border-violet flex flex-row justify-center items-center gap-[10px]">
+                  <MusicIcon
+                    width={9}
+                    height={13}
+                    className="cursor-pointer text-violet"
+                  />
+                  <p className="text-[14px] font-medium text-violet">
+                    {selectedMusic.name}
+                  </p>
+                </span>
+              ) : (
+                <Image
+                  src="/media.svg"
+                  alt="Music Icon"
+                  width={24}
+                  height={24}
+                  className="cursor-pointer"
+                />
+              )}
+            </button>
+            {selectedMusic && (
+              <>
+                <div
+                  className="w-[20px] h-[20px] flex justify-center rounded-full border-[2px] border-violet cursor-pointer items-center"
+                  onClick={() =>
+                    togglePlayPause(selectedMusic.id, selectedMusic.musicFile)
+                  }
                 >
-                  {selectedMusic ? (
-                    <span className="w-fit px-4 h-[32px] rounded-[100px] cursor-pointer bg-white border border-violet flex flex-row justify-center items-center gap-[10px]">
-                      <MusicIcon
-                        width={9}
-                        height={13}
-                        className="cursor-pointer text-violet"
-                      />
-                      <p className="text-[14px] font-medium text-violet">
-                        {selectedMusic.name}
-                      </p>
-                    </span>
+                  {playingMusicId === selectedMusic.id ? (
+                    <Pause
+                      size={10}
+                      stroke="none"
+                      className="fill-current text-violet"
+                    />
                   ) : (
-                    <Image
-                      src="/media.svg"
-                      alt="Music Icon"
-                      width={24}
-                      height={24}
-                      className="cursor-pointer"
+                    <PlayIcon
+                      width={7}
+                      height={7}
+                      className="cursor-pointer text-violet"
                     />
                   )}
-                </button>
-              </SheetTrigger>
-              {selectedMusic && (
-                <>
-                  <div
-                    className="w-[20px] h-[20px] flex justify-center rounded-full border-[2px] border-violet cursor-pointer items-center"
-                    onClick={() =>
-                      togglePlayPause(selectedMusic.id, selectedMusic.musicFile)
+                </div>
+                <CloseIcon
+                  width={14}
+                  height={14}
+                  className="cursor-pointer text-red animate-none"
+                  onClick={() => {
+                    setValue("musicId", 0);
+                    setSelectedMusic(null);
+                    if (playingMusicId === selectedMusic.id) {
+                      audioRef.current?.pause();
+                      setPlayingMusicId(null);
                     }
-                  >
-                    {playingMusicId === selectedMusic.id ? (
-                      <Pause
-                        size={10}
-                        stroke="none"
-                        className="fill-current text-violet"
-                      />
-                    ) : (
-                      <PlayIcon
-                        width={7}
-                        height={7}
-                        className="cursor-pointer text-violet"
-                      />
-                    )}
-                  </div>
-                  <CloseIcon
-                    width={14}
-                    height={14}
-                    className="cursor-pointer text-red animate-none"
-                    onClick={() => {
-                      setValue("musicId", 0);
-                      setSelectedMusic(null);
-                      if (playingMusicId === selectedMusic.id) {
-                        audioRef.current?.pause();
-                        setPlayingMusicId(null);
-                      }
-                    }}
-                  />
-                </>
-              )}
-            </div>
-            <SheetContent className="bg-white flex flex-col border-none !max-w-none !w-[588px] border-l px-[50px] py-[60px] border-light-gray overflow-hidden">
-              {sidebarContent === "music" && (
-                <>
-                  <div className="flex flex-col justify-start items-start flex-1 min-h-0">
-                    <p className="text-[14px] font-medium text-gray">
-                      Add music
-                    </p>
-                    <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
-                      Select a background music
-                    </p>
-                    <div className=" flex flex-col flex-1 min-h-0 mt-[40px] gap-4 w-[500px] justify-start overflow-y-auto pr-4 ">
-                      {musics.map((music, index) => (
-                        <div
-                          key={music.id}
-                          className={`flex flex-row justify-between items-center w-full pt-[14px]
-                            ${
-                              index !== musics.length - 1
-                                ? "border-b border-light-gray pb-[25px]"
-                                : "border-none"
-                            }`}
-                          onClick={() =>
-                            selectMusic(
-                              music.id,
-                              music.name,
-                              music.musicFile,
-                              music.albumArt,
-                              music.artist,
-                            )
-                          }
-                        >
-                          <div className="flex flex-row items-center gap-[30px]">
-                            <div
-                              className="relative cursor-pointer"
-                              onClick={() =>
-                                togglePlayPause(music.id, music.musicFile)
-                              }
-                            >
-                              {!imageLoaded && (
-                                <div className="w-[56px] h-[56px] rounded-[8px] bg-gray-6 animate-pulse absolute"></div>
-                              )}
-                              <img
-                                src={
-                                  music.albumArt
-                                    ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${music.albumArt}`
-                                    : "/default-avatar.png"
-                                }
-                                alt="music cover"
-                                width={56}
-                                height={56}
-                                className={`w-[56px] h-[56px] rounded-[8px] object-cover object-center transition-opacity duration-500 ease-in ${
-                                  imageLoaded ? "opacity-100" : "opacity-0"
-                                }`}
-                                style={{ filter: "blur(0.7px)" }}
-                                onLoad={() =>
-                                  setTimeout(() => setImageLoaded(true), 500)
-                                }
-                              />
-                              <div className="w-[29px] h-[29px] absolute z-1000 rounded-full flex justify-center items-center border-[1px] border-white cursor-pointer top-3.5 right-3.5">
-                                {playingMusicId === music.id ? (
-                                  <Pause
-                                    size={18}
-                                    stroke="none"
-                                    className="fill-current text-white"
-                                  />
-                                ) : (
-                                  <PlayIcon
-                                    width={12}
-                                    height={12}
-                                    className="cursor-pointer text-white"
-                                  />
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <p className="text-[18px] font-normal text-dark-violet">
-                                {music.name}
-                              </p>
-                              <p className="text-[14px] font-medium text-gray-8">
-                                {music.artist}
-                              </p>
-                            </div>
-                          </div>
-                          <p className="text-[18px] font-normal text-dark-violet">
-                            {durations[music.id]}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                    <input type="hidden" {...register("musicId")} />
-                  </div>
-                  <div className="flex-shrink-0 mt-[20px]">
-                    {selectedMusic && (
-                      <div className="flex flex-row">
-                        <img
-                          src={
-                            selectedMusic.albumArt
-                              ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${selectedMusic.albumArt}`
-                              : "/default-avatar.png"
-                          }
-                          alt="music cover"
-                          width={24}
-                          height={24}
-                          className="cursor-pointer w-[65px] rounded-tl-[4px] rounded-bl-[4px] h-[65px] object-cover object-center"
-                        />
-                        <div className=" w-full relative bg-violet-4 px-[20px] rounded-tr-[4px] rounded-br-[4px] flex justify-between">
-                          <CloseIcon
-                            width={23}
-                            height={23}
-                            className="cursor-pointer absolute -right-3 -top-3 text-red"
-                            onClick={() => {
-                              setValue("musicId", 0);
-                              setSelectedMusic(null);
-                              if (playingMusicId === selectedMusic.id) {
-                                audioRef.current?.pause();
-                                setPlayingMusicId(null);
-                              }
-                            }}
-                          />
-                          <div className="w-full h-[6px] bg-violet-2 overflow-hidden rounded-br-[4px] absolute bottom-0 left-0">
-                            <div
-                              className="h-full bg-violet-3 transition-all"
-                              style={{
-                                width: `${(currentTime / duration) * 100}%`,
-                              }}
-                            ></div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="flex flex-col">
-                              <p className="text-[14px] font-medium text-dark-violet">
-                                {selectedMusic.name} - {selectedMusic.artist}
-                              </p>
-                              <span className="text-[12px] font-medium text-gray-8">
-                                {formatTime(currentTime)} /{" "}
-                                {formatTime(duration)}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            <button
-                              onClick={() =>
-                                togglePlayPause(
-                                  selectedMusic.id,
-                                  selectedMusic.musicFile,
-                                )
-                              }
-                            >
-                              {playingMusicId === selectedMusic.id ? (
-                                <Pause
-                                  size={26}
-                                  stroke="none"
-                                  className="fill-current cursor-pointer text-dark-violet"
-                                />
-                              ) : (
-                                <PlayIcon
-                                  width={18}
-                                  height={18}
-                                  className="cursor-pointer text-dark-violet"
-                                />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-shrink-0 flex flex-row justify-end items-center mt-[20px]">
-                    <VioletButton
-                      text="Add Music"
-                      className="w-[120px]"
-                      type="button"
-                      onClick={() => setIsSheetOpen(false)}
-                    />
-                  </div>
-                </>
-              )}
-            </SheetContent>
-          </Sheet>
+                  }}
+                />
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -694,7 +540,7 @@ export default function CuenttoForm({
         <input
           {...register("title")}
           placeholder="Title goes here (no need to put it first)"
-          className="text-dark-violet placeholder-gray-7 w-full text-[24px] font-normal bg-none outline-none"
+          className="text-dark-violet placeholder-gray-7 w-full text-[22px] font-medium bg-none outline-none"
         />
         {errors.title && (
           <p className="text-red-400 text-left w-full">
@@ -717,6 +563,7 @@ export default function CuenttoForm({
                 highlight_on_focus: false,
                 height: 300,
                 menubar: false,
+                toolbar_mode: "sliding",
                 placeholder:
                   "Start typing here (Doesn’t have to be a large cuentto)",
                 plugins:
@@ -724,9 +571,9 @@ export default function CuenttoForm({
                 toolbar:
                   "undo redo | fontsize | bold italic underline strikethrough | align lineheight | numlist bullist indent outdent | removeformat",
                 content_style: `
-                  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+                  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
                   body {
-                    font-family: 'Inter', sans-serif !important; font-size: 16px !important; color: #191C1D !important; padding-top: 10px !important;
+                    font-family: 'DM Sans', sans-serif !important; font-size: 16px !important; color: #191C1D !important; padding-top: 10px !important;
                   }
                      .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before { color: #A8A9A9; margin-top: 14px !important;}
                        'table { outline: none !important }'}`,
@@ -740,147 +587,340 @@ export default function CuenttoForm({
           </p>
         )}
       </div>
-      <div className=" w-full mt-[50px] flex flex-row ml-auto justify-end items-end">
+      <div className="w-full mt-[50px] flex flex-row justify-between items-center gap-4">
         {step === 1 && (
-          <button
-            type="button"
-            onClick={handleFirstStep}
-            className="w-[80px] h-[40px] text-[14px] rounded-[8px] font-medium bg-violet text-white cursor-pointer"
-          >
-            Next
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={handleSaveAsDraft}
+              disabled={savingDraft}
+              className="h-[40px] px-4 text-[14px] rounded-[8px] font-medium bg-transparent text-black cursor-pointer disabled:opacity-50"
+            >
+              Save as draft
+            </button>
+            <button
+              type="button"
+              onClick={handleFirstStep}
+              className="w-[80px] h-[40px] text-[14px] rounded-[8px] font-medium bg-violet text-white cursor-pointer"
+            >
+              Next
+            </button>
+          </>
         )}
       </div>
 
-      <Sheet
+      <ResponsiveSheetDialog
+        title={step === 2 ? "Choose an emotion" : "Choose who to share with"}
         open={step > 1}
         onOpenChange={(isOpen) => {
           if (!isOpen) setStep(1);
         }}
       >
-        <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-[588px] border-l px-[50px] py-[60px] border-light-gray">
-          {step === 2 && (
-            <>
-              <div className="flex flex-col justify-start items start">
-                <p className="text-[14px] font-medium text-gray">Emotions</p>
-                <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
-                  How did you feel writing <br></br>this story?
-                </p>
-                <div className=" flex flex-row flex-wrap  mt-[40px] gap-4 w-full justify-start ">
-                  {moods.map((moods) => (
-                    <button
-                      key={moods.id}
-                      onClick={() => selectMood(moods.id, moods.title)}
-                      className={`py-3 px-[20px] flex items-center justify-center gap-2.5 text-black rounded-[100px] cursor-pointer text-[14px] font-medium transition-all duration-300 ease-in-out ${
-                        selectedMood === moods.title
-                          ? "border border-light-black"
-                          : "border border-white px-2"
-                      }`}
-                      style={{ backgroundColor: moods.color || "#ccc" }}
-                    >
-                      {selectedMood === moods.title && (
-                        <CheckIcon width={18} height={18} color="black" />
-                      )}
-                      {moods.title}
-                    </button>
-                  ))}
-                </div>
-                {errors.moodId && !selectedMood && (
-                  <p className="text-red-400 mt-[50px] text-left w-full">
-                    {errors.moodId.message}
-                  </p>
-                )}
+        {step === 2 && (
+          <>
+            <div className="flex flex-col justify-start items-center text-center">
+              <p className="text-[14px] font-medium text-gray">Emotions</p>
+              <p className="text-[18px] font-normal text-subtle-black mt-[10px]">
+                Select an emotion for <br></br>your cuentto:
+              </p>
+              <div className="flex flex-row flex-wrap justify-center mt-[40px] gap-3 w-full">
+                {moods.map((moods) => (
+                  <button
+                    key={moods.id}
+                    onClick={() => selectMood(moods.id, moods.title)}
+                    className={`py-1.5 px-2.5 flex items-center justify-center gap-2 text-black rounded-[100px] cursor-pointer text-[14px] font-medium transition-all duration-300 ease-in-out ${
+                      selectedMood === moods.title
+                        ? "border border-light-black"
+                        : "border border-transparent"
+                    }`}
+                    style={{ backgroundColor: moods.color || "#ccc" }}
+                  >
+                    {selectedMood === moods.title && (
+                      <CheckIcon width={18} height={18} color="black" />
+                    )}
+                    {moods.title}
+                  </button>
+                ))}
               </div>
-              <input type="hidden" {...register("moodId")} />
+              {errors.moodId && !selectedMood && (
+                <p className="text-red-400 mt-[50px] text-left w-full">
+                  {errors.moodId.message}
+                </p>
+              )}
+            </div>
+            <input type="hidden" {...register("moodId")} />
 
-              <div className="flex flex-row justify-end items-center gap-6">
-                <p
-                  className="text-violet text-[14px] font-medium cursor-pointer"
-                  onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
-                >
-                  previous step
-                </p>
-                <VioletButton
-                  text="Next"
-                  className="w-[80px]"
-                  type="button"
-                  onClick={handleNextStep}
+            <div className="flex flex-row justify-end items-center gap-6 mt-8">
+              <p
+                className="text-violet text-[14px] font-medium cursor-pointer"
+                onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
+              >
+                previous step
+              </p>
+              <VioletButton
+                text="Next"
+                className="w-[80px]"
+                type="button"
+                onClick={handleNextStep}
+              />
+            </div>
+          </>
+        )}
+        {step === 3 && (
+          <>
+            <div className="flex flex-col justify-start items-center text-center">
+              <p className="text-[14px] font-medium text-gray">Share</p>
+              <p className="text-[18px] font-normal text-subtle-black mt-[10px]">
+                Who do you want to <br></br>share your cuentto with
+              </p>
+              <div className="flex mt-[40px] w-full justify-center">
+                <CustomRadioButtonGroup
+                  key={`share-radio-${innerCircleGroup?.id ?? "none"}`}
+                  className="flex flex-row flex-wrap justify-center gap-3 w-full"
+                  onChange={(values) => {
+                    const isSelfShared = values.includes("self");
+                    const isPublic = !isSelfShared && values.includes("all");
+                    const groupIds = isSelfShared
+                      ? []
+                      : values.filter(
+                          (v): v is number => typeof v === "number",
+                        );
+                    setValue("isSelfShared", isSelfShared);
+                    setValue("isPublic", isPublic);
+                    setValue("groupIds", groupIds);
+                  }}
+                  options={[
+                    { value: "all", label: "Public" },
+                    ...(innerCircleGroup
+                      ? [
+                          {
+                            value: innerCircleGroup.id,
+                            label: innerCircleGroup.name,
+                          },
+                        ]
+                      : []),
+                    {
+                      value: "self",
+                      label: "My Journal",
+                    },
+                    ...groups
+                      .filter((group) => group.id !== innerCircleGroup?.id)
+                      .map((group) => ({
+                        value: group.id,
+                        label: group.name,
+                      })),
+                  ]}
+                  defaultValue={initialShareSelection}
+                  exclusiveValues={["self"]}
                 />
               </div>
-            </>
-          )}
-          {step === 3 && (
-            <>
-              <div className="flex flex-col justify-start items-start">
-                <p className="text-[14px] font-medium text-gray">Share</p>
-                <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
-                  Select with who to share your <br></br>Cuentto:
-                </p>
-                <div className="flex flex-col mt-[40px] gap-4 w-full justify-start">
-                  <CustomRadioButtonGroup
-                    key={`share-radio-${innerCircleGroup?.id ?? "none"}`}
-                    className="flex flex-col gap-4 w-full justify-start"
-                    onChange={(values) => {
-                      const isSelfShared = values.includes("self");
-                      const isPublic = !isSelfShared && values.includes("all");
-                      const groupIds = isSelfShared
-                        ? []
-                        : values.filter(
-                            (v): v is number => typeof v === "number",
-                          );
-                      setValue("isSelfShared", isSelfShared);
-                      setValue("isPublic", isPublic);
-                      setValue("groupIds", groupIds);
-                    }}
-                    options={[
-                      { value: "all", label: "Public" },
-                      ...(innerCircleGroup
-                        ? [
-                            {
-                              value: innerCircleGroup.id,
-                              label: innerCircleGroup.name,
-                            },
-                          ]
-                        : []),
-                      {
-                        value: "self",
-                        label: "My Journal",
-                      },
-                      ...groups
-                        .filter((group) => group.id !== innerCircleGroup?.id)
-                        .map((group) => ({
-                          value: group.id,
-                          label: group.name,
-                        })),
-                    ]}
-                    defaultValue={initialShareSelection}
-                    exclusiveValues={["self"]}
-                  />
+              {error && (
+                <p className="text-red-400 w-full text-left">{error}</p>
+              )}
+            </div>
+            <div className="flex flex-row justify-end items-center gap-6 mt-8">
+              <p
+                className="text-violet text-[14px] font-medium cursor-pointer"
+                onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
+              >
+                previous step
+              </p>
+              <VioletButton
+                text={isEdit ? "Save" : "Share"}
+                className="w-[87px]"
+                loading={loading}
+                type="submit"
+                onClick={handleSubmit(onSubmit)}
+              />
+            </div>
+          </>
+        )}
+      </ResponsiveSheetDialog>
+
+      <ResponsiveSheetDialog
+        title="Add music"
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+        className="sm:max-w-[560px]"
+      >
+        {sidebarContent === "music" && (
+          <div className="flex flex-col gap-4">
+            <p className="text-[14px] font-medium text-gray">Add music</p>
+            <p className="text-[22px] font-normal text-subtle-black">
+              Select a background music
+            </p>
+            <div className="flex flex-col gap-4 w-full">
+              {musics.map((music, index) => (
+                <div
+                  key={music.id}
+                  className={`flex flex-row justify-between items-center w-full pt-[14px]
+                    ${
+                      index !== musics.length - 1
+                        ? "border-b border-light-gray pb-[25px]"
+                        : "border-none"
+                    }`}
+                  onClick={() =>
+                    selectMusic(
+                      music.id,
+                      music.name,
+                      music.musicFile,
+                      music.albumArt,
+                      music.artist,
+                    )
+                  }
+                >
+                  <div className="flex flex-row items-center gap-[30px]">
+                    <div
+                      className="relative cursor-pointer"
+                      onClick={() =>
+                        togglePlayPause(music.id, music.musicFile)
+                      }
+                    >
+                      {!imageLoaded && (
+                        <div className="w-[56px] h-[56px] rounded-[8px] bg-gray-6 animate-pulse absolute"></div>
+                      )}
+                      <img
+                        src={
+                          music.albumArt
+                            ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${music.albumArt}`
+                            : "/default-avatar.png"
+                        }
+                        alt="music cover"
+                        width={56}
+                        height={56}
+                        className={`w-[56px] h-[56px] rounded-[8px] object-cover object-center transition-opacity duration-500 ease-in ${
+                          imageLoaded ? "opacity-100" : "opacity-0"
+                        }`}
+                        style={{ filter: "blur(0.7px)" }}
+                        onLoad={() =>
+                          setTimeout(() => setImageLoaded(true), 500)
+                        }
+                      />
+                      <div className="w-[29px] h-[29px] absolute z-1000 rounded-full flex justify-center items-center border-[1px] border-white cursor-pointer top-3.5 right-3.5">
+                        {playingMusicId === music.id ? (
+                          <Pause
+                            size={18}
+                            stroke="none"
+                            className="fill-current text-white"
+                          />
+                        ) : (
+                          <PlayIcon
+                            width={12}
+                            height={12}
+                            className="cursor-pointer text-white"
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col">
+                      <p className="text-[18px] font-normal text-dark-violet">
+                        {music.name}
+                      </p>
+                      <p className="text-[14px] font-medium text-gray-8">
+                        {music.artist}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-[18px] font-normal text-dark-violet">
+                    {durations[music.id]}
+                  </p>
                 </div>
-                {error && (
-                  <p className="text-red-400 w-full text-left">{error}</p>
-                )}
-              </div>
-              <div className="flex flex-row justify-end items-center gap-6">
-                <p
-                  className="text-violet text-[14px] font-medium cursor-pointer"
-                  onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
-                >
-                  previous step
-                </p>
-                <VioletButton
-                  text={isEdit ? "Save" : "Share"}
-                  className="w-[87px]"
-                  loading={loading}
-                  type="submit"
-                  onClick={handleSubmit(onSubmit)}
+              ))}
+            </div>
+            <input type="hidden" {...register("musicId")} />
+
+            {selectedMusic && (
+              <div className="flex flex-row">
+                <img
+                  src={
+                    selectedMusic.albumArt
+                      ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${selectedMusic.albumArt}`
+                      : "/default-avatar.png"
+                  }
+                  alt="music cover"
+                  width={24}
+                  height={24}
+                  className="cursor-pointer w-[65px] rounded-tl-[4px] rounded-bl-[4px] h-[65px] object-cover object-center"
                 />
+                <div className=" w-full relative bg-violet-4 px-[20px] rounded-tr-[4px] rounded-br-[4px] flex justify-between">
+                  <CloseIcon
+                    width={23}
+                    height={23}
+                    className="cursor-pointer absolute -right-3 -top-3 text-red"
+                    onClick={() => {
+                      setValue("musicId", 0);
+                      setSelectedMusic(null);
+                      if (playingMusicId === selectedMusic.id) {
+                        audioRef.current?.pause();
+                        setPlayingMusicId(null);
+                      }
+                    }}
+                  />
+                  <div className="w-full h-[6px] bg-violet-2 overflow-hidden rounded-br-[4px] absolute bottom-0 left-0">
+                    <div
+                      className="h-full bg-violet-3 transition-all"
+                      style={{
+                        width: `${(currentTime / duration) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex flex-col">
+                      <p className="text-[14px] font-medium text-dark-violet">
+                        {selectedMusic.name} - {selectedMusic.artist}
+                      </p>
+                      <span className="text-[12px] font-medium text-gray-8">
+                        {formatTime(currentTime)} /{" "}
+                        {formatTime(duration)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() =>
+                        togglePlayPause(
+                          selectedMusic.id,
+                          selectedMusic.musicFile,
+                        )
+                      }
+                    >
+                      {playingMusicId === selectedMusic.id ? (
+                        <Pause
+                          size={26}
+                          stroke="none"
+                          className="fill-current cursor-pointer text-dark-violet"
+                        />
+                      ) : (
+                        <PlayIcon
+                          width={18}
+                          height={18}
+                          className="cursor-pointer text-dark-violet"
+                        />
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+            )}
+
+            <div className="flex flex-row justify-end items-center">
+              <VioletButton
+                text="Add Music"
+                className="w-[120px]"
+                type="button"
+                onClick={() => setIsSheetOpen(false)}
+              />
+            </div>
+          </div>
+        )}
+      </ResponsiveSheetDialog>
+
+      <ResponsiveSheetDialog
+        title="Cuentto published"
+        open={openDialog}
+        onOpenChange={setOpenDialog}
+      >
         <PublishCuentto
           message={
             isEdit ? (
@@ -890,7 +930,7 @@ export default function CuenttoForm({
             ) : undefined
           }
         />
-      </Dialog>
+      </ResponsiveSheetDialog>
       <audio
         ref={audioRef}
         onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}

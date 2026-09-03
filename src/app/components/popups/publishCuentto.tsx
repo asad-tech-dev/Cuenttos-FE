@@ -1,4 +1,3 @@
-import { DialogContent, DialogClose } from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -7,12 +6,14 @@ interface PublishCuenttoProps {
   redirectHref?: string;
 }
 
+// Rendered as the children of a ResponsiveSheetDialog (bottom sheet on
+// mobile, centered dialog on desktop) — no dialog/sheet chrome of its own.
 function PublishCuentto({
   message,
   redirectHref = "/share",
 }: PublishCuenttoProps) {
   return (
-    <DialogContent className="bg-white z-100 border-none w-[408px] h-[340px] p-[30px] rounded-[16px]">
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col justify-center items-center gap-[20px]">
         <Image
           src="/green-check.png"
@@ -29,15 +30,14 @@ function PublishCuentto({
         </p>
       </div>
 
-      <div className="flex flex-row items-center justify-end mt-[0px]">
+      <div className="flex flex-row items-center justify-end">
         <Link href={redirectHref}>
           <button className="w-[97px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer">
             Accept
           </button>
         </Link>
       </div>
-      <DialogClose asChild>Close</DialogClose>
-    </DialogContent>
+    </div>
   );
 }
 export default PublishCuentto;
