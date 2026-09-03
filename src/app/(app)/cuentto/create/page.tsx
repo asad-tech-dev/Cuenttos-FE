@@ -5,14 +5,16 @@ import CuenttoForm from "@/app/components/forms/cuentto";
 import { BackIcon } from "@/app/components/icons";
 import Spinner from "@/app/components/ui/Spinner";
 import Link from "next/link";
-import { isAuthenticated } from "@/lib/api/auth";
+import { getCurrentUserId, isAuthenticated } from "@/lib/api/auth";
 import { readCuenttoDraft, clearCuenttoDraft } from "@/lib/cuenttoDraft";
+import { getLocalDraft } from "@/lib/localDrafts";
 import { CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 
 function CreateCuenttoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const promptGroupId = searchParams.get("promptGroupId");
+  const localDraftId = searchParams.get("draftId");
   const [ready, setReady] = useState(false);
   const [draft, setDraft] = useState<CuenttoCreateData | undefined>(undefined);
 
@@ -37,11 +39,15 @@ function CreateCuenttoContent() {
       if (restored) {
         setDraft(restored);
         clearCuenttoDraft(promptGroupId);
+      } else if (localDraftId) {
+        const userId = getCurrentUserId();
+        const local = userId != null ? getLocalDraft(userId, localDraftId) : null;
+        if (local) setDraft(local);
       }
     }
 
     setReady(true);
-  }, [router, promptGroupId]);
+  }, [router, promptGroupId, localDraftId]);
 
   if (!ready) return null;
 
@@ -57,7 +63,7 @@ function CreateCuenttoContent() {
         </Link>
       </div>
 
-      <CuenttoForm initialData={draft} />
+      <CuenttoForm initialData={draft} localDraftId={localDraftId ?? undefined} />
     </div>
   );
 }

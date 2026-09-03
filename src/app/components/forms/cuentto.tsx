@@ -27,6 +27,7 @@ import { CuenttoSchema, CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 import { createCuentto, updateCuentto } from "@/lib/api/cuentto";
 import { getCurrentUserId, isAuthenticated } from "@/lib/api/auth";
 import { saveCuenttoDraft } from "@/lib/cuenttoDraft";
+import { saveLocalDraft, deleteLocalDraft } from "@/lib/localDrafts";
 
 interface CuenttoFormProps {
   mode?: "create" | "edit";
@@ -35,6 +36,10 @@ interface CuenttoFormProps {
   // Cuentto, but a restored guest draft (see saveCuenttoDraft) only ever has
   // the CuenttoCreateData fields — every read below is already optional-safe.
   initialData?: Partial<Cuentto>;
+  // Set when this form was opened from a local (device-only) draft shown on
+  // /write, so "Save as draft" updates it in place instead of duplicating
+  // it, and it's removed once the cuentto is actually published.
+  localDraftId?: string;
 }
 
 const CHALLENGE_DURATION_SECONDS = 5 * 60;
@@ -49,6 +54,7 @@ export default function CuenttoForm({
   mode = "create",
   cuenttoId,
   initialData,
+  localDraftId,
 }: CuenttoFormProps = {}) {
   const isEdit = mode === "edit";
   const {
@@ -56,6 +62,7 @@ export default function CuenttoForm({
     handleSubmit,
     setValue,
     watch,
+    getValues,
     control,
     trigger,
     formState: { errors },
@@ -268,6 +275,18 @@ export default function CuenttoForm({
       setStep(3);
     }
   };
+  const [savingDraft, setSavingDraft] = useState(false);
+  const handleSaveAsDraft = () => {
+    const userId = getCurrentUserId();
+    if (userId == null) return;
+    setSavingDraft(true);
+    try {
+      saveLocalDraft(userId, getValues(), localDraftId);
+      router.push("/write");
+    } finally {
+      setSavingDraft(false);
+    }
+  };
   useEffect(() => {
     const getMoods = async () => {
       try {
@@ -384,6 +403,10 @@ export default function CuenttoForm({
       return;
     } finally {
       setLoading(false);
+    }
+    if (localDraftId) {
+      const userId = getCurrentUserId();
+      if (userId != null) deleteLocalDraft(userId, localDraftId);
     }
     setStep(1);
     setTimeout(() => {
@@ -740,15 +763,25 @@ export default function CuenttoForm({
           </p>
         )}
       </div>
-      <div className=" w-full mt-[50px] flex flex-row ml-auto justify-end items-end">
+      <div className="w-full mt-[50px] flex flex-row justify-between items-center gap-4">
         {step === 1 && (
-          <button
-            type="button"
-            onClick={handleFirstStep}
-            className="w-[80px] h-[40px] text-[14px] rounded-[8px] font-medium bg-violet text-white cursor-pointer"
-          >
-            Next
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={handleSaveAsDraft}
+              disabled={savingDraft}
+              className="h-[40px] px-4 text-[14px] rounded-[8px] font-medium bg-transparent text-black cursor-pointer disabled:opacity-50"
+            >
+              Save as draft
+            </button>
+            <button
+              type="button"
+              onClick={handleFirstStep}
+              className="w-[80px] h-[40px] text-[14px] rounded-[8px] font-medium bg-violet text-white cursor-pointer"
+            >
+              Next
+            </button>
+          </>
         )}
       </div>
 
