@@ -212,7 +212,7 @@ function ProfileePage() {
             <div
               role="tablist"
               aria-label="Filter cuenttos by mood"
-              className="flex flex-nowrap items-center gap-2 overflow-x-auto -mx-1 px-1 pb-2"
+              className="flex flex-nowrap items-center gap-2 overflow-x-auto -mx-1 px-1 -mt-2 pt-2 pb-2 hide-scrollbar-lg"
             >
               <motion.button
                 type="button"
