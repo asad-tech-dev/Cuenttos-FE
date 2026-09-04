@@ -43,7 +43,7 @@ function SharePage() {
     getFeatured();
   }, []);
   return (
-    <div className="pl-[110px] pr-6 overflow-x-hidden">
+    <div className="px-4 sm:px-6 md:px-[60px] lg:pl-[110px] lg:pr-6 overflow-x-hidden">
       <div className="flex flex-col gap-[16px]">
         <h2 className="text-dark-gray text-[12px] font-medium flex items-center gap-1.5">
           <span aria-hidden>🔥</span> TRENDING CUENTTOS
@@ -60,7 +60,7 @@ function SharePage() {
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-[16px] mt-[80px]">
+      <div className="flex flex-col gap-[16px] mt-[48px] md:mt-[80px]">
         <h2 className="text-dark-gray text-[12px] font-medium flex items-center gap-1.5">
           <span aria-hidden>💌</span> SHARED TO YOU
         </h2>

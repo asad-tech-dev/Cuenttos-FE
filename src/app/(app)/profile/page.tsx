@@ -137,7 +137,7 @@ function ProfileePage() {
   };
 
   return (
-    <div className="flex flex-col gap-[30px] w-full py-[60px] px-[110px]">
+    <div className="flex flex-col gap-[20px] sm:gap-[30px] w-full py-8 sm:py-10 md:py-[60px] px-4 sm:px-6 md:px-[60px] lg:px-[110px]">
       <div className="flex flex-row items-center justify-between">
         <BackIcon
           width={10}
@@ -193,7 +193,7 @@ function ProfileePage() {
         </div>
       </div>
 
-      <section className="flex flex-col gap-[16px] mt-[40px]">
+      <section className="flex flex-col gap-[16px] mt-[24px] md:mt-[40px]">
         <h2 className="text-dark-gray text-[12px] font-medium flex items-center gap-1.5">
           <span aria-hidden>📓</span> MY CUENTTOS
         </h2>
@@ -282,10 +282,10 @@ function ProfileePage() {
       </section>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-[488px] border-l px-[50px] py-[60px] border-light-gray">
+        <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-full md:!w-[488px] border-l px-6 py-10 sm:px-[50px] sm:py-[60px] border-light-gray">
           <div className="flex flex-col justify-start items-start">
             <p className="text-[14px] font-medium text-gray">Delete Account</p>
-            <p className="text-[22px] font-normal text-subtle-black mt-[10px] w-[340px]">
+            <p className="text-[22px] font-normal text-subtle-black mt-[10px] w-full sm:w-[340px]">
               Are you sure you want to delete your account?
             </p>
             <p className="text-[16px] font-normal text-gray mt-[40px]">
