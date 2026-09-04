@@ -212,7 +212,7 @@ function ProfileePage() {
             <div
               role="tablist"
               aria-label="Filter cuenttos by mood"
-              className="flex flex-wrap items-center gap-2"
+              className="flex flex-nowrap items-center gap-2 overflow-x-auto -mx-1 px-1 pb-2"
             >
               <motion.button
                 type="button"
@@ -221,7 +221,7 @@ function ProfileePage() {
                 onClick={() => setSelectedMoodId(null)}
                 whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.95 }}
-                className={`rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors duration-200 cursor-pointer ${
+                className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors duration-200 cursor-pointer ${
                   selectedMoodId == null
                     ? "border-violet bg-violet text-white shadow-[0_4px_12px_rgba(93,77,190,0.25)]"
                     : "border-light-gray bg-white text-subtle-black hover:border-violet/60 hover:text-violet"
@@ -240,7 +240,7 @@ function ProfileePage() {
                     onClick={() => setSelectedMoodId(mood.id)}
                     whileHover={{ y: -1 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors duration-200 cursor-pointer ${
+                    className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors duration-200 cursor-pointer ${
                       isActive
                         ? "border-transparent text-subtle-black shadow-[0_4px_12px_rgba(15,15,15,0.08)]"
                         : "border-light-gray bg-white text-subtle-black hover:border-subtle-black"
