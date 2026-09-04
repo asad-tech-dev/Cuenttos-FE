@@ -137,7 +137,7 @@ function ProfileePage() {
   };
 
   return (
-    <div className="flex flex-col gap-[30px] w-full py-[60px] px-[110px]">
+    <div className="flex flex-col gap-[20px] sm:gap-[30px] w-full py-8 sm:py-10 md:py-[60px] px-4 sm:px-6 md:px-[60px] lg:px-[110px]">
       <div className="flex flex-row items-center justify-between">
         <BackIcon
           width={10}
@@ -193,7 +193,7 @@ function ProfileePage() {
         </div>
       </div>
 
-      <section className="flex flex-col gap-[16px] mt-[40px]">
+      <section className="flex flex-col gap-[16px] mt-[24px] md:mt-[40px]">
         <h2 className="text-dark-gray text-[12px] font-medium flex items-center gap-1.5">
           <span aria-hidden>📓</span> MY CUENTTOS
         </h2>
@@ -212,7 +212,7 @@ function ProfileePage() {
             <div
               role="tablist"
               aria-label="Filter cuenttos by mood"
-              className="flex flex-wrap items-center gap-2"
+              className="flex flex-nowrap items-center gap-2 overflow-x-auto -mx-1 px-1 pb-2"
             >
               <motion.button
                 type="button"
@@ -221,7 +221,7 @@ function ProfileePage() {
                 onClick={() => setSelectedMoodId(null)}
                 whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.95 }}
-                className={`rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors duration-200 cursor-pointer ${
+                className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors duration-200 cursor-pointer ${
                   selectedMoodId == null
                     ? "border-violet bg-violet text-white shadow-[0_4px_12px_rgba(93,77,190,0.25)]"
                     : "border-light-gray bg-white text-subtle-black hover:border-violet/60 hover:text-violet"
@@ -240,7 +240,7 @@ function ProfileePage() {
                     onClick={() => setSelectedMoodId(mood.id)}
                     whileHover={{ y: -1 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors duration-200 cursor-pointer ${
+                    className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors duration-200 cursor-pointer ${
                       isActive
                         ? "border-transparent text-subtle-black shadow-[0_4px_12px_rgba(15,15,15,0.08)]"
                         : "border-light-gray bg-white text-subtle-black hover:border-subtle-black"
@@ -282,10 +282,10 @@ function ProfileePage() {
       </section>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-[488px] border-l px-[50px] py-[60px] border-light-gray">
+        <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-full md:!w-[488px] border-l px-6 py-10 sm:px-[50px] sm:py-[60px] border-light-gray">
           <div className="flex flex-col justify-start items-start">
             <p className="text-[14px] font-medium text-gray">Delete Account</p>
-            <p className="text-[22px] font-normal text-subtle-black mt-[10px] w-[340px]">
+            <p className="text-[22px] font-normal text-subtle-black mt-[10px] w-full sm:w-[340px]">
               Are you sure you want to delete your account?
             </p>
             <p className="text-[16px] font-normal text-gray mt-[40px]">

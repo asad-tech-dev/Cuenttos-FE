@@ -43,24 +43,27 @@ function SharePage() {
     getFeatured();
   }, []);
   return (
-    <div className="pl-[110px] pr-6 overflow-x-hidden">
-      <div className="flex flex-col gap-[16px]">
-        <h2 className="text-dark-gray text-[12px] font-medium flex items-center gap-1.5">
+    <div className="px-4 sm:px-6 md:px-[60px] lg:pl-[110px] lg:pr-6 overflow-x-hidden">
+      <div className="flex flex-col gap-2">
+        <h2 className="text-violet text-[14px] sm:text-[16px] font-bold flex items-center gap-1.5">
           <span aria-hidden>🔥</span> TRENDING CUENTTOS
         </h2>
         {loading1 ? (
           <SkeletonCuenttoFeatured />
         ) : (
-          <div className="flex flex-row gap-[20px] overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory md:flex-wrap md:overflow-visible md:snap-none">
+          <div className="flex flex-row gap-[20px] overflow-x-auto pt-2 pb-2 -mx-1 px-1 snap-x snap-mandatory hide-scrollbar-lg">
             {featured.map((cuentto, idx) => (
-              <div key={cuentto.id} className="shrink-0 snap-start md:shrink">
+              <div
+                key={cuentto.id}
+                className="shrink-0 snap-start w-[78%] sm:w-[55%] md:w-[45%] lg:w-[32%] xl:w-[24%]"
+              >
                 <FeaturedCuenttoFeedCard cuentto={cuentto} index={idx} />
               </div>
             ))}
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-[16px] mt-[80px]">
+      <div className="flex flex-col gap-[16px] mt-[48px] md:mt-[80px]">
         <h2 className="text-dark-gray text-[12px] font-medium flex items-center gap-1.5">
           <span aria-hidden>💌</span> SHARED TO YOU
         </h2>

@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Bookmark, TrendingUp } from "lucide-react";
+import { Bookmark, Clock, TrendingUp } from "lucide-react";
 import { FeaturedCuentto } from "@/types/cuentto";
 import { moodGradient } from "@/lib/utils";
 import { getCuenttoPath } from "@/lib/cuenttoLink";
@@ -17,21 +17,7 @@ const GRADIENTS = [
   "linear-gradient(135deg, #FFE3E8 0%, #FAC8D1 45%, #E6A7B8 100%)",
 ];
 
-const AVATAR_COLORS = [
-  "#B79FEF",
-  "#F0A7A0",
-  "#F2B28C",
-  "#88C5B9",
-  "#F4C77A",
-  "#8FB2E3",
-];
-
-const getInitials = (name: string) => {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-};
+const getInitial = (name: string) => (name.trim().charAt(0) || "?").toUpperCase();
 
 const FeaturedCuenttoFeedCard: React.FC<{
   cuentto: FeaturedCuentto;
@@ -41,12 +27,11 @@ const FeaturedCuenttoFeedCard: React.FC<{
     () => moodGradient(cuentto.mood?.color) ?? GRADIENTS[index % GRADIENTS.length],
     [cuentto.mood?.color, index]
   );
-  const avatarColor = AVATAR_COLORS[index % AVATAR_COLORS.length];
   const displayName = cuentto.user.profileName || cuentto.user.username;
 
   return (
     <div
-      className="relative w-full sm:w-[260px] md:w-[300px] h-[220px] rounded-[20px] p-5 flex flex-col justify-between overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-transform hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)]"
+      className="relative w-full min-h-[230px] rounded-[20px] p-5 flex flex-col overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-transform hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)]"
       style={{ background: gradient }}
     >
       <div className="flex items-start justify-between">
@@ -69,16 +54,20 @@ const FeaturedCuenttoFeedCard: React.FC<{
         </button>
       </div>
 
-      <Link
-        href={`${getCuenttoPath(cuentto)}?featured=true`}
-        className="flex-1 flex items-end mt-4"
-      >
-        <h2 className="text-[22px] leading-[1.15] font-bold text-subtle-black line-clamp-3">
+      <Link href={`${getCuenttoPath(cuentto)}?featured=true`} className="mt-4 block">
+        <h2 className="text-[20px] sm:text-[22px] leading-[1.15] font-bold text-subtle-black line-clamp-3">
           {cuentto.title}
         </h2>
       </Link>
 
-      <div className="flex items-center gap-2.5 mt-4">
+      <div className="flex items-center gap-1.5 text-subtle-black/70 mt-3">
+        <Clock size={13} strokeWidth={2.5} />
+        <span className="text-[12px] font-medium">
+          {cuentto.duration} min read
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2.5 mt-auto pt-4">
         {cuentto.user.profilePicture ? (
           <Image
             src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${cuentto.user.profilePicture}`}
@@ -88,11 +77,8 @@ const FeaturedCuenttoFeedCard: React.FC<{
             className="w-7 h-7 rounded-full object-cover border border-white/60"
           />
         ) : (
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-semibold border border-white/60"
-            style={{ backgroundColor: avatarColor }}
-          >
-            {getInitials(displayName)}
+          <div className="w-7 h-7 rounded-full flex items-center justify-center bg-white text-subtle-black text-[11px] font-bold shadow-sm">
+            {getInitial(displayName)}
           </div>
         )}
         <span className="text-[13px] font-medium text-subtle-black truncate">

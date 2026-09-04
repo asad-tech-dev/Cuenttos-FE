@@ -419,7 +419,7 @@ export default function CuenttoForm({
       onSubmit={handleSubmit(onSubmit)}
       className="flex flex-col w-full mt-10"
     >
-      <div className="flex w-full justify-between pb-[20px] border-b border-light-gray">
+      <div className="flex w-full flex-wrap justify-between gap-3 pb-[20px] border-b border-light-gray">
         <div className="flex flex-row gap-3 items-center">
           {isChallenge && (
             <span className="inline-flex items-center gap-1.5 h-[32px] px-3 rounded-[100px] bg-light-violet text-violet text-[14px] font-semibold tabular-nums">
@@ -437,7 +437,7 @@ export default function CuenttoForm({
             <p className="text-dark-violet text-[16px] font-medium">min read</p>
           </div>
         </div>
-        <div className="flex flex-row items-center gap-[40px]">
+        <div className="flex flex-row items-center gap-6 sm:gap-[40px]">
           <MicIcon
             width={14}
             height={19}
@@ -510,17 +510,17 @@ export default function CuenttoForm({
                 </>
               )}
             </div>
-            <SheetContent className="bg-white flex flex-col border-none !max-w-none !w-[588px] border-l px-[50px] py-[60px] border-light-gray overflow-hidden">
+            <SheetContent className="bg-white flex flex-col border-none !max-w-none !w-full md:!w-[588px] border-l px-6 py-10 sm:px-[50px] sm:py-[60px] border-light-gray overflow-hidden">
               {sidebarContent === "music" && (
                 <>
-                  <div className="flex flex-col justify-start items-start flex-1 min-h-0">
+                  <div className="flex flex-col justify-start items-start flex-1 min-h-0 w-full">
                     <p className="text-[14px] font-medium text-gray">
                       Add music
                     </p>
                     <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
                       Select a background music
                     </p>
-                    <div className=" flex flex-col flex-1 min-h-0 mt-[40px] gap-4 w-[500px] justify-start overflow-y-auto pr-4 ">
+                    <div className=" flex flex-col flex-1 min-h-0 mt-[40px] gap-4 w-full justify-start overflow-y-auto pr-4 ">
                       {musics.map((music, index) => (
                         <div
                           key={music.id}
@@ -540,9 +540,9 @@ export default function CuenttoForm({
                             )
                           }
                         >
-                          <div className="flex flex-row items-center gap-[30px]">
+                          <div className="flex flex-row items-center gap-4 sm:gap-[30px] min-w-0">
                             <div
-                              className="relative cursor-pointer"
+                              className="relative cursor-pointer shrink-0"
                               onClick={() =>
                                 togglePlayPause(music.id, music.musicFile)
                               }
@@ -583,16 +583,16 @@ export default function CuenttoForm({
                                 )}
                               </div>
                             </div>
-                            <div className="flex flex-col">
-                              <p className="text-[18px] font-normal text-dark-violet">
+                            <div className="flex flex-col min-w-0">
+                              <p className="text-[18px] font-normal text-dark-violet truncate">
                                 {music.name}
                               </p>
-                              <p className="text-[14px] font-medium text-gray-8">
+                              <p className="text-[14px] font-medium text-gray-8 truncate">
                                 {music.artist}
                               </p>
                             </div>
                           </div>
-                          <p className="text-[18px] font-normal text-dark-violet">
+                          <p className="text-[18px] font-normal text-dark-violet shrink-0 pl-3">
                             {durations[music.id]}
                           </p>
                         </div>
@@ -713,11 +713,11 @@ export default function CuenttoForm({
         </div>
       )}
 
-      <div className="w-full pt-[70px] pb-[40px] border-gray-7 border-b">
+      <div className="w-full pt-8 pb-6 sm:pt-[70px] sm:pb-[40px] border-gray-7 border-b">
         <input
           {...register("title")}
           placeholder="Title goes here (no need to put it first)"
-          className="text-dark-violet placeholder-gray-7 w-full text-[24px] font-normal bg-none outline-none"
+          className="text-dark-violet placeholder-gray-7 w-full text-[20px] sm:text-[24px] font-normal bg-none outline-none"
         />
         {errors.title && (
           <p className="text-red-400 text-left w-full">
@@ -726,7 +726,7 @@ export default function CuenttoForm({
         )}
       </div>
 
-      <div className="w-full pt-[40px] pb-[40px] border-gray-7 border-b overflow-hidden ">
+      <div className="w-full pt-6 pb-6 sm:pt-[40px] sm:pb-[40px] border-gray-7 border-b overflow-hidden ">
         <Controller
           name="description"
           control={control}
@@ -763,7 +763,7 @@ export default function CuenttoForm({
           </p>
         )}
       </div>
-      <div className="w-full mt-[50px] flex flex-row justify-between items-center gap-4">
+      <div className="w-full mt-8 sm:mt-[50px] flex flex-row justify-between items-center gap-4">
         {step === 1 && (
           <>
             <button
@@ -791,7 +791,7 @@ export default function CuenttoForm({
           if (!isOpen) setStep(1);
         }}
       >
-        <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-[588px] border-l px-[50px] py-[60px] border-light-gray">
+        <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-full md:!w-[588px] border-l px-6 py-10 sm:px-[50px] sm:py-[60px] border-light-gray">
           {step === 2 && (
             <>
               <div className="flex flex-col justify-start items start">

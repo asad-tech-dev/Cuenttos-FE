@@ -68,6 +68,19 @@ body {
 ::-webkit-scrollbar-thumb:window-inactive {
   background: #5d4dbe;
 }
+/* Keeps horizontal scrolling functional but hides the visible scrollbar
+   track/thumb from laptop-sized viewports up, where a mouse/trackpad makes
+   drag-scrolling the carousel natural without needing the bar shown. */
+@media (min-width: 1024px) {
+  .hide-scrollbar-lg {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar-lg::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 .tox .tox-statusbar__path {
   display: none !important;
 }

@@ -12,7 +12,7 @@ function PublishCuentto({
   redirectHref = "/share",
 }: PublishCuenttoProps) {
   return (
-    <DialogContent className="bg-white z-100 border-none w-[408px] h-[340px] p-[30px] rounded-[16px]">
+    <DialogContent className="bg-white z-100 border-none w-[calc(100vw-2rem)] max-w-[408px] min-h-[280px] sm:h-[340px] p-6 sm:p-[30px] rounded-[16px]">
       <div className="flex flex-col justify-center items-center gap-[20px]">
         <Image
           src="/green-check.png"
