@@ -276,6 +276,11 @@ export default function CuenttoForm({
     }
   };
   const [savingDraft, setSavingDraft] = useState(false);
+  // Guests writing from a shared prompt have no account to keep a draft in,
+  // so they never see "Save as draft". Both places that mount this form
+  // (create page, edit page) render it client-side only after their own auth
+  // check, so reading the token once here is hydration-safe and flicker-free.
+  const [canSaveDraft] = useState(() => isAuthenticated());
   const handleSaveAsDraft = () => {
     const userId = getCurrentUserId();
     if (userId == null) return;
@@ -766,18 +771,20 @@ export default function CuenttoForm({
       <div className="w-full mt-8 sm:mt-[50px] flex flex-row justify-between items-center gap-4">
         {step === 1 && (
           <>
-            <button
-              type="button"
-              onClick={handleSaveAsDraft}
-              disabled={savingDraft}
-              className="h-[40px] px-4 text-[14px] rounded-[8px] font-medium bg-transparent text-black cursor-pointer disabled:opacity-50"
-            >
-              Save as draft
-            </button>
+            {canSaveDraft && (
+              <button
+                type="button"
+                onClick={handleSaveAsDraft}
+                disabled={savingDraft}
+                className="h-[40px] px-4 text-[14px] rounded-[8px] font-medium bg-transparent text-black cursor-pointer disabled:opacity-50"
+              >
+                Save as draft
+              </button>
+            )}
             <button
               type="button"
               onClick={handleFirstStep}
-              className="w-[80px] h-[40px] text-[14px] rounded-[8px] font-medium bg-violet text-white cursor-pointer"
+              className="ml-auto w-[80px] h-[40px] text-[14px] rounded-[8px] font-medium bg-violet text-white cursor-pointer"
             >
               Next
             </button>
