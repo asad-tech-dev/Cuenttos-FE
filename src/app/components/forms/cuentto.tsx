@@ -797,7 +797,7 @@ export default function CuenttoForm({
               <div className="flex flex-col justify-start items start">
                 <p className="text-[14px] font-medium text-gray">Emotions</p>
                 <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
-                  How did you feel writing <br></br>this story?
+                  What emotion did you feel when writing <br></br>the story?
                 </p>
                 <div className=" flex flex-row flex-wrap  mt-[40px] gap-4 w-full justify-start ">
                   {moods.map((moods) => (
