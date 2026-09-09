@@ -794,12 +794,14 @@ export default function CuenttoForm({
         <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-full md:!w-[588px] border-l px-6 py-10 sm:px-[50px] sm:py-[60px] border-light-gray">
           {step === 2 && (
             <>
-              <div className="flex flex-col justify-start items start">
+              <div className="flex flex-col justify-start items start flex-1 min-h-0">
                 <p className="text-[14px] font-medium text-gray">Emotions</p>
                 <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
-                  What emotion did you feel when writing <br></br>the story?
+                  What emotion did you feel when writing{" "}
+                  <br className="hidden sm:inline" />
+                  the story?
                 </p>
-                <div className=" flex flex-row flex-wrap  mt-[40px] gap-4 w-full justify-start ">
+                <div className=" flex flex-row flex-wrap  mt-[40px] gap-4 w-full justify-start min-h-0 overflow-y-auto overscroll-y-contain ">
                   {moods.map((moods) => (
                     <button
                       key={moods.id}
