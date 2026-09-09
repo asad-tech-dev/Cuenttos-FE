@@ -801,7 +801,7 @@ export default function CuenttoForm({
                   <br className="hidden sm:inline" />
                   the story?
                 </p>
-                <div className=" flex flex-row flex-wrap  mt-[40px] gap-4 w-full justify-start min-h-0 overflow-y-auto overscroll-y-contain ">
+                <div className=" flex flex-col items-start mt-[40px] gap-4 w-full justify-start min-h-0 overflow-y-auto overscroll-y-contain ">
                   {moods.map((moods) => (
                     <button
                       key={moods.id}
