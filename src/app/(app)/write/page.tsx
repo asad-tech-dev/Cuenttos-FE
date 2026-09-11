@@ -61,7 +61,9 @@ function WritePage() {
           WHAT ARE YOU WRITING TODAY?
         </h2>
 
-        <Link href="/mindfulness">
+        {/* Mindfulness navigation disabled - redirects directly to /cuentto/create */}
+        {/* <Link href="/mindfulness"> */}
+        <Link href="/cuentto/create">
           <div className="relative w-full max-w-[720px] overflow-hidden rounded-[28px] bg-violet px-6 py-8 sm:px-8 sm:py-10 cursor-pointer">
             <div
               aria-hidden

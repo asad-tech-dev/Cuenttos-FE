@@ -1,3 +1,16 @@
+import { redirect } from "next/navigation";
+
+// The Mindfulness page is disabled and no longer accessible from the Write flow.
+// Redirect any direct visits to /cuentto/create.
+export default function MindfulnessPage() {
+  redirect("/cuentto/create");
+}
+
+/*
+ ============================================================================
+ The original Mindfulness page implementation is disabled and commented out below.
+ ============================================================================
+
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -385,8 +398,8 @@ function MindfulnessPage() {
         priority
         quality={100}
       />
-      {/* <div className="absolute inset-0 bg-gradient-to-b from-darkpurple-grad/95 via-darkpurple-grad/85 to-darkpurple-grad/95 z-0" /> */}
-      {/* <div className="absolute inset-0 bg-gradient-to-l from-darkpurple-grad to-purple-grad z-0" /> */}
+      {/* <div className="absolute inset-0 bg-gradient-to-b from-darkpurple-grad/95 via-darkpurple-grad/85 to-darkpurple-grad/95 z-0" / > *}
+      {/* <div className="absolute inset-0 bg-gradient-to-l from-darkpurple-grad to-purple-grad z-0" / > *}
 
       <div className="relative z-10 flex flex-col min-h-[100dvh] px-5 sm:px-8 md:px-10 lg:px-16 py-5 md:py-8">
         <div className="flex flex-row items-center justify-between gap-4 w-full max-w-[860px] mx-auto">
@@ -482,3 +495,4 @@ function MindfulnessPage() {
 }
 
 export default checkAuth(MindfulnessPage);
+*/
