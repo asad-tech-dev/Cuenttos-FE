@@ -26,7 +26,7 @@ import { firstValidQuestion } from "@/lib/questionPrompt";
 import { CuenttoSchema, CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 import { createCuentto, updateCuentto } from "@/lib/api/cuentto";
 import { getCurrentUserId, isAuthenticated } from "@/lib/api/auth";
-import { saveCuenttoDraft } from "@/lib/cuenttoDraft";
+import { saveCuenttoDraft, clearCuenttoDraft } from "@/lib/cuenttoDraft";
 import { saveLocalDraft, deleteLocalDraft } from "@/lib/localDrafts";
 
 interface CuenttoFormProps {
@@ -81,9 +81,15 @@ export default function CuenttoForm({
     },
   });
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const promptGroupId = !isEdit ? searchParams.get("promptGroupId") : null;
+  const stepParam = searchParams.get("step");
+
   const [loading, setLoading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(() => (stepParam === "3" ? 3 : 1));
+  const [isAuthed, setIsAuthed] = useState(() => isAuthenticated());
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [sidebarContent, setSidebarContent] = useState("music");
   const [error, setError] = useState<string | null>(null);
@@ -104,12 +110,19 @@ export default function CuenttoForm({
   const [playingMusicId, setPlayingMusicId] = useState<number | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const router = useRouter();
+
+  useEffect(() => {
+    setIsAuthed(isAuthenticated());
+  }, []);
+
+  useEffect(() => {
+    if (stepParam === "3") {
+      setStep(3);
+    }
+  }, [stepParam]);
 
   // A prompt picked on /think (?promptGroupId=) is shown at the top of the
   // writing step, matching the mobile app — it never applies in edit mode.
-  const searchParams = useSearchParams();
-  const promptGroupId = !isEdit ? searchParams.get("promptGroupId") : null;
   const [prompt, setPrompt] = useState<{
     groupTitle: string;
     question: Question;
@@ -266,12 +279,26 @@ export default function CuenttoForm({
   const handleFirstStep = async () => {
     const isFormValid = await trigger(["duration", "title", "description"]);
     if (isFormValid) {
+      if (!isEdit && !isAuthenticated()) {
+        saveCuenttoDraft(promptGroupId, getValues());
+      }
       setStep(2);
     }
   };
   const handleNextStep = async () => {
     const isMoodValid = await trigger(["moodId"]);
     if (isMoodValid) {
+      if (!isEdit && !isAuthenticated()) {
+        // Unregistered user clicking Share on the emotion step:
+        // Save their story and selected emotion, then redirect to login/register
+        saveCuenttoDraft(promptGroupId, getValues());
+        const fromPrompt = searchParams.get("fromPrompt");
+        const target = `/cuentto/create?promptGroupId=${promptGroupId ?? ""}&step=3${
+          fromPrompt ? `&fromPrompt=${encodeURIComponent(fromPrompt)}` : ""
+        }`;
+        router.push(`/login?redirect=${encodeURIComponent(target)}`);
+        return;
+      }
       setStep(3);
     }
   };
@@ -360,6 +387,20 @@ export default function CuenttoForm({
     getGroups();
   }, []);
 
+  useEffect(() => {
+    if (!innerCircleGroup) return;
+    const currentGroupIds = getValues("groupIds");
+    const isPublic = getValues("isPublic");
+    const isSelfShared = getValues("isSelfShared");
+    if (
+      (!currentGroupIds || currentGroupIds.length === 0) &&
+      !isPublic &&
+      !isSelfShared
+    ) {
+      setValue("groupIds", [innerCircleGroup.id]);
+    }
+  }, [innerCircleGroup, getValues, setValue]);
+
   const onSubmit = async (data: CuenttoCreateData) => {
     // A guest writing from a shared prompt link can fill out the whole form
     // — login is only required at Publish. Save what they've written so it
@@ -367,7 +408,10 @@ export default function CuenttoForm({
     // of letting the API call 401.
     if (!isEdit && !isAuthenticated()) {
       saveCuenttoDraft(promptGroupId, data);
-      const target = `/cuentto/create${promptGroupId ? `?promptGroupId=${promptGroupId}` : ""}`;
+      const fromPrompt = searchParams.get("fromPrompt");
+      const target = `/cuentto/create?promptGroupId=${promptGroupId ?? ""}&step=3${
+        fromPrompt ? `&fromPrompt=${encodeURIComponent(fromPrompt)}` : ""
+      }`;
       router.push(`/login?redirect=${encodeURIComponent(target)}`);
       return;
     }
@@ -413,6 +457,7 @@ export default function CuenttoForm({
       const userId = getCurrentUserId();
       if (userId != null) deleteLocalDraft(userId, localDraftId);
     }
+    clearCuenttoDraft(promptGroupId);
     setStep(1);
     setTimeout(() => {
       setOpenDialog(true);
@@ -843,8 +888,8 @@ export default function CuenttoForm({
                   previous step
                 </p>
                 <VioletButton
-                  text="Next"
-                  className="w-[80px]"
+                  text={!isAuthed ? "Share" : "Next"}
+                  className={!isAuthed ? "w-[87px]" : "w-[80px]"}
                   type="button"
                   onClick={handleNextStep}
                 />
