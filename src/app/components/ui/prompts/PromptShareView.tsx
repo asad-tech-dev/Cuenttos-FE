@@ -32,7 +32,10 @@ export default function PromptShareView({
   // freely there; CuenttoForm only sends them to login at Publish, saving
   // what they've written so it survives the round trip.
   const handleStartWriting = () => {
-    router.push(`/cuentto/create?promptGroupId=${groupId}`);
+    const slugOrId = groupSlug || String(groupId);
+    router.push(
+      `/cuentto/create?promptGroupId=${groupId}&fromPrompt=${encodeURIComponent(slugOrId)}`,
+    );
   };
 
   if (!groupTitle || !questionText) {

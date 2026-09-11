@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import VioletButton from "../buttons/VioletButton";
 import { RegisterFormData,registerSchema } from "@/lib/formSchemas/auth";
-import { registerUser } from "@/lib/api/auth";
+import { registerUser, loginUser, storeToken, storeIsAdmin } from "@/lib/api/auth";
 import { isSafeRedirectPath } from "@/lib/safeRedirect";
 
 export default function RegisterForm() {
@@ -31,14 +31,27 @@ export default function RegisterForm() {
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  // Registration doesn't return a token (unlike login), so a shared-prompt
-  // signup still needs a real login step — carry the destination through it
-  // instead of dropping into the (unrelated) default onboarding flow.
   const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
     setError(null);
     try {
       await registerUser(data);
+      if (redirect) {
+        try {
+          const { token, isAdmin } = await loginUser({
+            email: data.email,
+            password: data.password,
+          });
+          if (token) {
+            storeToken(token);
+            storeIsAdmin(Boolean(isAdmin));
+            router.push(redirect);
+            return;
+          }
+        } catch {
+          // Fall back to login page with redirect preserved
+        }
+      }
       router.push(
         redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/interest",
       );
@@ -134,7 +147,13 @@ export default function RegisterForm() {
 
       <p className="text-white mt-[16px] text-[14px] font-normal w-full text-left">
         Already have an account?{" "}
-        <Link href="/login">
+        <Link
+          href={
+            redirect
+              ? `/login?redirect=${encodeURIComponent(redirect)}`
+              : "/login"
+          }
+        >
           <span className="text-violet cursor-pointer"> Sign In here </span>
         </Link>
       </p>

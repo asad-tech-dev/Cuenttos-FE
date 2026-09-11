@@ -1,13 +1,35 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import { BellIcon, SearchIcon } from "../icons";
 import CustomToast from "../toasts/comingSoon";
 import { useMobileNav } from "../context/MobileNavContext";
+import { isAuthenticated } from "@/lib/api/auth";
 
 export default function AppHeader({ showSidebar = false }: { showSidebar?: boolean }) {
   const { toggle } = useMobileNav();
+  const pathname = usePathname();
+  const [authed, setAuthed] = useState(showSidebar);
+
+  useEffect(() => {
+    setAuthed(isAuthenticated());
+  }, [pathname, showSidebar]);
+
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!authed && (pathname.startsWith("/prompt") || pathname.startsWith("/cuentto/create"))) {
+      e.preventDefault();
+    }
+  };
+
+  const logoHref = authed
+    ? "/share"
+    : pathname.startsWith("/prompt") || pathname.startsWith("/cuentto/create")
+    ? "#"
+    : "/share";
+
   return (
     <div className="flex h-[55px] fixed w-full top-0 z-50 px-4 sm:px-6 lg:px-12 items-center justify-between bg-white border-b border-light-gray">
       <div className="flex items-center gap-3">
@@ -21,7 +43,7 @@ export default function AppHeader({ showSidebar = false }: { showSidebar?: boole
             <Menu size={22} />
           </button>
         )}
-        <Link href="/share">
+        <Link href={logoHref} onClick={handleLogoClick}>
           <Image
             src="/dark-logo.png"
             alt="Logo"
