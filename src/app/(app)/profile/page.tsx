@@ -7,7 +7,6 @@ import Link from "next/link";
 import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "motion/react";
-import VioletButton from "@/app/components/buttons/VioletButton";
 import { z } from "zod";
 import { BackIcon } from "@/app/components/icons";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -81,11 +80,9 @@ function ProfilePage() {
   // Followers & Following state
   const [followers, setFollowers] = useState<FollowUser[]>([]);
   const [followersLoading, setFollowersLoading] = useState(false);
-  const [followersLoaded, setFollowersLoaded] = useState(false);
 
   const [followings, setFollowings] = useState<FollowUser[]>([]);
   const [followingsLoading, setFollowingsLoading] = useState(false);
-  const [followingsLoaded, setFollowingsLoaded] = useState(false);
 
   // 3-dots actions menu
   const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
@@ -148,19 +145,21 @@ function ProfilePage() {
         .finally(() => setCuenttosLoading(false));
 
       // Fetch follower & following initial counts
+      setFollowersLoading(true);
       fetchUserFollowers(userId)
         .then((data) => {
           setFollowers(data);
-          setFollowersLoaded(true);
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setFollowersLoading(false));
 
+      setFollowingsLoading(true);
       fetchUserFollowings(userId)
         .then((data) => {
           setFollowings(data);
-          setFollowingsLoaded(true);
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setFollowingsLoading(false));
     } else {
       setUserLoading(false);
       setCuenttosLoading(false);

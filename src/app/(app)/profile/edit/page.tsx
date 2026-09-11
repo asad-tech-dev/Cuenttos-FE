@@ -13,13 +13,10 @@ import {
   Lock,
   Mail,
   MapPin,
-  Phone,
   Search,
   Sparkles,
   User,
   Calendar,
-  AlertCircle,
-  ArrowLeft,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -28,7 +25,6 @@ import {
   fetchUserProfile,
   updateUserProfile,
   UserProfile,
-  formatUsername,
 } from "@/lib/api/profile";
 import { getCurrentUserId } from "@/lib/api/auth";
 import {
