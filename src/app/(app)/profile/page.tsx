@@ -12,6 +12,7 @@ import { z } from "zod";
 import { BackIcon } from "@/app/components/icons";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
+  AlertTriangle,
   BookOpen,
   Compass,
   Eye,
@@ -22,6 +23,7 @@ import {
   PenLine,
   Trash2,
   Users,
+  X,
 } from "lucide-react";
 import CustomToast from "@/app/components/toasts/toast";
 import CuenttoFeedCard from "@/app/components/ui/cuenttos/cuenttoFeedCard";
@@ -39,12 +41,10 @@ import {
 import { clearAuth, getCurrentUserId, logoutUser } from "@/lib/api/auth";
 import ProfileHeader from "@/app/components/profile/ProfileHeader";
 import UserFollowTile from "@/app/components/profile/UserFollowTile";
-import EditProfileModal from "@/app/components/profile/EditProfileModal";
 import checkAuth from "@/HOC/checkAuth";
 
 const schema = z.object({
-  email: z.string().min(1, "Email is required").email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -61,7 +61,6 @@ function ProfilePage() {
 
   // Dialog & menu states
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -215,14 +214,30 @@ function ProfilePage() {
     setLoading(true);
     setError(null);
     try {
+      const emailToUse =
+        userProfile?.email ||
+        (typeof window !== "undefined"
+          ? (() => {
+              try {
+                const token = localStorage.getItem("authToken");
+                return token ? JSON.parse(atob(token.split(".")[1])).email : "";
+              } catch {
+                return "";
+              }
+            })()
+          : "");
+
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/profile/delete`,
-        data,
+        {
+          email: emailToUse,
+          password: data.password,
+        },
         {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       CustomToast({ title: "Account deleted successfully." });
       clearAuth();
@@ -231,7 +246,7 @@ function ProfilePage() {
       if (axios.isAxiosError(err)) {
         setError(
           err.response?.data?.message ||
-            "Account deletion failed. Please try again."
+            "Account deletion failed. Please check your password and try again.",
         );
       } else {
         setError("An unexpected error occurred. Please try again.");
@@ -256,7 +271,9 @@ function ProfilePage() {
         </button>
 
         <p className="text-[15px] sm:text-[17px] font-semibold text-subtle-black tracking-tight truncate text-center flex-1 min-w-0 px-2">
-          {userProfile?.username ? formatUsername(userProfile.username) : "Profile"}
+          {userProfile?.username
+            ? formatUsername(userProfile.username)
+            : "Profile"}
         </p>
 
         <div className="relative shrink-0" ref={actionsMenuRef}>
@@ -286,7 +303,7 @@ function ProfilePage() {
                   role="menuitem"
                   onClick={() => {
                     setActionsMenuOpen(false);
-                    setIsEditModalOpen(true);
+                    router.push("/profile/edit");
                   }}
                   className="flex w-full cursor-pointer items-center gap-3 px-3 py-2.5 rounded-[10px] text-[13px] sm:text-[14px] font-medium text-subtle-black transition-colors duration-150 hover:bg-light-beige/70 hover:text-violet"
                 >
@@ -332,7 +349,7 @@ function ProfilePage() {
         followersCount={followers.length}
         followingCount={followings.length}
         onTabSelect={(tab) => setActiveTab(tab)}
-        onEditClick={() => setIsEditModalOpen(true)}
+        onEditClick={() => router.push("/profile/edit")}
       />
 
       {/* Tabs Navigation: About, Followers, Following */}
@@ -479,14 +496,15 @@ function ProfilePage() {
                     whileTap={{ scale: 0.95 }}
                     className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 sm:px-4 py-1.5 text-[11px] sm:text-[12px] font-semibold transition-all duration-150 cursor-pointer ${
                       selectedMoodId == null
-                        ? "border-violet bg-violet text-white shadow-[0_4px_12px_rgba(93,77,190,0.25)]"
-                        : "border-light-gray bg-white text-subtle-black hover:border-violet/60 hover:text-violet"
+                        ? "border-violet bg-violet text-white"
+                        : "border-violet/70 bg-white text-violet hover:border-violet"
                     }`}
                   >
                     All
                   </motion.button>
                   {availableMoods.map((mood) => {
                     const isActive = selectedMoodId === mood.id;
+                    const moodColor = mood.color || "#5D4DBE";
                     return (
                       <motion.button
                         key={mood.id}
@@ -498,11 +516,20 @@ function ProfilePage() {
                         whileTap={{ scale: 0.95 }}
                         className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 sm:px-4 py-1.5 text-[11px] sm:text-[12px] font-semibold transition-all duration-150 cursor-pointer ${
                           isActive
-                            ? "border-transparent text-subtle-black shadow-[0_4px_12px_rgba(15,15,15,0.08)]"
-                            : "border-light-gray bg-white text-subtle-black hover:border-subtle-black"
+                            ? "border-transparent text-subtle-black"
+                            : "bg-white hover:opacity-90"
                         }`}
                         style={
-                          isActive ? { backgroundColor: mood.color } : undefined
+                          isActive
+                            ? {
+                                backgroundColor: moodColor,
+                                borderColor: moodColor,
+                              }
+                            : {
+                                borderColor: moodColor,
+                                color: "gray",
+                                backgroundColor: moodColor,
+                              }
                         }
                       >
                         {mood.title}
@@ -526,7 +553,7 @@ function ProfilePage() {
                         cuentto={cuentto}
                         onDeleted={(id) =>
                           setMyCuenttos((prev) =>
-                            prev.filter((c) => c.id !== id)
+                            prev.filter((c) => c.id !== id),
                           )
                         }
                       />
@@ -582,8 +609,8 @@ function ProfilePage() {
                     onFollowChange={(id, status) => {
                       setFollowers((prev) =>
                         prev.map((u) =>
-                          u.id === id ? { ...u, isFollowing: status } : u
-                        )
+                          u.id === id ? { ...u, isFollowing: status } : u,
+                        ),
                       );
                     }}
                   />
@@ -643,8 +670,8 @@ function ProfilePage() {
                     onFollowChange={(id, status) => {
                       setFollowings((prev) =>
                         prev.map((u) =>
-                          u.id === id ? { ...u, isFollowing: status } : u
-                        )
+                          u.id === id ? { ...u, isFollowing: status } : u,
+                        ),
                       );
                     }}
                   />
@@ -655,83 +682,144 @@ function ProfilePage() {
         )}
       </div>
 
-      {/* Edit Profile Modal */}
-      <EditProfileModal
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        user={userProfile}
-        onProfileUpdated={(updated) => setUserProfile(updated)}
-      />
-
-      {/* Delete Account Sheet (Preserved functionality, responsive sheet layout) */}
+      {/* Delete Account Sheet (Matched to mobile app design reference) */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="bg-white flex flex-col justify-between h-full border-none !max-w-none !w-full sm:!max-w-[480px] p-6 sm:p-10 border-l border-light-gray overflow-y-auto">
-          <div className="flex flex-col justify-start items-start">
-            <p className="text-[13px] sm:text-[14px] font-medium text-gray">Delete Account</p>
-            <p className="text-[20px] sm:text-[22px] font-bold text-subtle-black mt-2 max-w-[340px]">
-              Are you sure you want to delete your account?
-            </p>
-            <p className="text-[14px] sm:text-[15px] font-normal text-gray mt-4 leading-relaxed">
-              Your profile, cuenttos, comments, and followers will be
-              permanently deleted.
-            </p>
-          </div>
-
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col w-full gap-3.5 my-auto py-6"
-          >
-            <input
-              {...register("email")}
-              placeholder="Email"
-              autoComplete="off"
-              className="border border-light-gray text-subtle-black text-[15px] sm:text-[16px] bg-none outline-none h-[52px] rounded-[10px] w-full px-4 placeholder-gray focus:border-violet transition-colors"
-            />
-            {errors.email && (
-              <p className="text-red-400 text-left text-[13px] w-full">
-                {errors.email.message}
-              </p>
-            )}
-
-            <div className="relative w-full">
-              <input
-                {...register("password")}
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                autoComplete="off"
-                className="border border-light-gray text-subtle-black bg-none outline-none text-[15px] sm:text-[16px] h-[52px] rounded-[10px] w-full px-4 placeholder-gray focus:border-violet transition-colors"
-              />
+        <SheetContent
+          hideCloseButton
+          className="bg-white flex flex-col justify-between h-full border-none !max-w-none !w-full sm:!max-w-[460px] p-5 sm:p-7 border-l border-light-gray overflow-y-auto"
+        >
+          <div className="flex flex-col gap-5 sm:gap-6">
+            {/* Drawer Header: Back button on left, Title centered, Close button on right */}
+            <div className="flex items-center justify-between pb-3 border-b border-light-gray/60 relative">
               <button
                 type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray hover:text-subtle-black cursor-pointer"
+                onClick={() => setIsSheetOpen(false)}
+                aria-label="Back"
+                className="p-1.5 -ml-1.5 text-subtle-black hover:text-gray transition-colors cursor-pointer rounded-full hover:bg-light-gray/30"
               >
-                {showPassword ? (
-                  <EyeOff size={18} />
-                ) : (
-                  <Eye size={18} />
-                )}
+                <BackIcon width={10} height={18} className="text-current" />
+              </button>
+              <h2 className="text-[17px] font-semibold text-subtle-black absolute left-1/2 -translate-x-1/2">
+                Delete Account
+              </h2>
+              <button
+                type="button"
+                onClick={() => setIsSheetOpen(false)}
+                aria-label="Close"
+                className="p-1.5 -mr-1.5 text-gray hover:text-subtle-black transition-colors cursor-pointer rounded-full hover:bg-light-gray/30"
+              >
+                <X size={18} />
               </button>
             </div>
-            {errors.password && (
-              <p className="text-red-400 text-left text-[13px] w-full">
-                {errors.password.message}
-              </p>
-            )}
 
-            {error && <p className="text-red-400 w-full text-left text-[13px]">{error}</p>}
-
-            <div className="flex flex-row gap-3 mt-3 justify-start">
-              <VioletButton
-                text="Delete my account"
-                className="w-full sm:w-[180px] text-[14px]"
-                loading={loading}
-                type="submit"
+            {/* Warning Banner Card */}
+            <div className="flex items-start gap-3 rounded-[14px] bg-[#FEF2F2] border border-[#FCA5A5]/60 p-3.5 sm:p-4">
+              <AlertTriangle
+                className="text-[#DC2626] shrink-0 mt-0.5"
+                size={20}
               />
+              <p className="text-[13px] sm:text-[13.5px] leading-relaxed text-[#991B1B]">
+                Deleting your account is permanent. This cannot be undone and
+                your writing cannot be recovered.
+              </p>
             </div>
-          </form>
 
-          <div />
+            {/* What gets deleted */}
+            <div className="flex flex-col gap-2.5">
+              <h3 className="text-[16px] font-bold text-subtle-black">
+                What gets deleted
+              </h3>
+              <ul className="flex flex-col gap-2 text-[13.5px] sm:text-[14px] text-[#4B5563]">
+                <li className="flex items-start gap-2">
+                  <span className="text-[#6B7280] leading-tight">•</span>
+                  <span>All your cuenttos, public and private</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#6B7280] leading-tight">•</span>
+                  <span>Your drafts saved on this device</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#6B7280] leading-tight">•</span>
+                  <span>Your circles, followers and following</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#6B7280] leading-tight">•</span>
+                  <span>Your saved cuenttos and comments</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="border-t border-light-gray/80" />
+
+            {/* Confirm password form */}
+            <form
+              id="delete-account-form"
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex flex-col gap-3.5"
+            >
+              <div>
+                <h3 className="text-[16px] font-bold text-subtle-black">
+                  Confirm your password
+                </h3>
+                <p className="text-[13px] text-gray mt-1">
+                  Enter your password to confirm it is really you.
+                </p>
+              </div>
+
+              <div className="relative w-full mt-2">
+                <input
+                  {...register("password")}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  autoComplete="current-password"
+                  className="w-full h-[46px] px-1 bg-transparent border-b border-light-gray text-subtle-black text-[14px] sm:text-[15px] outline-none focus:border-subtle-black transition-colors placeholder:text-gray/70"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 text-gray hover:text-subtle-black cursor-pointer p-1"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-red text-left text-[12px]">
+                  {errors.password.message}
+                </p>
+              )}
+
+              {error && (
+                <p className="text-red text-left text-[13px] rounded-lg bg-red/5 p-2.5 border border-red/20">
+                  {error}
+                </p>
+              )}
+            </form>
+          </div>
+
+          {/* Action buttons (Delete My Account + Cancel) */}
+          <div className="flex flex-col gap-2.5 pt-6 mt-4">
+            <button
+              type="submit"
+              form="delete-account-form"
+              disabled={loading}
+              className="w-full py-3.5 px-4 rounded-[12px] bg-[#DC6B6B] hover:bg-[#C95B5B] text-white font-semibold text-[15px] transition-colors shadow-xs cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {loading && (
+                <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              )}
+              <span>Delete My Account</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsSheetOpen(false)}
+              disabled={loading}
+              className="w-full py-3.5 px-4 rounded-[12px] bg-white border border-light-gray hover:bg-light-beige/40 text-[#4B5563] font-semibold text-[15px] transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
         </SheetContent>
       </Sheet>
     </div>
