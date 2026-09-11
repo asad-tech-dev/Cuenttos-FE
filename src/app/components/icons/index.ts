@@ -20,3 +20,6 @@ export { default as CloseIcon } from "./CloseIcon";
 export { default as HomeActive } from "./HomeActive";
 export { default as FavouriteActive } from "./FavouriteActive";
 export { default as ProfileActive } from "./ProfileActive";
+export { default as ThinkIcon } from "./ThinkIcon";
+export { default as WriteIcon } from "./WriteIcon";
+export { default as ShareNavIcon } from "./ShareNavIcon";

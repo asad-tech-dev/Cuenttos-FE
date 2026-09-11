@@ -276,6 +276,11 @@ export default function CuenttoForm({
     }
   };
   const [savingDraft, setSavingDraft] = useState(false);
+  // Guests writing from a shared prompt have no account to keep a draft in,
+  // so they never see "Save as draft". Both places that mount this form
+  // (create page, edit page) render it client-side only after their own auth
+  // check, so reading the token once here is hydration-safe and flicker-free.
+  const [canSaveDraft] = useState(() => isAuthenticated());
   const handleSaveAsDraft = () => {
     const userId = getCurrentUserId();
     if (userId == null) return;
@@ -766,18 +771,20 @@ export default function CuenttoForm({
       <div className="w-full mt-8 sm:mt-[50px] flex flex-row justify-between items-center gap-4">
         {step === 1 && (
           <>
-            <button
-              type="button"
-              onClick={handleSaveAsDraft}
-              disabled={savingDraft}
-              className="h-[40px] px-4 text-[14px] rounded-[8px] font-medium bg-transparent text-black cursor-pointer disabled:opacity-50"
-            >
-              Save as draft
-            </button>
+            {canSaveDraft && (
+              <button
+                type="button"
+                onClick={handleSaveAsDraft}
+                disabled={savingDraft}
+                className="h-[40px] px-4 text-[14px] rounded-[8px] font-medium bg-transparent text-black cursor-pointer disabled:opacity-50"
+              >
+                Save as draft
+              </button>
+            )}
             <button
               type="button"
               onClick={handleFirstStep}
-              className="w-[80px] h-[40px] text-[14px] rounded-[8px] font-medium bg-violet text-white cursor-pointer"
+              className="ml-auto w-[80px] h-[40px] text-[14px] rounded-[8px] font-medium bg-violet text-white cursor-pointer"
             >
               Next
             </button>
@@ -794,12 +801,14 @@ export default function CuenttoForm({
         <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-full md:!w-[588px] border-l px-6 py-10 sm:px-[50px] sm:py-[60px] border-light-gray">
           {step === 2 && (
             <>
-              <div className="flex flex-col justify-start items start">
+              <div className="flex flex-col justify-start items start flex-1 min-h-0">
                 <p className="text-[14px] font-medium text-gray">Emotions</p>
                 <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
-                  How did you feel writing <br></br>this story?
+                  What emotion did you feel when writing{" "}
+                  <br className="hidden sm:inline" />
+                  the story?
                 </p>
-                <div className=" flex flex-row flex-wrap  mt-[40px] gap-4 w-full justify-start ">
+                <div className=" flex flex-col items-start mt-[40px] gap-4 w-full justify-start min-h-0 overflow-y-auto overscroll-y-contain ">
                   {moods.map((moods) => (
                     <button
                       key={moods.id}

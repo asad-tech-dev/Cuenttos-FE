@@ -3,7 +3,8 @@
 import checkAuth from "@/HOC/checkAuth";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Star, Zap, PenLine, ArrowRight, Share2 } from "lucide-react";
+import { Star, Zap, PenLine, ArrowRight } from "lucide-react";
+import { ShareIcon } from "@/app/components/icons";
 import { fetchActiveQuestionGroups } from "@/lib/api/questionGroup";
 import { QuestionGroup } from "@/types/questionGroup";
 import { firstValidQuestion } from "@/lib/questionPrompt";
@@ -246,7 +247,7 @@ function ThinkPage() {
                       aria-label="Share prompt"
                       className="shrink-0 w-[38px] h-[38px] rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white cursor-pointer transition-colors"
                     >
-                      <Share2 size={16} />
+                      <ShareIcon width={14} height={18} />
                     </button>
                   </div>
                   <span className="text-white/70 text-[14px]">
@@ -357,9 +358,9 @@ function ThinkPage() {
                         onClick={() => sharePrompt(group)}
                         aria-label={`Share prompt: ${group.title}`}
                         className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"
-                        style={{ backgroundColor: `${accent}26` }}
+                        style={{ backgroundColor: `${accent}26`, color: accent }}
                       >
-                        <Share2 size={14} style={{ color: accent }} />
+                        <ShareIcon width={12} height={15} />
                       </button>
                       <button
                         type="button"

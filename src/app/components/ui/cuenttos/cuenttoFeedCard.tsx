@@ -79,7 +79,7 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
   };
 
   return (
-    <div className="bg-white w-full max-w-[984px] border border-light-gray rounded-[16px] p-6 sm:p-8 flex flex-col gap-5">
+    <div className="bg-white w-full max-w-[984px] border border-light-gray rounded-[16px] p-4 sm:p-6 md:p-8 flex flex-col gap-4 sm:gap-5">
       <div className="flex items-center justify-between gap-3">
         {!isOwnCuentto ? (
           <div className="inline-flex items-center gap-2 bg-[#EEEAFE] text-[#6C5CE7] rounded-full px-3 py-1.5">

@@ -10,11 +10,14 @@ import {
   ClipboardList,
   ChevronDown,
   LogOut,
-  Lightbulb,
-  Pencil,
-  Share2,
 } from "lucide-react";
-import { ProfileIcon, ProfileActive } from "../icons";
+import {
+  ProfileIcon,
+  ProfileActive,
+  ThinkIcon,
+  WriteIcon,
+  ShareNavIcon,
+} from "../icons";
 import { getIsAdmin, logoutUser, clearAuth } from "@/lib/api/auth";
 import { useMobileNav } from "../context/MobileNavContext";
 
@@ -69,8 +72,9 @@ export default function Sidebar() {
       name: "Think",
       href: "/think",
       icon: (isActive: boolean) => (
-        <Lightbulb
-          size={18}
+        <ThinkIcon
+          width={18}
+          height={18}
           className={isActive ? "text-black" : "text-gray"}
         />
       ),
@@ -79,14 +83,22 @@ export default function Sidebar() {
       name: "Write",
       href: "/write",
       icon: (isActive: boolean) => (
-        <Pencil size={18} className={isActive ? "text-black" : "text-gray"} />
+        <WriteIcon
+          width={18}
+          height={18}
+          className={isActive ? "text-black" : "text-gray"}
+        />
       ),
     },
     {
       name: "Share",
       href: "/share",
       icon: (isActive: boolean) => (
-        <Share2 size={18} className={isActive ? "text-black" : "text-gray"} />
+        <ShareNavIcon
+          width={18}
+          height={18}
+          className={isActive ? "text-black" : "text-gray"}
+        />
       ),
     },
     {
