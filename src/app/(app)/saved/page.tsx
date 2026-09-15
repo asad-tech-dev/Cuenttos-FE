@@ -58,8 +58,8 @@ function SavedCuenttoPage() {
 
   return (
     <div className="flex flex-col gap-8 px-4 sm:px-6 md:px-[60px] lg:px-[90px] py-2 overflow-x-hidden">
-      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-x-4 sm:gap-y-3">
+        <div className="flex min-w-0 flex-col gap-2">
           <h1 className="text-[26px] sm:text-[30px] font-semibold text-subtle-black">
             Saved Cuenttos
           </h1>
