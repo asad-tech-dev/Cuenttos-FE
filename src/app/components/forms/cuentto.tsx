@@ -50,6 +50,25 @@ function formatChallengeTime(totalSeconds: number): string {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
+function getDarkerColor(hex?: string, factor = 0.55): string {
+  if (!hex || !hex.startsWith("#")) return "#3B3363";
+  let c = hex.replace("#", "");
+  if (c.length === 3) {
+    c = c.split("").map((x) => x + x).join("");
+  }
+  if (c.length !== 6) return "#3B3363";
+  const num = parseInt(c, 16);
+  let r = (num >> 16) & 255;
+  let g = (num >> 8) & 255;
+  let b = num & 255;
+
+  r = Math.max(0, Math.floor(r * (1 - factor)));
+  g = Math.max(0, Math.floor(g * (1 - factor)));
+  b = Math.max(0, Math.floor(b * (1 - factor)));
+
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
+
 export default function CuenttoForm({
   mode = "create",
   cuenttoId,
@@ -102,6 +121,7 @@ export default function CuenttoForm({
     artist: string;
   } | null>(null);
   const [moods, setMoods] = useState<Mood[]>([]);
+  const [moodsLoading, setMoodsLoading] = useState(true);
   const [groups, setGroups] = useState<Group[]>([]);
   const [musics, setMusics] = useState<Music[]>([]);
   const [durations, setDurations] = useState<Durations>({});
@@ -322,10 +342,13 @@ export default function CuenttoForm({
   useEffect(() => {
     const getMoods = async () => {
       try {
+        setMoodsLoading(true);
         const data = await fetchMoods();
-        setMoods(data);
+        setMoods(data ?? []);
       } catch (error) {
         console.log(error);
+      } finally {
+        setMoodsLoading(false);
       }
     };
     getMoods();
@@ -846,34 +869,53 @@ export default function CuenttoForm({
         <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-full md:!w-[588px] border-l px-6 py-10 sm:px-[50px] sm:py-[60px] border-light-gray">
           {step === 2 && (
             <>
-              <div className="flex flex-col justify-start items start flex-1 min-h-0">
+              <div className="flex flex-col justify-start items-start flex-1 min-h-0">
                 <p className="text-[14px] font-medium text-gray">Emotions</p>
                 <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
                   What emotion did you feel when writing{" "}
                   <br className="hidden sm:inline" />
                   the story?
                 </p>
-                <div className=" flex flex-col items-start mt-[40px] gap-4 w-full justify-start min-h-0 overflow-y-auto overscroll-y-contain ">
-                  {moods.map((moods) => (
-                    <button
-                      key={moods.id}
-                      onClick={() => selectMood(moods.id, moods.title)}
-                      className={`py-3 px-[20px] flex items-center justify-center gap-2.5 text-black rounded-[100px] cursor-pointer text-[14px] font-medium transition-all duration-300 ease-in-out ${
-                        selectedMood === moods.title
-                          ? "border border-light-black"
-                          : "border border-white px-2"
-                      }`}
-                      style={{ backgroundColor: moods.color || "#ccc" }}
-                    >
-                      {selectedMood === moods.title && (
-                        <CheckIcon width={18} height={18} color="black" />
-                      )}
-                      {moods.title}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-2 md:flex md:flex-wrap md:items-center md:content-start gap-2.5 sm:gap-3.5 mt-6 sm:mt-8 w-full content-start flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-1 py-2 pb-8">
+                  {moodsLoading ? (
+                    Array.from({ length: 8 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="w-full md:w-28 h-[44px] sm:h-[46px] rounded-full bg-light-gray/60 animate-pulse shrink-0"
+                      />
+                    ))
+                  ) : (
+                    moods.map((mood) => {
+                      const isSelected = selectedMood === mood.title;
+                      const darkerCheckColor = getDarkerColor(mood.color, 0.55);
+                      return (
+                        <button
+                          key={mood.id}
+                          type="button"
+                          onClick={() => selectMood(mood.id, mood.title)}
+                          className={`w-full md:w-auto min-h-[44px] sm:min-h-[46px] py-2.5 px-3 sm:px-4 md:px-5 flex items-center justify-center gap-2 rounded-full cursor-pointer text-[13px] sm:text-[14px] font-medium tracking-tight text-subtle-black whitespace-nowrap shrink-0 select-none transition-all duration-150 ease-out active:scale-95 hover:brightness-95 ${
+                            isSelected ? "font-semibold shadow-xs" : ""
+                          }`}
+                          style={{
+                            backgroundColor: mood.color || "#EEEAFE",
+                          }}
+                        >
+                          {isSelected && (
+                            <CheckIcon
+                              width={13}
+                              height={10}
+                              color={darkerCheckColor}
+                              className="shrink-0"
+                            />
+                          )}
+                          <span className="truncate md:overflow-visible">{mood.title}</span>
+                        </button>
+                      );
+                    })
+                  )}
                 </div>
                 {errors.moodId && !selectedMood && (
-                  <p className="text-red-400 mt-[50px] text-left w-full">
+                  <p className="text-red mt-4 text-left w-full text-[13px] font-medium">
                     {errors.moodId.message}
                   </p>
                 )}
