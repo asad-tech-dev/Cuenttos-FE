@@ -17,6 +17,8 @@ import {
   ThinkIcon,
   WriteIcon,
   ShareNavIcon,
+  FavouriteIcon,
+  FavouriteActive,
 } from "../icons";
 import { getIsAdmin, logoutUser, clearAuth } from "@/lib/api/auth";
 import { useMobileNav } from "../context/MobileNavContext";
@@ -102,6 +104,16 @@ export default function Sidebar() {
       ),
     },
     {
+      name: "Saved",
+      href: "/saved",
+      icon: (isActive: boolean) =>
+        isActive ? (
+          <FavouriteActive width={16} height={19} className="text-black" />
+        ) : (
+          <FavouriteIcon width={16} height={19} className="text-gray" />
+        ),
+    },
+    {
       name: "Profile",
       href: "/profile",
       icon: (isActive: boolean) =>
@@ -112,9 +124,6 @@ export default function Sidebar() {
         ),
     },
   ];
-  // "Saved Cuentto" (href "/saved") is intentionally omitted from the nav —
-  // the route and its FavouriteIcon/FavouriteActive icons stay wired up
-  // (still reachable at /saved) so nothing underneath was removed.
 
   const adminItems = [
     {

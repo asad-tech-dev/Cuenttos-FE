@@ -8,13 +8,13 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import {
-  FavouriteIcon,
   CommentIcon,
   ShareIcon,
   MusicIcon,
   OptionIcon,
 } from "../../icons";
 import CustomToast from "../../toasts/comingSoon";
+import SaveCuenttoButton from "./SaveCuenttoButton";
 import ConfirmDialog from "../ConfirmDialog";
 import { Cuentto } from "@/types/cuentto";
 import { getCurrentUserId } from "@/lib/api/auth";
@@ -218,12 +218,7 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
             onClick={() => CustomToast()}
           />
         </div>
-        <FavouriteIcon
-          width={14}
-          height={17}
-          className="cursor-pointer text-subtle-black"
-          onClick={() => CustomToast()}
-        />
+        <SaveCuenttoButton cuenttoId={cuentto.id} width={14} height={17} />
       </div>
 
       <ConfirmDialog

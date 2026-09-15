@@ -9,7 +9,6 @@ import { OpenInAppButton } from "@/app/components/buttons/OpenInAppButton";
 import CustomToast from "@/app/components/toasts/comingSoon";
 import axios from "axios";
 import {
-  FavouriteIcon,
   CommentIcon,
   OptionIcon,
   BackIcon,
@@ -18,6 +17,7 @@ import {
   VolumeIcon,
   PlayIcon,
 } from "@/app/components/icons";
+import SaveCuenttoButton from "@/app/components/ui/cuenttos/SaveCuenttoButton";
 import Image from "next/image";
 import { Cuentto } from "@/types/cuentto";
 
@@ -388,21 +388,20 @@ function CuenttoDetailView({
             {cuentto?._count.comments ?? 0} comments
           </span>
         </div>
-        <div
-          className="flex flex-row gap-7 sm:gap-[40px]"
-          onClick={() => CustomToast()}
-        >
-          <FavouriteIcon
-            width={14}
-            height={17}
-            color="black"
-            className="cursor-pointer"
-          />
+        <div className="flex flex-row items-center gap-7 sm:gap-[40px]">
+          {cuentto && isAuthenticated && (
+            <SaveCuenttoButton
+              cuenttoId={cuentto.id}
+              width={14}
+              height={17}
+            />
+          )}
           <ShareIcon
             width={16}
             height={20}
             color="black"
             className="cursor-pointer"
+            onClick={() => CustomToast()}
           />
         </div>
       </div>

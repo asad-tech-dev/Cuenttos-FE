@@ -46,6 +46,16 @@ export interface Cuentto {
   };
 }
 
+// A row from GET /api/savecuentto — the join record, with the saved cuentto
+// itself nested under `cuentto` (same shape the feed returns).
+export interface SavedCuentto {
+  id: number;
+  userId: number;
+  cuenttoId: number;
+  createdAt: string;
+  cuentto: Cuentto;
+}
+
 export interface FeaturedCuentto {
   id: number;
   title: string;
