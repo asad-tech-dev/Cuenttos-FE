@@ -13,12 +13,10 @@ import {
 } from "lucide-react";
 import {
   ProfileIcon,
-  ProfileActive,
   ThinkIcon,
   WriteIcon,
   ShareNavIcon,
   FavouriteIcon,
-  FavouriteActive,
 } from "../icons";
 import { getIsAdmin, logoutUser, clearAuth } from "@/lib/api/auth";
 import { useMobileNav } from "../context/MobileNavContext";
@@ -106,22 +104,20 @@ export default function Sidebar() {
     {
       name: "Saved",
       href: "/saved",
-      icon: (isActive: boolean) =>
-        isActive ? (
-          <FavouriteActive width={16} height={19} className="text-black" />
-        ) : (
-          <FavouriteIcon width={16} height={19} className="text-gray" />
-        ),
+      icon: (isActive: boolean) => (
+        <FavouriteIcon
+          width={16}
+          height={19}
+          className={isActive ? "text-black" : "text-gray"}
+        />
+      ),
     },
     {
       name: "Profile",
       href: "/profile",
-      icon: (isActive: boolean) =>
-        isActive ? (
-          <ProfileActive className="text-black" />
-        ) : (
-          <ProfileIcon className="text-gray" />
-        ),
+      icon: (isActive: boolean) => (
+        <ProfileIcon className={isActive ? "text-black" : "text-gray"} />
+      ),
     },
   ];
 
