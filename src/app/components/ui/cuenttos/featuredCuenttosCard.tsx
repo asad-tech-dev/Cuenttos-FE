@@ -2,11 +2,11 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Bookmark, Clock, TrendingUp } from "lucide-react";
+import { Clock, TrendingUp } from "lucide-react";
 import { FeaturedCuentto } from "@/types/cuentto";
 import { moodGradient } from "@/lib/utils";
 import { getCuenttoPath } from "@/lib/cuenttoLink";
-import CustomToast from "../../toasts/comingSoon";
+import SaveCuenttoButton from "./SaveCuenttoButton";
 
 const GRADIENTS = [
   "linear-gradient(135deg, #FDE2DE 0%, #F7D0C8 45%, #E5B8DF 100%)",
@@ -41,17 +41,12 @@ const FeaturedCuenttoFeedCard: React.FC<{
             #{index + 1} THIS WEEK
           </span>
         </div>
-        <button
-          type="button"
-          aria-label="Bookmark"
-          onClick={(e) => {
-            e.preventDefault();
-            CustomToast();
-          }}
-          className="w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-sm transition-colors"
-        >
-          <Bookmark size={14} className="text-subtle-black" strokeWidth={2} />
-        </button>
+        <SaveCuenttoButton
+          cuenttoId={cuentto.id}
+          variant="floating"
+          width={12}
+          height={15}
+        />
       </div>
 
       <Link href={`${getCuenttoPath(cuentto)}?featured=true`} className="mt-4 block">

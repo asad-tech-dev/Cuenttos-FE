@@ -8,13 +8,13 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import {
-  FavouriteIcon,
   CommentIcon,
   ShareIcon,
   MusicIcon,
   OptionIcon,
 } from "../../icons";
 import CustomToast from "../../toasts/comingSoon";
+import SaveCuenttoButton from "./SaveCuenttoButton";
 import ConfirmDialog from "../ConfirmDialog";
 import { Cuentto } from "@/types/cuentto";
 import { getCurrentUserId } from "@/lib/api/auth";
@@ -82,17 +82,21 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
     <div className="bg-white w-full max-w-[984px] border border-light-gray rounded-[16px] p-4 sm:p-6 md:p-8 flex flex-col gap-4 sm:gap-5">
       <div className="flex items-center justify-between gap-3">
         {!isOwnCuentto ? (
-          <div className="inline-flex items-center gap-2 bg-[#EEEAFE] text-[#6C5CE7] rounded-full px-3 py-1.5">
-            <ShareIcon width={12} height={14} className="text-[#6C5CE7]" />
-            <span className="text-[12px] font-semibold">
+          <div className="inline-flex min-w-0 items-center gap-2 bg-[#EEEAFE] text-[#6C5CE7] rounded-full px-3 py-1.5">
+            <ShareIcon
+              width={12}
+              height={14}
+              className="shrink-0 text-[#6C5CE7]"
+            />
+            <span className="truncate text-[12px] font-semibold">
               {cuentto.user.username} shared with you
             </span>
           </div>
         ) : (
           <span />
         )}
-        <div className="flex items-center gap-3">
-          <span className="text-gray text-[12px] font-normal whitespace-nowrap">
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="hidden sm:inline text-gray text-[12px] font-normal whitespace-nowrap">
             {relativeTime}
           </span>
           {isOwnCuentto && (
@@ -145,7 +149,7 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
       </div>
 
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="w-[40px] h-[40px] shrink-0">
             <Image
               src={
@@ -159,8 +163,8 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
               className="object-cover rounded-full !w-full !h-full border border-white"
             />
           </div>
-          <div>
-            <p className="font-semibold text-[14px] text-black leading-tight">
+          <div className="min-w-0">
+            <p className="font-semibold text-[14px] text-black leading-tight truncate">
               {cuentto.user.profileName || cuentto.user.username}
             </p>
             <p className="font-normal text-[12px] text-gray mt-0.5">
@@ -171,7 +175,7 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
         {cuentto.music?.name && (
           <div className="flex items-center gap-1.5 text-gray shrink-0">
             <MusicIcon width={12} height={14} className="text-gray" />
-            <span className="text-[13px] font-normal truncate max-w-[180px]">
+            <span className="text-[13px] font-normal truncate max-w-[110px] sm:max-w-[180px]">
               {cuentto.music.name}
             </span>
           </div>
@@ -195,7 +199,7 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
             {cuentto.mood.title}
           </span>
         )}
-        <h2 className="font-serif text-[22px] sm:text-[24px] leading-[1.3] font-bold text-black">
+        <h2 className="font-serif text-[22px] sm:text-[24px] leading-[1.3] font-bold text-black break-words">
           {cuentto.title || "Untitled"}
         </h2>
       </Link>
@@ -218,12 +222,7 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
             onClick={() => CustomToast()}
           />
         </div>
-        <FavouriteIcon
-          width={14}
-          height={17}
-          className="cursor-pointer text-subtle-black"
-          onClick={() => CustomToast()}
-        />
+        <SaveCuenttoButton cuenttoId={cuentto.id} width={14} height={17} />
       </div>
 
       <ConfirmDialog

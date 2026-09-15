@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import AppHeader from "./headers/appHeader";
 import Sidebar from "./sidebar/mainSidebar";
 import { MobileNavProvider } from "./context/MobileNavContext";
+import { SavedCuenttosProvider } from "./context/SavedCuenttosContext";
 import { isAuthenticated } from "@/lib/api/auth";
 
 /**
@@ -23,19 +24,21 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <MobileNavProvider>
-      <div className="flex flex-col h-screen">
-        <AppHeader showSidebar={authed} />
-        <div className="flex flex-1">
-          {authed && <Sidebar />}
-          <main
-            className={`flex-1 min-w-0 mt-[55px] py-6 ${
-              authed ? "ml-0 lg:ml-[256px]" : "ml-0"
-            }`}
-          >
-            {children}
-          </main>
+      <SavedCuenttosProvider>
+        <div className="flex flex-col h-screen">
+          <AppHeader showSidebar={authed} />
+          <div className="flex flex-1">
+            {authed && <Sidebar />}
+            <main
+              className={`flex-1 min-w-0 mt-[55px] py-6 ${
+                authed ? "ml-0 lg:ml-[256px]" : "ml-0"
+              }`}
+            >
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
+      </SavedCuenttosProvider>
     </MobileNavProvider>
   );
 }
