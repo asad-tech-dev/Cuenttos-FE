@@ -44,8 +44,8 @@ const FeaturedCuenttoFeedCard: React.FC<{
         <SaveCuenttoButton
           cuenttoId={cuentto.id}
           variant="floating"
-          width={12}
-          height={15}
+          width={14}
+          height={14}
         />
       </div>
 

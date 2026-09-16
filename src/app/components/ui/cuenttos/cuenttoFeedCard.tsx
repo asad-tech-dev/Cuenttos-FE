@@ -21,7 +21,7 @@ import { getCurrentUserId } from "@/lib/api/auth";
 import { deleteCuentto } from "@/lib/api/cuentto";
 import { getCuenttoPath } from "@/lib/cuenttoLink";
 import { isPubliclyShareable, shareCuentto } from "@/lib/shareCuentto";
-import CuenttoVisibilityTag from "./CuenttoVisibilityTag";
+import CuenttoVisibilityTag, { TAG_SURFACE } from "./CuenttoVisibilityTag";
 
 interface CuenttoFeedCardProps {
   cuentto: Cuentto;
@@ -84,12 +84,10 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
     <div className="bg-white w-full max-w-[984px] border border-light-gray rounded-[16px] p-4 sm:p-6 md:p-8 flex flex-col gap-4 sm:gap-5">
       <div className="flex items-center justify-between gap-3">
         {!isOwnCuentto ? (
-          <div className="inline-flex min-w-0 items-center gap-2 bg-[#EEEAFE] text-[#6C5CE7] rounded-full px-3 py-1.5">
-            <ShareIcon
-              width={12}
-              height={14}
-              className="shrink-0 text-[#6C5CE7]"
-            />
+          <div
+            className={`inline-flex min-w-0 items-center gap-2 rounded-full px-3 py-1.5 ${TAG_SURFACE}`}
+          >
+            <ShareIcon width={12} height={14} className="shrink-0" />
             <span className="truncate text-[12px] font-semibold">
               {cuentto.user.username} shared with you
             </span>
@@ -231,7 +229,7 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
             />
           )}
         </div>
-        <SaveCuenttoButton cuenttoId={cuentto.id} width={14} height={17} />
+        <SaveCuenttoButton cuenttoId={cuentto.id} width={16} height={16} />
       </div>
 
       <ConfirmDialog

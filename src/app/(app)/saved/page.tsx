@@ -104,7 +104,7 @@ function SavedCuenttoPage() {
       ) : showEmpty ? (
         <div className="flex flex-col items-center justify-center text-center rounded-[20px] border border-dashed border-light-gray bg-gray-5 px-6 py-16 sm:py-20">
           <div className="flex items-center justify-center w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-full bg-light-violet">
-            <FavouriteIcon width={24} height={30} className="text-violet" />
+            <FavouriteIcon width={28} height={28} className="text-violet" />
           </div>
           <h2 className="mt-6 text-[20px] sm:text-[22px] font-semibold text-dark-violet">
             Nothing saved yet

@@ -274,7 +274,7 @@ function CuenttoDetailView({
               {cuentto?.mood.title}
             </span>
             {cuentto && (
-              <CuenttoVisibilityTag cuentto={cuentto} tone="onColor" />
+              <CuenttoVisibilityTag cuentto={cuentto} />
             )}
           </div>
         </div>
@@ -399,8 +399,8 @@ function CuenttoDetailView({
           {cuentto && isAuthenticated && (
             <SaveCuenttoButton
               cuenttoId={cuentto.id}
-              width={14}
-              height={17}
+              width={16}
+              height={16}
             />
           )}
           {cuentto && isPubliclyShareable(cuentto) && (

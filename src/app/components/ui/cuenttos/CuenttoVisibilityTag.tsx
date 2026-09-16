@@ -48,33 +48,30 @@ export function getCuenttoVisibility(
   return { kind: "private", label: "Private", Icon: Lock };
 }
 
+/**
+ * The surface every cuentto pill shares — the same values the "shared with
+ * you" pill on the feed card uses, exported so the two cannot drift apart.
+ * One tone on every background: the detail header tints its own backdrop with
+ * the mood colour, and this sits on it the same way the mood pill does.
+ */
+export const TAG_SURFACE = "bg-[#EEEAFE] text-[#6C5CE7]";
+
 interface CuenttoVisibilityTagProps {
   cuentto: CuenttoVisibilitySource;
-  /**
-   * "default" sits on the white feed card; "onColor" sits on the detail
-   * header, whose background is the mood colour.
-   */
-  tone?: "default" | "onColor";
   className?: string;
 }
 
 export default function CuenttoVisibilityTag({
   cuentto,
-  tone = "default",
   className = "",
 }: CuenttoVisibilityTagProps) {
   const { label, Icon } = getCuenttoVisibility(cuentto);
 
-  const toneClasses =
-    tone === "onColor"
-      ? "border-dark-violet/20 bg-white/70 text-dark-violet"
-      : "border-light-gray bg-white text-gray";
-
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium leading-none whitespace-nowrap ${toneClasses} ${className}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold leading-none whitespace-nowrap ${TAG_SURFACE} ${className}`}
     >
-      <Icon size={11} strokeWidth={2} aria-hidden="true" />
+      <Icon size={12} strokeWidth={2} aria-hidden="true" />
       {label}
     </span>
   );
