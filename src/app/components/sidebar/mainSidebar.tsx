@@ -12,14 +12,24 @@ import {
   LogOut,
 } from "lucide-react";
 import {
-  ProfileIcon,
   ThinkIcon,
   WriteIcon,
   ShareNavIcon,
   FavouriteIcon,
+  ProfileIcon,
 } from "../icons";
 import { getIsAdmin, logoutUser, clearAuth } from "@/lib/api/auth";
 import { useMobileNav } from "../context/MobileNavContext";
+
+// The app's own icons are all drawn on one 24x24 grid with one 2px stroke
+// (see IconBase), which is the same grid and weight lucide uses — so both
+// families render at identical size and boldness from one size + one stroke
+// applied here.
+const ICON_SIZE = 20;
+const ICON_STROKE = 2;
+// Fixed square around each icon: guarantees the labels share one vertical
+// axis and stops the icon being squeezed by a long label.
+const ICON_SLOT = "flex h-5 w-5 shrink-0 items-center justify-center";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -68,69 +78,18 @@ export default function Sidebar() {
   };
 
   const menuItems = [
-    {
-      name: "Think",
-      href: "/think",
-      icon: (isActive: boolean) => (
-        <ThinkIcon
-          width={18}
-          height={18}
-          className={isActive ? "text-black" : "text-gray"}
-        />
-      ),
-    },
-    {
-      name: "Write",
-      href: "/write",
-      icon: (isActive: boolean) => (
-        <WriteIcon
-          width={18}
-          height={18}
-          className={isActive ? "text-black" : "text-gray"}
-        />
-      ),
-    },
-    {
-      name: "Share",
-      href: "/share",
-      icon: (isActive: boolean) => (
-        <ShareNavIcon
-          width={18}
-          height={18}
-          className={isActive ? "text-black" : "text-gray"}
-        />
-      ),
-    },
-    {
-      name: "Saved",
-      href: "/saved",
-      icon: (isActive: boolean) => (
-        <FavouriteIcon
-          width={16}
-          height={19}
-          className={isActive ? "text-black" : "text-gray"}
-        />
-      ),
-    },
-    {
-      name: "Profile",
-      href: "/profile",
-      icon: (isActive: boolean) => (
-        <ProfileIcon className={isActive ? "text-black" : "text-gray"} />
-      ),
-    },
+    { name: "Think", href: "/think", Icon: ThinkIcon },
+    { name: "Write", href: "/write", Icon: WriteIcon },
+    { name: "Share", href: "/share", Icon: ShareNavIcon },
+    { name: "Saved", href: "/saved", Icon: FavouriteIcon },
+    { name: "Profile", href: "/profile", Icon: ProfileIcon },
   ];
 
   const adminItems = [
     {
       name: "Manage Questions",
       href: "/admin/manage-questions",
-      icon: (isActive: boolean) => (
-        <ClipboardList
-          size={20}
-          className={isActive ? "text-black" : "text-gray"}
-        />
-      ),
+      Icon: ClipboardList,
     },
   ];
 
@@ -172,7 +131,13 @@ export default function Sidebar() {
                 ${isActive ? "text-black font-semibold" : "text-gray"}
               `}
               >
-                {item.icon(isActive)}
+                <span className={ICON_SLOT}>
+                  <item.Icon
+                    size={ICON_SIZE}
+                    strokeWidth={ICON_STROKE}
+                    className={isActive ? "text-black" : "text-gray"}
+                  />
+                </span>
                 <p className="text-[14px] font-semibold">{item.name}</p>
                 {isActive && (
                   <div className="absolute right-[30px] w-2 h-2 rounded-full bg-violet"></div>
@@ -195,10 +160,13 @@ export default function Sidebar() {
                   : "text-gray hover:text-black"
               }`}
             >
-              <ShieldCheck
-                size={18}
-                className={isAdminSectionActive ? "text-violet" : "text-gray"}
-              />
+              <span className={ICON_SLOT}>
+                <ShieldCheck
+                  size={ICON_SIZE}
+                  strokeWidth={ICON_STROKE}
+                  className={isAdminSectionActive ? "text-violet" : "text-gray"}
+                />
+              </span>
               <p className="text-[14px] font-semibold flex-1 text-left">
                 Admin
               </p>
@@ -234,7 +202,13 @@ export default function Sidebar() {
                           {isActive && (
                             <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 bg-violet" />
                           )}
-                          {item.icon(isActive)}
+                          <span className={ICON_SLOT}>
+                            <item.Icon
+                              size={ICON_SIZE}
+                              strokeWidth={ICON_STROKE}
+                              className={isActive ? "text-black" : "text-gray"}
+                            />
+                          </span>
                           <p className="text-[12px] font-semibold">
                             {item.name}
                           </p>
@@ -261,10 +235,13 @@ export default function Sidebar() {
             aria-label="Logout"
             className={`group relative flex items-center gap-4 px-4 w-[200px] h-[56px] rounded-[100px] transition-all duration-300 cursor-pointer text-gray hover:text-[#b91c1c] disabled:opacity-60 disabled:cursor-not-allowed`}
           >
-            <LogOut
-              size={20}
-              className="text-gray group-hover:text-[#b91c1c] transition-colors duration-300"
-            />
+            <span className={ICON_SLOT}>
+              <LogOut
+                size={ICON_SIZE}
+                strokeWidth={ICON_STROKE}
+                className="text-gray group-hover:text-[#b91c1c] transition-colors duration-300"
+              />
+            </span>
 
             <p className="text-[14px] font-semibold">Logout</p>
           </button>

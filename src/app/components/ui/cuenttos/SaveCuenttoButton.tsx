@@ -28,8 +28,8 @@ interface SaveCuenttoButtonProps {
  */
 export default function SaveCuenttoButton({
   cuenttoId,
-  width = 14,
-  height = 17,
+  width = 16,
+  height = 16,
   variant = "plain",
   className = "",
 }: SaveCuenttoButtonProps) {
