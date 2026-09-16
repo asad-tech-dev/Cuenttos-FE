@@ -1,4 +1,4 @@
-import { DialogContent, DialogClose } from "@/components/ui/dialog";
+import { DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -20,13 +20,13 @@ function PublishCuentto({
           width={84}
           height={84}
         />
-        <p className="text-[22px] text-subtle-black text-center font-normal leading-[28px]">
+        <DialogTitle className="text-[22px] text-subtle-black text-center font-normal leading-[28px]">
           {message ?? (
             <>
               Your Cuentto has been <br></br>succesfully published.
             </>
           )}
-        </p>
+        </DialogTitle>
       </div>
 
       <div className="flex flex-row items-center justify-end mt-[0px]">

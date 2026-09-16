@@ -8,7 +8,12 @@ import axios from "axios";
 import PublishCuentto from "../popups/publishCuentto";
 import Image from "next/image";
 import { CheckIcon, CloseIcon, MicIcon, MusicIcon, PlayIcon } from "../icons";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import CustomRadioButtonGroup from "../ui/CustomRadioButtonGroup";
 import { Dialog } from "@/components/ui/dialog";
 import { Editor } from "@tinymce/tinymce-react";
@@ -590,9 +595,9 @@ export default function CuenttoForm({
                     <p className="text-[14px] font-medium text-gray">
                       Add music
                     </p>
-                    <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
+                    <SheetTitle className="text-[22px] font-normal text-subtle-black mt-[10px]">
                       Select a background music
-                    </p>
+                    </SheetTitle>
                     <div className=" flex flex-col flex-1 min-h-0 mt-[40px] gap-4 w-full justify-start overflow-y-auto pr-4 ">
                       {musics.map((music, index) => (
                         <div
@@ -871,11 +876,11 @@ export default function CuenttoForm({
             <>
               <div className="flex flex-col justify-start items-start flex-1 min-h-0">
                 <p className="text-[14px] font-medium text-gray">Emotions</p>
-                <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
+                <SheetTitle className="text-[22px] font-normal text-subtle-black mt-[10px]">
                   What emotion did you feel when writing{" "}
                   <br className="hidden sm:inline" />
                   the story?
-                </p>
+                </SheetTitle>
                 <div className="grid grid-cols-2 md:flex md:flex-wrap md:items-center md:content-start gap-2.5 sm:gap-3.5 mt-6 sm:mt-8 w-full content-start flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-1 py-2 pb-8">
                   {moodsLoading ? (
                     Array.from({ length: 8 }).map((_, idx) => (
@@ -942,9 +947,9 @@ export default function CuenttoForm({
             <>
               <div className="flex flex-col justify-start items-start">
                 <p className="text-[14px] font-medium text-gray">Share</p>
-                <p className="text-[22px] font-normal text-subtle-black mt-[10px]">
+                <SheetTitle className="text-[22px] font-normal text-subtle-black mt-[10px]">
                   Select with who to share your <br></br>Cuentto:
-                </p>
+                </SheetTitle>
                 <div className="flex flex-col mt-[40px] gap-4 w-full justify-start">
                   <CustomRadioButtonGroup
                     key={`share-radio-${innerCircleGroup?.id ?? "none"}`}

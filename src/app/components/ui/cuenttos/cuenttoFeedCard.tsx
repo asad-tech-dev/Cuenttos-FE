@@ -20,6 +20,8 @@ import { Cuentto } from "@/types/cuentto";
 import { getCurrentUserId } from "@/lib/api/auth";
 import { deleteCuentto } from "@/lib/api/cuentto";
 import { getCuenttoPath } from "@/lib/cuenttoLink";
+import { isPubliclyShareable, shareCuentto } from "@/lib/shareCuentto";
+import CuenttoVisibilityTag from "./CuenttoVisibilityTag";
 
 interface CuenttoFeedCardProps {
   cuentto: Cuentto;
@@ -191,14 +193,17 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
               : "—"}
           </span>
         </span>
-        {cuentto.mood?.title && (
-          <span
-            className="self-start rounded-full px-3 py-1 text-[12px] font-medium text-black"
-            style={{ backgroundColor: cuentto.mood.color || "#EEEAFE" }}
-          >
-            {cuentto.mood.title}
-          </span>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {cuentto.mood?.title && (
+            <span
+              className="self-start rounded-full px-3 py-1 text-[12px] font-medium text-black"
+              style={{ backgroundColor: cuentto.mood.color || "#EEEAFE" }}
+            >
+              {cuentto.mood.title}
+            </span>
+          )}
+          <CuenttoVisibilityTag cuentto={cuentto} />
+        </div>
         <h2 className="font-serif text-[22px] sm:text-[24px] leading-[1.3] font-bold text-black break-words">
           {cuentto.title || "Untitled"}
         </h2>
@@ -215,12 +220,16 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
               {cuentto._count.comments ?? 0}
             </span>
           </div>
-          <ShareIcon
-            width={16}
-            height={20}
-            className="cursor-pointer text-subtle-black"
-            onClick={() => CustomToast()}
-          />
+          {isPubliclyShareable(cuentto) && (
+            <ShareIcon
+              width={16}
+              height={20}
+              className="cursor-pointer text-subtle-black"
+              onClick={() => {
+                shareCuentto(cuentto);
+              }}
+            />
+          )}
         </div>
         <SaveCuenttoButton cuenttoId={cuentto.id} width={14} height={17} />
       </div>

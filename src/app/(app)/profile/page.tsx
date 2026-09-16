@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "motion/react";
 import { z } from "zod";
 import { BackIcon } from "@/app/components/icons";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
   AlertTriangle,
   BookOpen,
@@ -698,9 +698,9 @@ function ProfilePage() {
               >
                 <BackIcon width={10} height={18} className="text-current" />
               </button>
-              <h2 className="text-[17px] font-semibold text-subtle-black absolute left-1/2 -translate-x-1/2">
+              <SheetTitle className="text-[17px] font-semibold text-subtle-black absolute left-1/2 -translate-x-1/2">
                 Delete Account
-              </h2>
+              </SheetTitle>
               <button
                 type="button"
                 onClick={() => setIsSheetOpen(false)}

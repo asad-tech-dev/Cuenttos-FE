@@ -18,6 +18,8 @@ import {
   PlayIcon,
 } from "@/app/components/icons";
 import SaveCuenttoButton from "@/app/components/ui/cuenttos/SaveCuenttoButton";
+import { isPubliclyShareable, shareCuentto } from "@/lib/shareCuentto";
+import CuenttoVisibilityTag from "@/app/components/ui/cuenttos/CuenttoVisibilityTag";
 import Image from "next/image";
 import { Cuentto } from "@/types/cuentto";
 
@@ -260,16 +262,21 @@ function CuenttoDetailView({
           <h2 className="text-[28px] leading-[34px] sm:text-[36px] sm:leading-[42px] md:text-[45px] md:leading-[52px] font-normal text-dark-violet break-words">
             {cuentto?.title}
           </h2>
-          <span
-            className={`px-3 py-1 font-medium text-[11px] rounded-full w-fit ${
-              isFeatured ? "bg-gray-400 text-white" : "text-dark-violet"
-            }`}
-            style={{
-              backgroundColor: !isFeatured ? cuentto?.mood.color : "",
-            }}
-          >
-            {cuentto?.mood.title}
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`px-3 py-1 font-medium text-[11px] rounded-full w-fit ${
+                isFeatured ? "bg-gray-400 text-white" : "text-dark-violet"
+              }`}
+              style={{
+                backgroundColor: !isFeatured ? cuentto?.mood.color : "",
+              }}
+            >
+              {cuentto?.mood.title}
+            </span>
+            {cuentto && (
+              <CuenttoVisibilityTag cuentto={cuentto} tone="onColor" />
+            )}
+          </div>
         </div>
         <div className="relative z-10 flex items-center gap-4">
           <div className="w-[40px] h-[40px]">
@@ -396,13 +403,17 @@ function CuenttoDetailView({
               height={17}
             />
           )}
-          <ShareIcon
-            width={16}
-            height={20}
-            color="black"
-            className="cursor-pointer"
-            onClick={() => CustomToast()}
-          />
+          {cuentto && isPubliclyShareable(cuentto) && (
+            <ShareIcon
+              width={16}
+              height={20}
+              color="black"
+              className="cursor-pointer"
+              onClick={() => {
+                shareCuentto(cuentto);
+              }}
+            />
+          )}
         </div>
       </div>
 
