@@ -11,8 +11,19 @@ import {
   setDailyPrompt,
 } from "@/lib/api/think";
 import { DailyPrompt, SelectableGroup } from "@/types/think";
+import { QuestionGroup } from "@/types/questionGroup";
+import { firstValidQuestion } from "@/lib/questionPrompt";
 import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
 import FormField from "@/app/components/ui/FormField";
+
+// What a writer will actually read on Think: the group's first answerable
+// question. Titles like "group-1" identify the record, not the prompt, so they
+// are only a fallback for the (API-prevented) case of a group with no usable
+// question. Mirrors the rule the backend resolver and the picker both apply.
+const promptLabel = (group?: QuestionGroup | null): string | null => {
+  const text = firstValidQuestion(group?.questions)?.text?.trim();
+  return text || group?.title || null;
+};
 
 export default function DailyPromptScheduler() {
   const [schedule, setSchedule] = useState<DailyPrompt[]>([]);
@@ -145,7 +156,8 @@ export default function DailyPromptScheduler() {
           {isScheduled ? (
             <>
               <h3 className="text-[17px] font-semibold leading-[24px] text-subtle-black break-words sm:text-[18px]">
-                {scheduledToday?.questionGroup?.title ?? "Scheduled prompt"}
+                {promptLabel(scheduledToday?.questionGroup) ??
+                  "Scheduled prompt"}
               </h3>
               <p className="text-[13px] leading-[20px] text-gray break-words">
                 Chosen by an admin for {today}.
@@ -191,7 +203,9 @@ export default function DailyPromptScheduler() {
             placeholder="Select a prompt…"
             options={selectableGroups.map((group) => ({
               value: group.id,
-              label: group.isActive ? group.title : `${group.title} (inactive)`,
+              label: group.isActive
+                ? group.questionText
+                : `${group.questionText} (inactive)`,
             }))}
             onChange={(event) =>
               setGroupId(event.target.value ? Number(event.target.value) : "")
@@ -266,8 +280,11 @@ export default function DailyPromptScheduler() {
                       Today
                     </span>
                   )}
-                  <span className="min-w-[110px] flex-1 text-[14px] font-medium text-subtle-black break-words">
-                    {entry.questionGroup?.title ??
+                  {/* Below 260px the date chip alone fills the row, so the
+                      prompt text takes a line of its own rather than being
+                      squeezed into the remainder. */}
+                  <span className="w-full min-w-0 text-[14px] font-medium text-subtle-black break-words min-[260px]:w-auto min-[260px]:flex-1">
+                    {promptLabel(entry.questionGroup) ??
                       `Prompt #${entry.questionGroupId}`}
                   </span>
                   <button

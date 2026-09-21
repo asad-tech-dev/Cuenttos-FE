@@ -49,6 +49,12 @@ export interface SelectableGroup {
   id: number;
   title: string;
   isActive: boolean;
+  /**
+   * The question that will actually appear on Think for this group — its
+   * first answerable one. This is what the picker shows, since a group title
+   * like "group-1" says nothing about what a writer will read.
+   */
+  questionText: string;
 }
 
 export interface ChallengeList {
