@@ -17,7 +17,7 @@ function ManageThinkPage() {
   const [tab, setTab] = useState<Tab>("prompt");
 
   return (
-    <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-8 px-5 py-8 sm:px-10 lg:px-[60px]">
+    <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-8 px-4 py-8 sm:px-10 lg:px-[60px]">
       <header className="flex flex-col gap-2">
         <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-violet">
           Admin
@@ -47,14 +47,21 @@ function ManageThinkPage() {
               role="tab"
               aria-selected={isActive}
               onClick={() => setTab(id)}
-              className={`inline-flex flex-1 items-center justify-center gap-2 rounded-[9px] px-4 py-2.5 text-[13px] font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet/30 cursor-pointer sm:flex-none sm:px-5 ${
+              // min-w-0 is what lets flex-1 shrink below the label's own
+              // width; without it the bar overflows and, because the app sets
+              // overflow-x:hidden globally, the second tab is silently clipped
+              // rather than scrollable.
+              className={`inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-[9px] px-2.5 py-2.5 text-[13px] font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet/30 cursor-pointer sm:flex-none sm:gap-2 sm:px-5 ${
                 isActive
                   ? "bg-white text-violet shadow-[0_1px_3px_rgba(15,15,15,0.08)]"
                   : "text-dark-gray hover:text-subtle-black"
               }`}
             >
-              <Icon size={15} className="shrink-0" />
-              <span className="whitespace-nowrap">{label}</span>
+              {/* Below ~380px the icons cost more than they add: dropping
+                  them buys enough room for both labels to read in full, and
+                  `truncate` stays as the backstop for anything narrower. */}
+              <Icon size={15} className="hidden shrink-0 min-[380px]:block" />
+              <span className="truncate">{label}</span>
             </button>
           );
         })}

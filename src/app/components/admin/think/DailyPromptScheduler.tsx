@@ -122,7 +122,10 @@ export default function DailyPromptScheduler() {
       {/* Status first: what Think is showing right now, so the admin never
           has to infer it from the list below. */}
       <section
-        className={`flex items-start gap-4 rounded-[16px] border p-5 sm:p-6 ${
+        // Below 300px a 40px icon plus its gap leaves the copy too little
+        // room and words start breaking one per line, so the icon moves above
+        // the text and the text gets the card's full width.
+        className={`flex flex-col gap-3 rounded-[16px] border p-5 min-[300px]:flex-row min-[300px]:items-start min-[300px]:gap-4 sm:p-6 ${
           isScheduled
             ? "border-violet/30 bg-light-violet/40"
             : "border-light-gray bg-gray-5"
@@ -144,16 +147,16 @@ export default function DailyPromptScheduler() {
               <h3 className="text-[17px] font-semibold leading-[24px] text-subtle-black break-words sm:text-[18px]">
                 {scheduledToday?.questionGroup?.title ?? "Scheduled prompt"}
               </h3>
-              <p className="text-[13px] leading-[20px] text-gray">
+              <p className="text-[13px] leading-[20px] text-gray break-words">
                 Chosen by an admin for {today}.
               </p>
             </>
           ) : (
             <>
-              <h3 className="text-[17px] font-semibold leading-[24px] text-subtle-black sm:text-[18px]">
+              <h3 className="text-[17px] font-semibold leading-[24px] text-subtle-black break-words sm:text-[18px]">
                 Automatic daily rotation
               </h3>
-              <p className="text-[13px] leading-[20px] text-gray">
+              <p className="text-[13px] leading-[20px] text-gray break-words">
                 Nothing is scheduled for {today || "today"}. Pick a prompt below
                 to override it.
               </p>
@@ -163,9 +166,9 @@ export default function DailyPromptScheduler() {
       </section>
 
       <section className="flex flex-col gap-5 rounded-[16px] border border-light-gray bg-white p-5 sm:p-6">
-        <div className="flex items-center gap-2.5">
+        <div className="flex min-w-0 items-center gap-2.5">
           <CalendarPlus size={18} className="shrink-0 text-violet" />
-          <h3 className="text-[16px] font-semibold text-subtle-black">
+          <h3 className="min-w-0 text-[16px] font-semibold text-subtle-black break-words">
             Schedule a prompt
           </h3>
         </div>
@@ -263,7 +266,7 @@ export default function DailyPromptScheduler() {
                       Today
                     </span>
                   )}
-                  <span className="min-w-[140px] flex-1 text-[14px] font-medium text-subtle-black break-words">
+                  <span className="min-w-[110px] flex-1 text-[14px] font-medium text-subtle-black break-words">
                     {entry.questionGroup?.title ??
                       `Prompt #${entry.questionGroupId}`}
                   </span>

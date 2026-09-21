@@ -227,9 +227,9 @@ export default function ChallengeManager() {
 
       {form && (
         <section className="flex flex-col gap-5 rounded-[16px] border border-violet/30 bg-white p-5 sm:p-6">
-          <div className="flex items-center gap-2.5">
+          <div className="flex min-w-0 items-center gap-2.5">
             <Zap size={18} className="shrink-0 text-violet" />
-            <h3 className="text-[16px] font-semibold text-subtle-black">
+            <h3 className="min-w-0 text-[16px] font-semibold text-subtle-black break-words">
               {form.id === null ? "New challenge" : "Edit challenge"}
             </h3>
           </div>
@@ -341,7 +341,7 @@ export default function ChallengeManager() {
                     : "border-light-gray hover:border-violet/40"
                 }`}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex flex-col gap-3 min-[300px]:flex-row min-[300px]:items-start min-[300px]:gap-4">
                   <div
                     className={`flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[10px] ${
                       isLive
@@ -392,7 +392,7 @@ export default function ChallengeManager() {
                       <Timer size={12} />
                       {Math.round(challenge.durationSeconds / 60)} min write
                     </span>
-                    <span className="inline-flex items-center gap-1.5 text-[11px] text-gray-7">
+                    <span className="inline-flex min-w-0 items-center gap-1.5 text-[11px] text-gray-7">
                       <CalendarClock size={12} className="shrink-0" />
                       <span className="break-words">
                         {describeWindow(challenge)}
