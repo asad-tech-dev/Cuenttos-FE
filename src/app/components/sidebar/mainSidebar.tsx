@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import {
   ShieldCheck,
   ClipboardList,
+  Lightbulb,
   ChevronDown,
   LogOut,
 } from "lucide-react";
@@ -90,6 +91,11 @@ export default function Sidebar() {
       name: "Manage Questions",
       href: "/admin/manage-questions",
       Icon: ClipboardList,
+    },
+    {
+      name: "Manage Think",
+      href: "/admin/think",
+      Icon: Lightbulb,
     },
   ];
 

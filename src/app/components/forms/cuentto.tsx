@@ -24,6 +24,7 @@ import { Group } from "@/types/group";
 import { Cuentto } from "@/types/cuentto";
 import { Question } from "@/types/questionGroup";
 import { fetchMusics } from "@/lib/api/music";
+import { fetchThinkToday } from "@/lib/api/think";
 import { fetchGroups } from "@/lib/api/group";
 import { fetchMoods } from "@/lib/api/mood";
 import { fetchQuestionGroupById } from "@/lib/api/questionGroup";
@@ -47,6 +48,8 @@ interface CuenttoFormProps {
   localDraftId?: string;
 }
 
+// Fallback countdown: what the sprint was before challenges became
+// admin-managed, and what a legacy ?challenge=5min link still means.
 const CHALLENGE_DURATION_SECONDS = 5 * 60;
 
 function formatChallengeTime(totalSeconds: number): string {
@@ -173,12 +176,46 @@ export default function CuenttoForm({
     };
   }, [promptGroupId]);
 
-  // The "5-min sprint" challenge on /think (?challenge=5min) opens straight
-  // into Create Cuentto with a live countdown, matching the mobile app.
-  const isChallenge = !isEdit && searchParams.get("challenge") === "5min";
+  // A challenge on /think opens straight into Create Cuentto with a live
+  // countdown. `?challenge=<id>` is the admin-managed form; `?challenge=5min`
+  // is the original literal, still honoured so links already shared or
+  // bookmarked keep working.
+  const challengeParam = isEdit ? null : searchParams.get("challenge");
+  const isChallenge = Boolean(challengeParam);
+  const [challengeDuration, setChallengeDuration] = useState(
+    CHALLENGE_DURATION_SECONDS,
+  );
   const [challengeSecondsLeft, setChallengeSecondsLeft] = useState(
     CHALLENGE_DURATION_SECONDS,
   );
+
+  // The challenge's own length. Read from /api/think/today rather than an
+  // admin endpoint, which a normal writer can't call — that returns the
+  // challenge currently on display, which is the one they just clicked. If it
+  // stopped being live in between, the default stands rather than erroring.
+  useEffect(() => {
+    if (!challengeParam || challengeParam === "5min") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { challenge } = await fetchThinkToday();
+        if (cancelled || !challenge) return;
+        if (String(challenge.id) !== challengeParam) return;
+        setChallengeDuration(challenge.durationSeconds);
+      } catch (error) {
+        console.error(error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [challengeParam]);
+
+  // Restart the clock whenever the real duration lands, so the brief moment
+  // before it resolves never eats into the writer's time.
+  useEffect(() => {
+    setChallengeSecondsLeft(challengeDuration);
+  }, [challengeDuration]);
 
   useEffect(() => {
     if (!isChallenge) return;
