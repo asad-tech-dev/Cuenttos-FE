@@ -6,7 +6,7 @@ import {
   SelectableGroup,
   ThinkToday,
 } from "@/types/think";
-import { Challenge } from "@/types/think";
+import { Challenge, ChallengeToggleResult } from "@/types/think";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -166,11 +166,14 @@ export const deleteChallenge = async (id: number): Promise<void> => {
 export const toggleChallengeActive = async (
   id: number,
   next: boolean,
-): Promise<Challenge> => {
+): Promise<ChallengeToggleResult> => {
   const response = await axios.patch(
     `${API_URL}/api/admin/challenges/${id}/${next ? "activate" : "deactivate"}`,
     {},
     { headers: authHeaders() },
   );
-  return response.data.challenge;
+  return {
+    challenge: response.data.challenge,
+    liveChallengeId: response.data.liveChallengeId ?? null,
+  };
 };

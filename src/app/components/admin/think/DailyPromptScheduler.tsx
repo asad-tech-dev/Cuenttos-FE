@@ -101,7 +101,9 @@ export default function DailyPromptScheduler() {
     }
   };
 
-  if (loading) {
+  // First paint only — scheduling or clearing a day refreshes in place
+  // rather than blanking the section back to skeletons.
+  if (loading && schedule.length === 0 && selectableGroups.length === 0) {
     return (
       <div className="flex flex-col gap-5">
         <div className="h-[104px] w-full animate-pulse rounded-[16px] bg-gray-6" />

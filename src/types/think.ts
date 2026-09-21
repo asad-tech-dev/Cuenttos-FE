@@ -63,6 +63,12 @@ export interface ChallengeList {
   challenges: Challenge[];
 }
 
+/** Toggling changes which challenge is live, so the new answer ships back. */
+export interface ChallengeToggleResult {
+  challenge: Challenge;
+  liveChallengeId: number | null;
+}
+
 export interface ChallengeInput {
   title: string;
   description: string;

@@ -77,6 +77,8 @@ export default function ChallengeManager() {
   const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
+    // `loading` only gates the first paint (see showSkeleton below), so a
+    // refresh triggered by a mutation never swaps the list out for skeletons.
     setLoading(true);
     setError(null);
     try {
@@ -152,13 +154,40 @@ export default function ChallengeManager() {
     }
   };
 
+  /**
+   * Optimistic, and deliberately does NOT re-fetch the list.
+   *
+   * The switch moves on click; the request only confirms it. Re-fetching used
+   * to put the whole section back into its loading state, so every toggle
+   * flashed the list away and back and the panel jumped as the skeleton
+   * heights differed from the cards. The response carries the recomputed
+   * `liveChallengeId`, which was the only thing the re-fetch was needed for.
+   */
   const handleToggle = async (challenge: Challenge, next: boolean) => {
+    if (togglingId !== null) return;
+
+    const previousChallenges = challenges;
+    const previousLiveId = liveId;
+
     setTogglingId(challenge.id);
+    setChallenges((list) =>
+      list.map((item) =>
+        item.id === challenge.id ? { ...item, isActive: next } : item,
+      ),
+    );
+
     try {
-      await toggleChallengeActive(challenge.id, next);
-      await load();
+      const result = await toggleChallengeActive(challenge.id, next);
+      setChallenges((list) =>
+        list.map((item) =>
+          item.id === result.challenge.id ? result.challenge : item,
+        ),
+      );
+      setLiveId(result.liveChallengeId);
     } catch (err) {
       console.error(err);
+      setChallenges(previousChallenges);
+      setLiveId(previousLiveId);
       toast.error(describeThinkApiError(err, "Couldn't update that challenge."));
     } finally {
       setTogglingId(null);
@@ -181,7 +210,9 @@ export default function ChallengeManager() {
     }
   };
 
-  if (loading) {
+  // Skeletons belong to the first paint only. A refresh after a mutation
+  // keeps the existing cards on screen, which is what stops the flicker.
+  if (loading && challenges.length === 0) {
     return (
       <div className="flex flex-col gap-4">
         <div className="h-[56px] w-full animate-pulse rounded-[16px] bg-gray-6" />
