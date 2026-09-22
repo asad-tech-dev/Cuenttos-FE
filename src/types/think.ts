@@ -1,4 +1,4 @@
-import { QuestionGroup } from "./questionGroup";
+import { Question, QuestionGroup } from "./questionGroup";
 
 export interface Challenge {
   id: number;
@@ -19,6 +19,12 @@ export interface TodaysPrompt {
    *               deterministic date-based pick the client used to make.
    */
   source: "scheduled" | "fallback";
+  /**
+   * The single question on display today, hoisted by the API so nothing has
+   * to re-derive it. `questionGroup.questions` now contains only this same
+   * question. Optional so an older backend response still type-checks.
+   */
+  question?: Question;
   questionGroup: QuestionGroup;
 }
 

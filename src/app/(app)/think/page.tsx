@@ -187,7 +187,12 @@ function ThinkPage() {
     return groups[dailyIndex(today, groups.length)];
   }, [serverPrompt, groups]);
 
-  const dailyQuestion = dailyGroup ? firstValidQuestion(dailyGroup.questions) : null;
+  // The API names today's question outright; firstValidQuestion stays as the
+  // fallback for the offline path, where dailyGroup came from the client-side
+  // pick rather than the server.
+  const dailyQuestion =
+    serverPrompt?.question ??
+    (dailyGroup ? firstValidQuestion(dailyGroup.questions) : null);
   const dailyText = dailyQuestion
     ? [dailyQuestion.text.trim(), dailyQuestion.description?.trim()]
         .filter(Boolean)
