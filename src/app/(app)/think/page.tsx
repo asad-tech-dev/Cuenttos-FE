@@ -6,13 +6,17 @@ import { useRouter } from "next/navigation";
 import { Star, Zap, PenLine, ArrowRight } from "lucide-react";
 import { ShareIcon } from "@/app/components/icons";
 import { fetchActiveQuestionGroups } from "@/lib/api/questionGroup";
+import { fetchThinkToday } from "@/lib/api/think";
 import { QuestionGroup } from "@/types/questionGroup";
+import { Challenge, TodaysPrompt } from "@/types/think";
 import { firstValidQuestion } from "@/lib/questionPrompt";
 import CustomToast from "@/app/components/toasts/toast";
 
-// There's no "daily pick" flag in the backend, so today's pick is derived
-// deterministically from today's date — stable all day, different tomorrow —
-// rather than randomized on every visit.
+// Fallback pick, used only when the backend can't tell us what today's prompt
+// is. Derives it deterministically from today's date — stable all day,
+// different tomorrow — rather than randomizing per visit. The backend runs an
+// identical implementation, so when nothing is scheduled the server-resolved
+// prompt and this one agree and the handover is invisible.
 function dailyIndex(dateKey: string, length: number): number {
   if (length <= 0) return 0;
   let hash = 0;
@@ -97,12 +101,26 @@ function readableAccent(hex: string, maxLightness = 42): string {
 
 type Mood = { id: number; title: string; color: string };
 
+// What the Challenge card showed before it was admin-managed. Still rendered
+// when /api/think/today can't be reached, so a backend blip degrades to the
+// page's previous behaviour instead of a missing section.
+const DEFAULT_CHALLENGE = {
+  title: "5-min sprint",
+  description: "Write without stopping. Don't edit. Just flow.",
+  href: "/cuentto/create?challenge=5min",
+};
+
 function ThinkPage() {
   const router = useRouter();
   const [groups, setGroups] = useState<QuestionGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMoodId, setSelectedMoodId] = useState<number | "all">("all");
+  const [serverPrompt, setServerPrompt] = useState<TodaysPrompt | null>(null);
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
+  // Distinguishes "the backend said there is no challenge" (hide the section)
+  // from "we never heard back" (keep showing the default card).
+  const [thinkResolved, setThinkResolved] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,9 +128,30 @@ function ThinkPage() {
       try {
         setLoading(true);
         setError(null);
-        const active = await fetchActiveQuestionGroups();
+        // Settled, not all: the mood grid must still render if the Think
+        // endpoint is unavailable, and vice versa.
+        const [activeResult, todayResult] = await Promise.allSettled([
+          fetchActiveQuestionGroups(),
+          fetchThinkToday(),
+        ]);
         if (cancelled) return;
-        setGroups(active.filter((g) => firstValidQuestion(g.questions)));
+
+        if (activeResult.status === "fulfilled") {
+          setGroups(
+            activeResult.value.filter((g) => firstValidQuestion(g.questions)),
+          );
+        } else {
+          throw activeResult.reason;
+        }
+
+        if (todayResult.status === "fulfilled") {
+          setServerPrompt(todayResult.value.prompt);
+          setChallenge(todayResult.value.challenge);
+          setThinkResolved(true);
+        } else {
+          // Non-fatal: both sections have their own fallback below.
+          console.error(todayResult.reason);
+        }
       } catch (e) {
         if (cancelled) return;
         console.error(e);
@@ -141,10 +180,12 @@ function ThinkPage() {
   }, [groups]);
 
   const dailyGroup = useMemo(() => {
+    // An admin's explicit pick for today, resolved server-side, always wins.
+    if (serverPrompt?.questionGroup) return serverPrompt.questionGroup;
     if (!groups.length) return null;
     const today = new Date().toISOString().slice(0, 10);
     return groups[dailyIndex(today, groups.length)];
-  }, [groups]);
+  }, [serverPrompt, groups]);
 
   const dailyQuestion = dailyGroup ? firstValidQuestion(dailyGroup.questions) : null;
   const dailyText = dailyQuestion
@@ -258,31 +299,43 @@ function ThinkPage() {
             </div>
           )}
 
-          <div className="flex flex-col gap-3">
-            <p className="text-dark-gray text-[12px] font-semibold tracking-[0.12em] uppercase">
-              Challenge
-            </p>
-            <div className="flex flex-row items-center gap-4 rounded-[16px] border border-amber-200 bg-amber-50 px-5 py-4">
-              <div className="shrink-0 w-12 h-12 rounded-[14px] bg-orange-400 text-white flex items-center justify-center">
-                <Zap size={22} className="fill-white" />
+          {/* Hidden only once the backend has confirmed there is no challenge
+              on display; an unreachable backend keeps the default card. */}
+          {(!thinkResolved || challenge) && (
+            <div className="flex flex-col gap-3">
+              <p className="text-dark-gray text-[12px] font-semibold tracking-[0.12em] uppercase">
+                Challenge
+              </p>
+              <div className="flex flex-row flex-wrap items-center gap-4 rounded-[16px] border border-amber-200 bg-amber-50 px-5 py-4">
+                <div className="shrink-0 w-12 h-12 rounded-[14px] bg-orange-400 text-white flex items-center justify-center">
+                  <Zap size={22} className="fill-white" />
+                </div>
+                {/* min-w-[160px] lets admin-authored copy of any length wrap
+                    onto its own row instead of crushing the button. */}
+                <div className="flex-1 min-w-[160px]">
+                  <p className="text-amber-700 text-[12px] font-bold tracking-[0.08em] uppercase break-words">
+                    {challenge?.title ?? DEFAULT_CHALLENGE.title}
+                  </p>
+                  <p className="text-[14px] text-subtle-black break-words">
+                    {challenge?.description ?? DEFAULT_CHALLENGE.description}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    router.push(
+                      challenge
+                        ? `/cuentto/create?challenge=${challenge.id}`
+                        : DEFAULT_CHALLENGE.href,
+                    )
+                  }
+                  className="shrink-0 inline-flex items-center justify-center h-[38px] px-5 rounded-[100px] bg-violet text-white text-[14px] font-semibold cursor-pointer"
+                >
+                  Go
+                </button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-amber-700 text-[12px] font-bold tracking-[0.08em] uppercase">
-                  5-min sprint
-                </p>
-                <p className="text-[14px] text-subtle-black">
-                  Write without stopping. Don&apos;t edit. Just flow.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => router.push("/cuentto/create?challenge=5min")}
-                className="shrink-0 inline-flex items-center justify-center h-[38px] px-5 rounded-[100px] bg-violet text-white text-[14px] font-semibold cursor-pointer"
-              >
-                Go
-              </button>
             </div>
-          </div>
+          )}
 
           {moods.length > 0 && (
             <div className="flex flex-col gap-3">
