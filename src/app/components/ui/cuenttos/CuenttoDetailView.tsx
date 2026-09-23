@@ -18,6 +18,7 @@ import {
   PlayIcon,
 } from "@/app/components/icons";
 import SaveCuenttoButton from "@/app/components/ui/cuenttos/SaveCuenttoButton";
+import { refreshAccessToken } from "@/lib/api/auth";
 import { isPubliclyShareable, shareCuentto } from "@/lib/shareCuentto";
 import CuenttoVisibilityTag from "@/app/components/ui/cuenttos/CuenttoVisibilityTag";
 import Image from "next/image";
@@ -97,9 +98,16 @@ function CuenttoDetailView({
             const payload = JSON.parse(decodedPayload);
             const isExpired = payload.exp * 1000 < Date.now();
             if (isExpired) {
-              localStorage.removeItem("authToken");
-              router.replace("/login");
-              return;
+              // Access token expired — try a silent refresh via the httpOnly
+              // refresh cookie before sending the user to /login. Only redirect
+              // if that refresh fails.
+              try {
+                await refreshAccessToken();
+              } catch {
+                localStorage.removeItem("authToken");
+                router.replace("/login");
+                return;
+              }
             }
           } catch (error) {
             console.error("Invalid token", error);

@@ -13,7 +13,12 @@ export const loginUser = async (data: LoginFormData): Promise<LoginResponse> => 
   const response = await axios.post(`${API_URL}/api/auth/login`, data, {
     headers: {
       "Content-Type": "application/json",
+      // Identify as a web client so the backend delivers the refresh token as
+      // an httpOnly cookie (never in the JS-readable body).
+      "x-client-type": "web",
     },
+    // Required so the browser stores the Set-Cookie refresh cookie.
+    withCredentials: true,
   });
   return {
     token: response.data.token,
@@ -25,6 +30,32 @@ export const storeToken = (token: string) => {
   localStorage.setItem("authToken", token);
 };
 
+/**
+ * Exchange the httpOnly refresh cookie for a fresh access token. The refresh
+ * token itself is never touched by JS — the browser sends the cookie because
+ * of `withCredentials`, and the backend rotates it via Set-Cookie. Returns the
+ * new access token (also persisted to localStorage) or throws on failure.
+ */
+export const refreshAccessToken = async (): Promise<string> => {
+  const response = await axios.post(
+    `${API_URL}/api/auth/refreshtoken`,
+    {},
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "x-client-type": "web",
+      },
+      withCredentials: true,
+    }
+  );
+  const newToken: string | undefined = response.data?.token;
+  if (!newToken) {
+    throw new Error("No access token returned from refresh");
+  }
+  storeToken(newToken);
+  return newToken;
+};
+
 export const logoutUser = async (): Promise<{ message: string }> => {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
@@ -34,8 +65,11 @@ export const logoutUser = async (): Promise<{ message: string }> => {
     {
       headers: {
         "Content-Type": "application/json",
+        "x-client-type": "web",
         Authorization: token ? `Bearer ${token}` : "",
       },
+      // Send the refresh cookie so the backend can clear it server-side.
+      withCredentials: true,
     }
   );
   return response.data;

@@ -8,6 +8,33 @@ import { SkeletonCuenttoFeed } from "@/app/components/skeletons/CuenttoFeed";
 import { Cuentto, FeaturedCuentto } from "@/types/cuentto";
 import { fetchAllCuenttos, fetchFeaturedCuenttos } from "@/lib/api/cuentto";
 
+// Shared empty-state block for a Share section, styled to match the app's
+// existing empty states (e.g. the Saved page): a dashed card with a rounded
+// icon badge, a heading and a friendly line of copy.
+function SectionEmptyState({
+  icon,
+  title,
+  description,
+}: {
+  icon: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center text-center rounded-[20px] border border-dashed border-light-gray bg-gray-5 px-6 py-14 sm:py-16">
+      <div className="flex items-center justify-center w-[64px] h-[64px] rounded-full bg-light-violet text-[26px]">
+        <span aria-hidden>{icon}</span>
+      </div>
+      <h3 className="mt-5 text-[18px] sm:text-[20px] font-semibold text-dark-violet">
+        {title}
+      </h3>
+      <p className="mt-2 max-w-[420px] text-[14px] sm:text-[15px] leading-[22px] text-gray">
+        {description}
+      </p>
+    </div>
+  );
+}
+
 function SharePage() {
   const [cuenttos, setCuenttos] = useState<Cuentto[]>([]);
   const [featured, setFeatured] = useState<FeaturedCuentto[]>([]);
@@ -50,6 +77,12 @@ function SharePage() {
         </h2>
         {loading1 ? (
           <SkeletonCuenttoFeatured />
+        ) : featured.length === 0 ? (
+          <SectionEmptyState
+            icon="🔥"
+            title="No trending Cuenttos yet"
+            description="Popular Cuenttos from the community will show up here. Check back soon to see what everyone's writing."
+          />
         ) : (
           <div className="flex flex-row gap-[20px] overflow-x-auto pt-2 pb-2 -mx-1 px-1 snap-x snap-mandatory hide-scrollbar-lg">
             {featured.map((cuentto, idx) => (
@@ -69,6 +102,12 @@ function SharePage() {
         </h2>
         {loading2 ? (
           <SkeletonCuenttoFeed />
+        ) : cuenttos.length === 0 ? (
+          <SectionEmptyState
+            icon="💌"
+            title="Nothing shared with you yet"
+            description="When someone shares a Cuentto with you, it'll appear here."
+          />
         ) : (
           <div className="flex flex-col gap-[20px]">
             {cuenttos.map((cuentto) => (
