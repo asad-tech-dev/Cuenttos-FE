@@ -9,7 +9,11 @@ import CustomToast from "../toasts/comingSoon";
 import { useMobileNav } from "../context/MobileNavContext";
 import { isAuthenticated } from "@/lib/api/auth";
 
-export default function AppHeader({ showSidebar = false }: { showSidebar?: boolean }) {
+export default function AppHeader({
+  showSidebar = false,
+}: {
+  showSidebar?: boolean;
+}) {
   const { toggle } = useMobileNav();
   const pathname = usePathname();
   const [authed, setAuthed] = useState(showSidebar);
@@ -19,7 +23,10 @@ export default function AppHeader({ showSidebar = false }: { showSidebar?: boole
   }, [pathname, showSidebar]);
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!authed && (pathname.startsWith("/prompt") || pathname.startsWith("/cuentto/create"))) {
+    if (
+      !authed &&
+      (pathname.startsWith("/prompt") || pathname.startsWith("/cuentto/create"))
+    ) {
       e.preventDefault();
     }
   };
@@ -27,8 +34,8 @@ export default function AppHeader({ showSidebar = false }: { showSidebar?: boole
   const logoHref = authed
     ? "/share"
     : pathname.startsWith("/prompt") || pathname.startsWith("/cuentto/create")
-    ? "#"
-    : "/share";
+      ? "#"
+      : "/share";
 
   return (
     <div className="flex h-[55px] fixed w-full top-0 z-50 px-4 sm:px-6 lg:px-12 items-center justify-between bg-white border-b border-light-gray">
@@ -49,6 +56,7 @@ export default function AppHeader({ showSidebar = false }: { showSidebar?: boole
             alt="Logo"
             width={122}
             height={21}
+            priority
             className="object-cover cursor-pointer"
           />
         </Link>
@@ -58,17 +66,13 @@ export default function AppHeader({ showSidebar = false }: { showSidebar?: boole
           width={17}
           height={17}
           className="cursor-pointer text-subtle-black"
-          onClick={() =>
-            CustomToast()
-          }
+          onClick={() => CustomToast()}
         />
         <BellIcon
           width={20}
           height={20}
           className="cursor-pointer text-subtle-black"
-          onClick={() =>
-            CustomToast()
-          }
+          onClick={() => CustomToast()}
         />
       </div>
     </div>

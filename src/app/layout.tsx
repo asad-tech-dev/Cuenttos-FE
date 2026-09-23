@@ -22,10 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.variable}>
-          <AuthInterceptorProvider />
-          <main>
-            {children}
-          </main>
+        <AuthInterceptorProvider />
+        {children}
         <Toaster />
       </body>
     </html>
