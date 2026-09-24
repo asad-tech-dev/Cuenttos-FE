@@ -10,6 +10,7 @@ import { readCuenttoDraft } from "@/lib/cuenttoDraft";
 import { getLocalDraft } from "@/lib/localDrafts";
 import { CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 import { fetchQuestionGroupById } from "@/lib/api/questionGroup";
+import { isSafeRedirectPath } from "@/lib/safeRedirect";
 
 function CreateCuenttoContent() {
   const router = useRouter();
@@ -69,7 +70,15 @@ function CreateCuenttoContent() {
 
   if (!ready) return null;
 
-  const backHref = promptSlug
+  // An explicit ?back=<path> (set by the page the writer came from, e.g. /think
+  // or /write) takes priority so Back returns them to their origin. It's
+  // sanitized to a same-site relative path to avoid open redirects. Falling
+  // back to the prompt page (for shared /prompt links) then /write keeps every
+  // existing flow unchanged.
+  const backParam = searchParams.get("back");
+  const backHref = isSafeRedirectPath(backParam)
+    ? backParam
+    : promptSlug
     ? `/prompt/${promptSlug}`
     : promptGroupId
     ? `/prompt/${promptGroupId}`

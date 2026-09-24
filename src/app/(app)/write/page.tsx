@@ -63,7 +63,7 @@ function WritePage() {
 
         {/* Mindfulness navigation disabled - redirects directly to /cuentto/create */}
         {/* <Link href="/mindfulness"> */}
-        <Link href="/cuentto/create">
+        <Link href={`/cuentto/create?back=${encodeURIComponent("/write")}`}>
           <div className="relative w-full max-w-[720px] overflow-hidden rounded-[28px] bg-violet px-6 py-8 sm:px-8 sm:py-10 cursor-pointer">
             <div
               aria-hidden
@@ -105,7 +105,7 @@ function WritePage() {
             {drafts.map((draft) => (
               <Link
                 key={draft.id}
-                href={`/cuentto/create?draftId=${draft.id}`}
+                href={`/cuentto/create?draftId=${draft.id}&back=${encodeURIComponent("/write")}`}
               >
                 <div className="flex flex-row items-center gap-4 rounded-[16px] border border-light-gray bg-white px-4 py-3 cursor-pointer">
                   <div className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-[12px] bg-violet">

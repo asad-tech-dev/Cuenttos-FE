@@ -211,7 +211,9 @@ function ThinkPage() {
   // here is a specific choice — it goes straight to Create Cuentto with that
   // prompt shown at the top, matching the mobile app's behavior.
   const openPrompt = (groupId: number) => {
-    router.push(`/cuentto/create?promptGroupId=${groupId}`);
+    router.push(
+      `/cuentto/create?promptGroupId=${groupId}&back=${encodeURIComponent("/think")}`,
+    );
   };
 
   // Copies a public, no-login-required link to this specific prompt
@@ -330,8 +332,8 @@ function ThinkPage() {
                   onClick={() =>
                     router.push(
                       challenge
-                        ? `/cuentto/create?challenge=${challenge.id}&duration=${challenge.durationSeconds}`
-                        : DEFAULT_CHALLENGE.href,
+                        ? `/cuentto/create?challenge=${challenge.id}&duration=${challenge.durationSeconds}&back=${encodeURIComponent("/think")}`
+                        : `${DEFAULT_CHALLENGE.href}&back=${encodeURIComponent("/think")}`,
                     )
                   }
                   className="shrink-0 inline-flex items-center justify-center h-[38px] px-5 rounded-[100px] bg-violet text-white text-[14px] font-semibold cursor-pointer"
