@@ -330,7 +330,7 @@ function ThinkPage() {
                   onClick={() =>
                     router.push(
                       challenge
-                        ? `/cuentto/create?challenge=${challenge.id}`
+                        ? `/cuentto/create?challenge=${challenge.id}&duration=${challenge.durationSeconds}`
                         : DEFAULT_CHALLENGE.href,
                     )
                   }
