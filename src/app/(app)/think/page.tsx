@@ -9,7 +9,7 @@ import { fetchActiveQuestionGroups } from "@/lib/api/questionGroup";
 import { fetchThinkToday } from "@/lib/api/think";
 import { QuestionGroup } from "@/types/questionGroup";
 import { Challenge, TodaysPrompt } from "@/types/think";
-import { firstValidQuestion } from "@/lib/questionPrompt";
+import { firstValidQuestion, validQuestions } from "@/lib/questionPrompt";
 import CustomToast from "@/app/components/toasts/toast";
 
 // Fallback pick, used only when the backend can't tell us what today's prompt
@@ -388,14 +388,16 @@ function ThinkPage() {
 
           {gridGroups.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {gridGroups.map((group) => {
-                const question = firstValidQuestion(group.questions);
-                if (!question) return null;
+              {gridGroups.flatMap((group) => {
+                const questions = validQuestions(group.questions);
+                if (questions.length === 0) return [];
                 const color = group.mood?.color || "#5D4DBE";
                 const accent = readableAccent(color);
-                return (
+                // One card per answerable question, each keeping the group's
+                // title, mood color, and share / start-writing actions.
+                return questions.map((question, index) => (
                   <div
-                    key={group.id}
+                    key={`${group.id}-${question.id ?? index}`}
                     className="relative flex flex-col justify-between gap-6 rounded-[20px] border border-black/[0.06] p-5 min-h-[150px]"
                     style={{ backgroundColor: `${color}26` }}
                   >
@@ -431,7 +433,7 @@ function ThinkPage() {
                       </button>
                     </div>
                   </div>
-                );
+                ));
               })}
             </div>
           )}
