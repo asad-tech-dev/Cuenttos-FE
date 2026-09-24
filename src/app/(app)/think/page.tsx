@@ -11,6 +11,7 @@ import { QuestionGroup } from "@/types/questionGroup";
 import { Challenge, TodaysPrompt } from "@/types/think";
 import { firstValidQuestion, validQuestions } from "@/lib/questionPrompt";
 import CustomToast from "@/app/components/toasts/toast";
+import ClampedText from "@/app/components/ui/ClampedText";
 
 // Fallback pick, used only when the backend can't tell us what today's prompt
 // is. Derives it deterministically from today's date — stable all day,
@@ -275,9 +276,10 @@ function ThinkPage() {
                     <Star size={12} className="fill-white text-white" />
                     Daily pick
                   </span>
-                  <p className="text-white text-[22px] sm:text-[28px] leading-[30px] sm:leading-[36px] font-medium max-w-[640px]">
-                    &quot;{dailyText}&quot;
-                  </p>
+                  <ClampedText
+                    text={`"${dailyText}"`}
+                    className="text-white text-[22px] sm:text-[28px] leading-[30px] sm:leading-[36px] font-medium max-w-[640px]"
+                  />
                 </div>
                 <div className="relative z-10 flex flex-row flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-row items-center gap-3">
@@ -320,12 +322,14 @@ function ThinkPage() {
                 {/* min-w-[160px] lets admin-authored copy of any length wrap
                     onto its own row instead of crushing the button. */}
                 <div className="flex-1 min-w-[160px]">
-                  <p className="text-amber-700 text-[12px] font-bold tracking-[0.08em] uppercase break-words">
-                    {challenge?.title ?? DEFAULT_CHALLENGE.title}
-                  </p>
-                  <p className="text-[14px] text-subtle-black break-words">
-                    {challenge?.description ?? DEFAULT_CHALLENGE.description}
-                  </p>
+                  <ClampedText
+                    text={challenge?.title ?? DEFAULT_CHALLENGE.title}
+                    className="text-amber-700 text-[12px] font-bold tracking-[0.08em] uppercase"
+                  />
+                  <ClampedText
+                    text={challenge?.description ?? DEFAULT_CHALLENGE.description}
+                    className="text-[14px] text-subtle-black"
+                  />
                 </div>
                 <button
                   type="button"
@@ -404,15 +408,15 @@ function ThinkPage() {
                     style={{ backgroundColor: `${color}26` }}
                   >
                     <div className="flex flex-col gap-2">
-                      <p
+                      <ClampedText
+                        text={group.title}
                         className="text-[11px] font-bold tracking-[0.1em] uppercase"
                         style={{ color: accent }}
-                      >
-                        {group.title}
-                      </p>
-                      <p className="text-[14px] leading-[20px] text-subtle-black line-clamp-2">
-                        {question.text}
-                      </p>
+                      />
+                      <ClampedText
+                        text={question.text}
+                        className="text-[14px] leading-[20px] text-subtle-black"
+                      />
                     </div>
                     <div className="self-end flex flex-row items-center gap-2">
                       <button
