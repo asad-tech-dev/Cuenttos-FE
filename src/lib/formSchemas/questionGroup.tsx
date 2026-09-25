@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-export const QUESTIONS_PER_GROUP = 3;
+// A new group starts with this many blank question slots.
+export const DEFAULT_QUESTIONS_PER_GROUP = 3;
+
+// A group must have at least one question. There is no upper limit -- the
+// backend accepts any number, so admins can add as many as they need.
+export const MIN_QUESTIONS_PER_GROUP = 1;
 
 export const QuestionGroupSchema = z.object({
   title: z
@@ -28,7 +33,10 @@ export const QuestionGroupSchema = z.object({
         isAnswer: z.boolean(),
       })
     )
-    .length(QUESTIONS_PER_GROUP, `Please provide ${QUESTIONS_PER_GROUP} questions`),
+    .min(
+      MIN_QUESTIONS_PER_GROUP,
+      `Please add at least ${MIN_QUESTIONS_PER_GROUP} question`
+    ),
 });
 
 export type QuestionGroupFormData = z.infer<typeof QuestionGroupSchema>;

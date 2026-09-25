@@ -11,7 +11,7 @@ import { SkeletonQuestionGroupForm } from "@/app/components/skeletons/QuestionGr
 import { fetchQuestionGroupById } from "@/lib/api/questionGroup";
 import {
   QuestionGroupFormData,
-  QUESTIONS_PER_GROUP,
+  MIN_QUESTIONS_PER_GROUP,
 } from "@/lib/formSchemas/questionGroup";
 
 function EditQuestionGroupPage() {
@@ -41,18 +41,26 @@ function EditQuestionGroupPage() {
           .slice()
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-        const questions = Array.from(
-          { length: QUESTIONS_PER_GROUP },
-          (_, i) => {
-            const q = sorted[i];
-            return {
-              ...(q?.id != null ? { id: q.id } : {}),
-              text: q?.text ?? "",
-              description: q?.description ?? null,
-              isAnswer: q?.isAnswer ?? true,
-            };
-          }
-        );
+        // Load the group's actual questions (no longer capped at a fixed
+        // count). Pad with blank slots only if a legacy group somehow has
+        // fewer than the minimum, so the form always has an editable row.
+        const loaded = sorted.map((q) => ({
+          ...(q.id != null ? { id: q.id } : {}),
+          text: q.text ?? "",
+          description: q.description ?? null,
+          isAnswer: q.isAnswer ?? true,
+        }));
+
+        const questions =
+          loaded.length >= MIN_QUESTIONS_PER_GROUP
+            ? loaded
+            : [
+                ...loaded,
+                ...Array.from(
+                  { length: MIN_QUESTIONS_PER_GROUP - loaded.length },
+                  () => ({ text: "", description: null, isAnswer: true })
+                ),
+              ];
 
         setInitialValues({
           title: group.title,

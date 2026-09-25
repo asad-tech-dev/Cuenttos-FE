@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { QUESTIONS_PER_GROUP } from "@/lib/formSchemas/questionGroup";
+import { DEFAULT_QUESTIONS_PER_GROUP } from "@/lib/formSchemas/questionGroup";
 
 function SectionCard({ children }: { children: React.ReactNode }) {
   return (
@@ -44,7 +44,7 @@ export function SkeletonQuestionGroupForm() {
         </div>
 
         <div className="flex flex-col gap-5">
-          {Array.from({ length: QUESTIONS_PER_GROUP }).map((_, i) => (
+          {Array.from({ length: DEFAULT_QUESTIONS_PER_GROUP }).map((_, i) => (
             <div
               key={i}
               className="flex flex-col gap-3 rounded-[12px] border border-light-gray bg-gray-5 p-5"
