@@ -9,8 +9,9 @@ import { fetchActiveQuestionGroups } from "@/lib/api/questionGroup";
 import { fetchThinkToday } from "@/lib/api/think";
 import { QuestionGroup } from "@/types/questionGroup";
 import { Challenge, TodaysPrompt } from "@/types/think";
-import { firstValidQuestion } from "@/lib/questionPrompt";
+import { firstValidQuestion, validQuestions } from "@/lib/questionPrompt";
 import CustomToast from "@/app/components/toasts/toast";
+import ClampedText from "@/app/components/ui/ClampedText";
 
 // Fallback pick, used only when the backend can't tell us what today's prompt
 // is. Derives it deterministically from today's date — stable all day,
@@ -211,7 +212,9 @@ function ThinkPage() {
   // here is a specific choice — it goes straight to Create Cuentto with that
   // prompt shown at the top, matching the mobile app's behavior.
   const openPrompt = (groupId: number) => {
-    router.push(`/cuentto/create?promptGroupId=${groupId}`);
+    router.push(
+      `/cuentto/create?promptGroupId=${groupId}&back=${encodeURIComponent("/think")}`,
+    );
   };
 
   // Copies a public, no-login-required link to this specific prompt
@@ -273,9 +276,10 @@ function ThinkPage() {
                     <Star size={12} className="fill-white text-white" />
                     Daily pick
                   </span>
-                  <p className="text-white text-[22px] sm:text-[28px] leading-[30px] sm:leading-[36px] font-medium max-w-[640px]">
-                    &quot;{dailyText}&quot;
-                  </p>
+                  <ClampedText
+                    text={`"${dailyText}"`}
+                    className="text-white text-[22px] sm:text-[28px] leading-[30px] sm:leading-[36px] font-medium max-w-[640px]"
+                  />
                 </div>
                 <div className="relative z-10 flex flex-row flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-row items-center gap-3">
@@ -318,20 +322,22 @@ function ThinkPage() {
                 {/* min-w-[160px] lets admin-authored copy of any length wrap
                     onto its own row instead of crushing the button. */}
                 <div className="flex-1 min-w-[160px]">
-                  <p className="text-amber-700 text-[12px] font-bold tracking-[0.08em] uppercase break-words">
-                    {challenge?.title ?? DEFAULT_CHALLENGE.title}
-                  </p>
-                  <p className="text-[14px] text-subtle-black break-words">
-                    {challenge?.description ?? DEFAULT_CHALLENGE.description}
-                  </p>
+                  <ClampedText
+                    text={challenge?.title ?? DEFAULT_CHALLENGE.title}
+                    className="text-amber-700 text-[12px] font-bold tracking-[0.08em] uppercase"
+                  />
+                  <ClampedText
+                    text={challenge?.description ?? DEFAULT_CHALLENGE.description}
+                    className="text-[14px] text-subtle-black"
+                  />
                 </div>
                 <button
                   type="button"
                   onClick={() =>
                     router.push(
                       challenge
-                        ? `/cuentto/create?challenge=${challenge.id}`
-                        : DEFAULT_CHALLENGE.href,
+                        ? `/cuentto/create?challenge=${challenge.id}&duration=${challenge.durationSeconds}&back=${encodeURIComponent("/think")}`
+                        : `${DEFAULT_CHALLENGE.href}&back=${encodeURIComponent("/think")}`,
                     )
                   }
                   className="shrink-0 inline-flex items-center justify-center h-[38px] px-5 rounded-[100px] bg-violet text-white text-[14px] font-semibold cursor-pointer"
@@ -388,27 +394,29 @@ function ThinkPage() {
 
           {gridGroups.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {gridGroups.map((group) => {
-                const question = firstValidQuestion(group.questions);
-                if (!question) return null;
+              {gridGroups.flatMap((group) => {
+                const questions = validQuestions(group.questions);
+                if (questions.length === 0) return [];
                 const color = group.mood?.color || "#5D4DBE";
                 const accent = readableAccent(color);
-                return (
+                // One card per answerable question, each keeping the group's
+                // title, mood color, and share / start-writing actions.
+                return questions.map((question, index) => (
                   <div
-                    key={group.id}
+                    key={`${group.id}-${question.id ?? index}`}
                     className="relative flex flex-col justify-between gap-6 rounded-[20px] border border-black/[0.06] p-5 min-h-[150px]"
                     style={{ backgroundColor: `${color}26` }}
                   >
                     <div className="flex flex-col gap-2">
-                      <p
+                      <ClampedText
+                        text={group.title}
                         className="text-[11px] font-bold tracking-[0.1em] uppercase"
                         style={{ color: accent }}
-                      >
-                        {group.title}
-                      </p>
-                      <p className="text-[14px] leading-[20px] text-subtle-black line-clamp-2">
-                        {question.text}
-                      </p>
+                      />
+                      <ClampedText
+                        text={question.text}
+                        className="text-[14px] leading-[20px] text-subtle-black"
+                      />
                     </div>
                     <div className="self-end flex flex-row items-center gap-2">
                       <button
@@ -431,7 +439,7 @@ function ThinkPage() {
                       </button>
                     </div>
                   </div>
-                );
+                ));
               })}
             </div>
           )}

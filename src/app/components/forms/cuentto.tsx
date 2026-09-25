@@ -182,48 +182,66 @@ export default function CuenttoForm({
   // bookmarked keep working.
   const challengeParam = isEdit ? null : searchParams.get("challenge");
   const isChallenge = Boolean(challengeParam);
-  const [challengeDuration, setChallengeDuration] = useState(
-    CHALLENGE_DURATION_SECONDS,
-  );
-  const [challengeSecondsLeft, setChallengeSecondsLeft] = useState(
-    CHALLENGE_DURATION_SECONDS,
+
+  // When the writer arrives from /think, the challenge's real length is carried
+  // in the URL (?duration=<seconds>), so the countdown renders the correct
+  // value on the very first paint — no flash of the 5:00 default and no wait.
+  const durationParam = isEdit ? null : searchParams.get("duration");
+  const parsedDuration = durationParam ? Number(durationParam) : NaN;
+  const hasValidDuration = Number.isFinite(parsedDuration) && parsedDuration > 0;
+  const initialDuration = hasValidDuration
+    ? parsedDuration
+    : CHALLENGE_DURATION_SECONDS;
+
+  const [challengeDuration, setChallengeDuration] = useState(initialDuration);
+  const [challengeSecondsLeft, setChallengeSecondsLeft] =
+    useState(initialDuration);
+  // The timer value is authoritative once we know it up-front (the duration
+  // param, or the fixed 5min legacy sprint) or the fallback fetch has resolved.
+  // Until then we render a neutral placeholder instead of a wrong number.
+  const [challengeReady, setChallengeReady] = useState(
+    () => hasValidDuration || challengeParam === "5min",
   );
 
-  // The challenge's own length. Read from /api/think/today rather than an
-  // admin endpoint, which a normal writer can't call — that returns the
-  // challenge currently on display, which is the one they just clicked. If it
+  // Fallback only — for a ?challenge=<id> link that didn't carry the duration
+  // (older shares/bookmarks). /api/think/today returns the challenge on display
+  // (the one just clicked); a normal writer can't hit the admin route. If it
   // stopped being live in between, the default stands rather than erroring.
   useEffect(() => {
-    if (!challengeParam || challengeParam === "5min") return;
+    if (!challengeParam || challengeParam === "5min" || hasValidDuration) return;
     let cancelled = false;
     (async () => {
       try {
         const { challenge } = await fetchThinkToday();
-        if (cancelled || !challenge) return;
-        if (String(challenge.id) !== challengeParam) return;
-        setChallengeDuration(challenge.durationSeconds);
+        if (cancelled) return;
+        if (challenge && String(challenge.id) === challengeParam) {
+          setChallengeDuration(challenge.durationSeconds);
+        }
       } catch (error) {
         console.error(error);
+      } finally {
+        if (!cancelled) setChallengeReady(true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [challengeParam]);
+  }, [challengeParam, hasValidDuration]);
 
-  // Restart the clock whenever the real duration lands, so the brief moment
-  // before it resolves never eats into the writer's time.
+  // Keep the remaining time in step with the resolved duration.
   useEffect(() => {
     setChallengeSecondsLeft(challengeDuration);
   }, [challengeDuration]);
 
+  // Tick only once the duration is known, so the countdown always starts from
+  // the correct full length.
   useEffect(() => {
-    if (!isChallenge) return;
+    if (!isChallenge || !challengeReady) return;
     const interval = setInterval(() => {
       setChallengeSecondsLeft((prev) => Math.max(prev - 1, 0));
     }, 1000);
     return () => clearInterval(interval);
-  }, [isChallenge]);
+  }, [isChallenge, challengeReady]);
 
   const innerCircleGroup = groups.find((g) => g.default);
 
@@ -539,7 +557,7 @@ export default function CuenttoForm({
           {isChallenge && (
             <span className="inline-flex items-center gap-1.5 h-[32px] px-3 rounded-[100px] bg-light-violet text-violet text-[14px] font-semibold tabular-nums">
               <Timer size={14} />
-              {formatChallengeTime(challengeSecondsLeft)}
+              {challengeReady ? formatChallengeTime(challengeSecondsLeft) : "–:––"}
             </span>
           )}
           <div className="flex flex-row gap-[5px] items-center">
