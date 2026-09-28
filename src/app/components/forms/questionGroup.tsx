@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, RefreshCw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Plus, RefreshCw, Trash2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,8 @@ import VioletButton from "../buttons/VioletButton";
 import {
   QuestionGroupSchema,
   QuestionGroupFormData,
-  QUESTIONS_PER_GROUP,
+  DEFAULT_QUESTIONS_PER_GROUP,
+  MIN_QUESTIONS_PER_GROUP,
 } from "@/lib/formSchemas/questionGroup";
 import {
   createQuestionGroup,
@@ -41,7 +42,7 @@ const emptyValues: QuestionGroupFormData = {
   title: "",
   description: "",
   moodId: 0,
-  questions: Array.from({ length: QUESTIONS_PER_GROUP }, () => ({
+  questions: Array.from({ length: DEFAULT_QUESTIONS_PER_GROUP }, () => ({
     text: "",
     isAnswer: true,
   })),
@@ -108,10 +109,22 @@ export default function QuestionGroupForm({
     loadMoods();
   }, []);
 
-  const { fields } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "questions",
   });
+
+  const canRemoveQuestion = fields.length > MIN_QUESTIONS_PER_GROUP;
+
+  const handleAddQuestion = () => {
+    if (loading) return;
+    append({ text: "", isAnswer: true });
+  };
+
+  const handleRemoveQuestion = (index: number) => {
+    if (!canRemoveQuestion || loading) return;
+    remove(index);
+  };
 
   const onCancel = () => router.push("/admin/manage-questions");
 
@@ -137,6 +150,8 @@ export default function QuestionGroupForm({
     if ((data.description ?? "") !== (initialValues.description ?? ""))
       return true;
     if (Number(data.moodId) !== Number(initialValues.moodId ?? 0)) return true;
+    if (data.questions.length !== (initialValues.questions?.length ?? 0))
+      return true;
     return data.questions.some((q, i) => {
       const initial = initialValues.questions?.[i];
       return (
@@ -417,7 +432,7 @@ export default function QuestionGroupForm({
                     Add Questions
                   </h2>
                   <p className="text-[13px] text-gray">
-                    Add {QUESTIONS_PER_GROUP} questions to guide the writer.
+                    Add as many questions as you need to guide the writer.
                   </p>
                 </div>
 
@@ -429,7 +444,7 @@ export default function QuestionGroupForm({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{
                         duration: 0.3,
-                        delay: 0.08 * index,
+                        delay: Math.min(0.08 * index, 0.32),
                         ease: "easeOut",
                       }}
                       whileHover={{ y: -2 }}
@@ -449,31 +464,45 @@ export default function QuestionGroupForm({
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <Controller
-                            control={control}
-                            name={`questions.${index}.isAnswer` as const}
-                            render={({ field: { value } }) => (
-                              <>
-                                <span
-                                  className={`text-[11px] font-semibold uppercase tracking-[0.06em] transition-colors ${
-                                    value ? "text-violet" : "text-gray-7"
-                                  }`}
-                                >
-                                  Answer {value ? "On" : "Off"}
-                                </span>
-                                <Toggle
-                                  checked={!!value}
-                                  disabled={loading}
-                                  size="sm"
-                                  ariaLabel={`Toggle isAnswer for question ${index + 1}`}
-                                  onChange={(next) =>
-                                    handleToggleIsAnswer(index, next)
-                                  }
-                                />
-                              </>
-                            )}
-                          />
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="flex items-center gap-2">
+                            <Controller
+                              control={control}
+                              name={`questions.${index}.isAnswer` as const}
+                              render={({ field: { value } }) => (
+                                <>
+                                  <span
+                                    className={`text-[11px] font-semibold uppercase tracking-[0.06em] transition-colors ${
+                                      value ? "text-violet" : "text-gray-7"
+                                    }`}
+                                  >
+                                    Answer {value ? "On" : "Off"}
+                                  </span>
+                                  <Toggle
+                                    checked={!!value}
+                                    disabled={loading}
+                                    size="sm"
+                                    ariaLabel={`Toggle isAnswer for question ${index + 1}`}
+                                    onChange={(next) =>
+                                      handleToggleIsAnswer(index, next)
+                                    }
+                                  />
+                                </>
+                              )}
+                            />
+                          </div>
+
+                          {canRemoveQuestion && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveQuestion(index)}
+                              disabled={loading}
+                              aria-label={`Remove question ${index + 1}`}
+                              className="flex h-[28px] w-[28px] items-center justify-center rounded-full text-gray-7 transition-colors duration-200 hover:bg-red/10 hover:text-red focus:outline-none focus-visible:ring-2 focus-visible:ring-red/30 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -487,6 +516,25 @@ export default function QuestionGroupForm({
                       />
                     </motion.div>
                   ))}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddQuestion}
+                    disabled={loading}
+                    className="group inline-flex h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-[12px] border border-dashed border-light-gray bg-white text-[14px] font-semibold text-violet transition-colors duration-200 hover:border-violet hover:bg-light-violet/40 disabled:cursor-not-allowed disabled:text-gray-7 disabled:hover:border-light-gray disabled:hover:bg-white"
+                  >
+                    <Plus
+                      size={16}
+                      className="transition-transform duration-200 group-hover:rotate-90"
+                    />
+                    Add question
+                  </button>
+                  <p className="text-center text-[12px] text-gray-7">
+                    {fields.length}{" "}
+                    {fields.length === 1 ? "question" : "questions"} added
+                  </p>
                 </div>
 
                 {errors.questions?.root?.message && (
