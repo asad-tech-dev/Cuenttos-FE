@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ElementType,
+  type Ref,
+} from "react";
 
 interface ClampedTextProps {
   /** The full text to display (and reveal in the tooltip when truncated). */
@@ -9,6 +16,11 @@ interface ClampedTextProps {
   className?: string;
   /** Inline styles, e.g. a dynamic mood color. */
   style?: CSSProperties;
+  /**
+   * Element to render as — e.g. "h2" so a page heading keeps its semantics.
+   * Defaults to "p" to preserve existing call sites.
+   */
+  as?: ElementType;
 }
 
 /**
@@ -23,8 +35,9 @@ export default function ClampedText({
   text,
   className = "",
   style,
+  as: Tag = "p",
 }: ClampedTextProps) {
-  const ref = useRef<HTMLParagraphElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const [truncated, setTruncated] = useState(false);
 
   useEffect(() => {
@@ -38,13 +51,13 @@ export default function ClampedText({
   }, [text]);
 
   return (
-    <p
-      ref={ref}
+    <Tag
+      ref={ref as Ref<HTMLElement>}
       className={`line-clamp-2 break-words ${className}`}
       style={style}
       title={truncated ? text : undefined}
     >
       {text}
-    </p>
+    </Tag>
   );
 }

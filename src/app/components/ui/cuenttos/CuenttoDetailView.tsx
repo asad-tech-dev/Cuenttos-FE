@@ -18,6 +18,7 @@ import {
   PlayIcon,
 } from "@/app/components/icons";
 import SaveCuenttoButton from "@/app/components/ui/cuenttos/SaveCuenttoButton";
+import ClampedText from "@/app/components/ui/ClampedText";
 import { refreshAccessToken } from "@/lib/api/auth";
 import { isPubliclyShareable, shareCuentto } from "@/lib/shareCuentto";
 import CuenttoVisibilityTag from "@/app/components/ui/cuenttos/CuenttoVisibilityTag";
@@ -267,9 +268,11 @@ function CuenttoDetailView({
         }}
       >
         <div className="flex flex-col gap-[16px]">
-          <h2 className="text-[28px] leading-[34px] sm:text-[36px] sm:leading-[42px] md:text-[45px] md:leading-[52px] font-normal text-dark-violet break-words">
-            {cuentto?.title}
-          </h2>
+          <ClampedText
+            as="h2"
+            text={cuentto?.title ?? ""}
+            className="text-[24px] leading-[30px] sm:text-[30px] sm:leading-[38px] md:text-[36px] md:leading-[44px] font-normal text-dark-violet"
+          />
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={`px-3 py-1 font-medium text-[11px] rounded-full w-fit ${
