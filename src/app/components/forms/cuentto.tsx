@@ -3,8 +3,9 @@ import { useForm, Controller } from "react-hook-form";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pause, Sparkles, Timer } from "lucide-react";
+import { Pause, Plus, Smile, Sparkles, Timer } from "lucide-react";
 import axios from "axios";
+import { toast } from "sonner";
 import PublishCuentto from "../popups/publishCuentto";
 import Image from "next/image";
 import { CheckIcon, CloseIcon, MicIcon, MusicIcon, PlayIcon } from "../icons";
@@ -18,6 +19,7 @@ import CustomRadioButtonGroup from "../ui/CustomRadioButtonGroup";
 import { Dialog } from "@/components/ui/dialog";
 import { Editor } from "@tinymce/tinymce-react";
 import VioletButton from "../buttons/VioletButton";
+import CircleMembers from "./circleMembers";
 import { Mood } from "@/types/mood";
 import { Music, Durations } from "@/types/music";
 import { Group } from "@/types/group";
@@ -25,7 +27,9 @@ import { Cuentto } from "@/types/cuentto";
 import { Question } from "@/types/questionGroup";
 import { fetchMusics } from "@/lib/api/music";
 import { fetchThinkToday } from "@/lib/api/think";
-import { fetchGroups } from "@/lib/api/group";
+import { createGroup, fetchGroups } from "@/lib/api/group";
+import { CIRCLE_EMOJI_SUGGESTIONS, toSingleEmoji } from "@/lib/emoji";
+import EmojiInput from "../ui/EmojiInput";
 import { fetchMoods } from "@/lib/api/mood";
 import { fetchQuestionGroupById } from "@/lib/api/questionGroup";
 import { firstValidQuestion } from "@/lib/questionPrompt";
@@ -256,6 +260,98 @@ export default function CuenttoForm({
     if (values.length > 0) return values;
     return innerCircleGroup ? [innerCircleGroup.id] : ["all"];
   })();
+
+  // What the share options show when they (re)mount — the form's current
+  // choice, so leaving the list (e.g. to create a circle) doesn't reset it.
+  const shareIsSelf = watch("isSelfShared");
+  const shareIsPublic = watch("isPublic");
+  const shareGroupIds = watch("groupIds");
+  const currentShareSelection: (string | number)[] = (() => {
+    if (shareIsSelf) return ["self"];
+    const values: (string | number)[] = [
+      ...(shareIsPublic ? ["all"] : []),
+      ...(shareGroupIds ?? []),
+    ];
+    return values.length > 0 ? values : initialShareSelection;
+  })();
+
+  // "Create New Circle" view inside the share drawer.
+  // "Create New Circle" is two screens, as in the mobile app: the circle's
+  // details, then (once it exists) an optional step to add people to it.
+  const [shareView, setShareView] = useState<
+    "options" | "createCircle" | "circleMembers"
+  >("options");
+  const [createdCircle, setCreatedCircle] = useState<Group | null>(null);
+  const [circleName, setCircleName] = useState("");
+  const [circleEmoji, setCircleEmoji] = useState("");
+  const [circleDescription, setCircleDescription] = useState("");
+  const [circleError, setCircleError] = useState<string | null>(null);
+  const [creatingCircle, setCreatingCircle] = useState(false);
+
+  const circleFieldClass =
+    "h-[48px] w-full rounded-[8px] border border-gray-9 px-4 text-[16px] text-subtle-black placeholder-gray-7 outline-none transition-colors focus:border-violet focus:ring-2 focus:ring-light-violet";
+
+  const submitCircleOnEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleCreateCircle();
+    }
+  };
+
+  const closeCreateCircle = () => {
+    setShareView("options");
+    setCreatedCircle(null);
+    setCircleName("");
+    setCircleEmoji("");
+    setCircleDescription("");
+    setCircleError(null);
+  };
+
+  const handleCreateCircle = async () => {
+    const name = circleName.trim();
+    const circleDesc = circleDescription.trim();
+    const emoji = toSingleEmoji(circleEmoji);
+    if (!name) {
+      setCircleError("Please add a circle name");
+      return;
+    }
+    if (!circleDesc) {
+      setCircleError("Please add a circle description");
+      return;
+    }
+    try {
+      setCreatingCircle(true);
+      setCircleError(null);
+      const group = await createGroup({
+        name,
+        description: circleDesc,
+        ...(emoji ? { emoji } : {}),
+      });
+      setGroups((prev) => [...prev, group]);
+      // Share with the new circle straight away. "My Journal" can't be
+      // combined with circles, so it gives way.
+      const keptGroupIds = getValues("isSelfShared")
+        ? []
+        : (getValues("groupIds") ?? []);
+      setValue("isSelfShared", false);
+      setValue("groupIds", [...keptGroupIds, group.id]);
+      setCircleName("");
+      setCircleEmoji("");
+      setCircleDescription("");
+      setCreatedCircle(group);
+      setShareView("circleMembers");
+      toast.success("Circle created");
+    } catch (err: unknown) {
+      setCircleError(
+        axios.isAxiosError(err)
+          ? err.response?.data?.message ||
+              "Could not create the circle. Please try again."
+          : "Could not create the circle. Please try again.",
+      );
+    } finally {
+      setCreatingCircle(false);
+    }
+  };
 
   const description = watch("description");
   useEffect(() => {
@@ -915,7 +1011,10 @@ export default function CuenttoForm({
       <Sheet
         open={step > 1}
         onOpenChange={(isOpen) => {
-          if (!isOpen) setStep(1);
+          if (!isOpen) {
+            setStep(1);
+            closeCreateCircle();
+          }
         }}
       >
         <SheetContent className="bg-white flex flex-col justify-between border-none !max-w-none !w-full md:!w-[588px] border-l px-6 py-10 sm:px-[50px] sm:py-[60px] border-light-gray">
@@ -990,14 +1089,144 @@ export default function CuenttoForm({
               </div>
             </>
           )}
-          {step === 3 && (
+          {step === 3 && shareView === "createCircle" && (
+            <>
+              <div className="flex flex-col justify-start items-start flex-1 min-h-0">
+                <p className="text-[14px] font-medium text-gray">
+                  Create Circle
+                </p>
+                <SheetTitle className="text-[22px] font-normal text-subtle-black mt-[10px]">
+                  Choose who is part of your circle{" "}
+                  <br className="hidden sm:inline" />
+                  and share exclusive content with them
+                </SheetTitle>
+                <div className="flex flex-col mt-[40px] gap-6 w-full flex-1 min-h-0 overflow-y-auto overscroll-y-contain -mx-1 px-1 py-1 pb-6">
+                  <label className="flex flex-col gap-2 w-full shrink-0">
+                    <span className="text-[14px] font-medium text-subtle-black">
+                      Circle name
+                    </span>
+                    <input
+                      value={circleName}
+                      onChange={(e) => setCircleName(e.target.value)}
+                      onKeyDown={submitCircleOnEnter}
+                      placeholder="e.g. Family, Book club"
+                      maxLength={50}
+                      autoFocus
+                      className={circleFieldClass}
+                    />
+                  </label>
+                  <div className="flex flex-col gap-2 w-full shrink-0">
+                    <label
+                      htmlFor="circle-emoji"
+                      className="text-[14px] font-medium text-subtle-black"
+                    >
+                      Emoji{" "}
+                      <span className="font-normal text-gray">(optional)</span>
+                    </label>
+                    <div className="flex flex-row items-start gap-3">
+                      <div className="relative shrink-0">
+                        <EmojiInput
+                          id="circle-emoji"
+                          value={circleEmoji}
+                          onChange={setCircleEmoji}
+                          onKeyDown={submitCircleOnEnter}
+                          inputMode="text"
+                          aria-describedby="circle-emoji-hint"
+                          className={`${circleFieldClass} !w-[56px] !px-0 text-center text-[24px] caret-transparent cursor-pointer`}
+                        />
+                        {!circleEmoji && (
+                          <Smile
+                            size={22}
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-7 pointer-events-none"
+                          />
+                        )}
+                      </div>
+                      <div className="grid grid-cols-6 gap-1.5">
+                        {CIRCLE_EMOJI_SUGGESTIONS.map((emoji) => {
+                          const isSelected = circleEmoji === emoji;
+                          return (
+                            <button
+                              key={emoji}
+                              type="button"
+                              aria-label={`Use ${emoji}`}
+                              aria-pressed={isSelected}
+                              onClick={() =>
+                                setCircleEmoji(isSelected ? "" : emoji)
+                              }
+                              className={`w-[40px] h-[40px] flex items-center justify-center rounded-[8px] text-[20px] cursor-pointer transition-colors ${
+                                isSelected
+                                  ? "bg-light-violet ring-1 ring-violet"
+                                  : "hover:bg-gray-6"
+                              }`}
+                            >
+                              {emoji}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <p
+                      id="circle-emoji-hint"
+                      className="text-[12px] text-gray"
+                    >
+                      Pick one above or type an emoji. Only emojis are allowed.
+                    </p>
+                  </div>
+                  <label className="flex flex-col gap-2 w-full shrink-0">
+                    <span className="text-[14px] font-medium text-subtle-black">
+                      Description
+                    </span>
+                    <textarea
+                      value={circleDescription}
+                      onChange={(e) => setCircleDescription(e.target.value)}
+                      placeholder="What is this circle about?"
+                      rows={3}
+                      maxLength={200}
+                      className={`${circleFieldClass} !h-auto py-3 resize-none`}
+                    />
+                  </label>
+                  {circleError && (
+                    <p className="text-red-400 w-full text-left">
+                      {circleError}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-row justify-end items-center gap-6">
+                <p
+                  className="text-violet text-[14px] font-medium cursor-pointer"
+                  onClick={closeCreateCircle}
+                >
+                  cancel
+                </p>
+                <VioletButton
+                  text="Create Circle"
+                  className="w-[124px]"
+                  loading={creatingCircle}
+                  type="button"
+                  onClick={handleCreateCircle}
+                />
+              </div>
+            </>
+          )}
+          {step === 3 && shareView === "circleMembers" && createdCircle && (
+            <CircleMembers
+              group={createdCircle}
+              onDone={closeCreateCircle}
+              onCancel={closeCreateCircle}
+            />
+          )}
+          {step === 3 && shareView === "options" && (
             <>
               <div className="flex flex-col justify-start items-start flex-1 min-h-0">
                 <p className="text-[14px] font-medium text-gray">Share</p>
                 <SheetTitle className="text-[22px] font-normal text-subtle-black mt-[10px]">
                   Select with who to share your <br></br>Cuentto:
                 </SheetTitle>
-                <div className="flex flex-col mt-[40px] gap-4 w-full justify-start flex-1 min-h-0 overflow-y-auto overscroll-y-contain -mx-1 px-1 py-1 pb-6">
+                {/* The list takes its natural height and only scrolls once it
+                    runs out of room, so "Create new circle" always sits right
+                    under the last option and stays visible. */}
+                <div className="flex flex-col mt-[40px] gap-4 w-full justify-start min-h-0 overflow-y-auto overscroll-y-contain -mx-1 px-1 py-1">
                   <CustomRadioButtonGroup
                     key={`share-radio-${innerCircleGroup?.id ?? "none"}`}
                     className="flex flex-col gap-4 w-full justify-start"
@@ -1034,10 +1263,26 @@ export default function CuenttoForm({
                           label: group.name,
                         })),
                     ]}
-                    defaultValue={initialShareSelection}
+                    defaultValue={currentShareSelection}
                     exclusiveValues={["self"]}
                   />
                 </div>
+                {/* Creating a circle needs an account; guests sharing from a
+                    prompt link log in at Share instead. */}
+                {isAuthed && (
+                  <div className="w-full shrink-0 mt-3 pt-3 border-t border-light-gray">
+                    <button
+                      type="button"
+                      onClick={() => setShareView("createCircle")}
+                      className="flex items-center gap-4 p-2 rounded cursor-pointer text-violet text-[16px] font-medium transition-colors hover:bg-light-violet/40"
+                    >
+                      <span className="w-5 h-5 rounded-full border border-dashed border-violet flex items-center justify-center">
+                        <Plus size={12} strokeWidth={2.5} />
+                      </span>
+                      Create new circle
+                    </button>
+                  </div>
+                )}
                 {error && (
                   <p className="text-red-400 w-full text-left">{error}</p>
                 )}
