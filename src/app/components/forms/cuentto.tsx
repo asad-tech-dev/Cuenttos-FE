@@ -1000,12 +1000,12 @@ export default function CuenttoForm({
           )}
           {step === 3 && (
             <>
-              <div className="flex flex-col justify-start items-start">
+              <div className="flex flex-col justify-start items-start flex-1 min-h-0">
                 <p className="text-[14px] font-medium text-gray">Share</p>
                 <SheetTitle className="text-[22px] font-normal text-subtle-black mt-[10px]">
                   Select with who to share your <br></br>Cuentto:
                 </SheetTitle>
-                <div className="flex flex-col mt-[40px] gap-4 w-full justify-start">
+                <div className="flex flex-col mt-[40px] gap-4 w-full justify-start flex-1 min-h-0 overflow-y-auto overscroll-y-contain -mx-1 px-1 py-1 pb-6">
                   <CustomRadioButtonGroup
                     key={`share-radio-${innerCircleGroup?.id ?? "none"}`}
                     className="flex flex-col gap-4 w-full justify-start"
