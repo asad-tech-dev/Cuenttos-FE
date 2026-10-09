@@ -6,7 +6,7 @@ import AppHeader from "./headers/appHeader";
 import Sidebar from "./sidebar/mainSidebar";
 import { MobileNavProvider } from "./context/MobileNavContext";
 import { SavedCuenttosProvider } from "./context/SavedCuenttosContext";
-import { isAuthenticated } from "@/lib/api/auth";
+import { AUTH_CHANGE_EVENT, isAuthenticated } from "@/lib/api/auth";
 
 /**
  * App chrome wrapper. The sidebar (and its mobile drawer / hamburger) is only
@@ -21,6 +21,14 @@ export default function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     setAuthed(isAuthenticated());
   }, [pathname]);
+
+  // Re-check when the token changes without a navigation — e.g. a route guard
+  // silently refreshed an expired access token on page load.
+  useEffect(() => {
+    const sync = () => setAuthed(isAuthenticated());
+    window.addEventListener(AUTH_CHANGE_EVENT, sync);
+    return () => window.removeEventListener(AUTH_CHANGE_EVENT, sync);
+  }, []);
 
   return (
     <MobileNavProvider>

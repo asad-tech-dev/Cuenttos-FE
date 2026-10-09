@@ -4,11 +4,16 @@ import axios from "axios";
 import VioletButton from "../buttons/VioletButton";
 
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Eye, EyeOff } from "lucide-react";
-import { loginUser, storeToken, storeIsAdmin } from "@/lib/api/auth";
+import {
+  loginUser,
+  storeToken,
+  storeIsAdmin,
+  restoreSession,
+} from "@/lib/api/auth";
 import { useSearchParams, useRouter } from "next/navigation";
 import { LoginFormData, loginSchema } from "@/lib/formSchemas/auth";
 import { isSafeRedirectPath } from "@/lib/safeRedirect";
@@ -30,6 +35,18 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const rawRedirect = searchParams.get("redirect");
   const redirect = isSafeRedirectPath(rawRedirect) ? rawRedirect : null;
+
+  // Someone who is still signed in (e.g. reopening the site after closing the
+  // tab) goes straight on instead of being asked to log in again.
+  useEffect(() => {
+    let active = true;
+    restoreSession().then((authed) => {
+      if (active && authed) router.replace(redirect || "/share");
+    });
+    return () => {
+      active = false;
+    };
+  }, [router, redirect]);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
