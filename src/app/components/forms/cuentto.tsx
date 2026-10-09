@@ -102,7 +102,8 @@ export default function CuenttoForm({
       duration: initialData?.duration ?? 0,
       moodId: initialData?.moodId ?? initialData?.mood?.id ?? 0,
       musicId: initialData?.musicId ?? initialData?.music?.id ?? 0,
-      isPublic: initialData?.isPublic ?? false,
+      // A new Cuentto is shared publicly by default.
+      isPublic: initialData ? (initialData.isPublic ?? false) : true,
       isSelfShared: initialData?.isSelfShared ?? false,
       groupIds: initialData?.groupIds ?? [],
     },
@@ -246,9 +247,7 @@ export default function CuenttoForm({
   const innerCircleGroup = groups.find((g) => g.default);
 
   const initialShareSelection: (string | number)[] = (() => {
-    if (!initialData) {
-      return innerCircleGroup ? [innerCircleGroup.id] : ["all"];
-    }
+    if (!initialData) return ["all"];
     if (initialData.isSelfShared) return ["self"];
     const values: (string | number)[] = [];
     if (initialData.isPublic) values.push("all");
@@ -257,13 +256,6 @@ export default function CuenttoForm({
     if (values.length > 0) return values;
     return innerCircleGroup ? [innerCircleGroup.id] : ["all"];
   })();
-
-  useEffect(() => {
-    if (initialData || !innerCircleGroup) return;
-    setValue("groupIds", [innerCircleGroup.id]);
-    setValue("isPublic", false);
-    setValue("isSelfShared", false);
-  }, [initialData, innerCircleGroup, setValue]);
 
   const description = watch("description");
   useEffect(() => {
