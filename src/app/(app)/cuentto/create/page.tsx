@@ -5,7 +5,7 @@ import CuenttoForm from "@/app/components/forms/cuentto";
 import { BackIcon } from "@/app/components/icons";
 import Spinner from "@/app/components/ui/Spinner";
 import Link from "next/link";
-import { getCurrentUserId, isAuthenticated } from "@/lib/api/auth";
+import { getCurrentUserId, restoreSession } from "@/lib/api/auth";
 import { readCuenttoDraft } from "@/lib/cuenttoDraft";
 import { getLocalDraft } from "@/lib/localDrafts";
 import { CuenttoCreateData } from "@/lib/formSchemas/cuentto";
@@ -41,31 +41,43 @@ function CreateCuenttoContent() {
   }, [promptGroupId, promptSlug]);
 
   useEffect(() => {
-    const authed = isAuthenticated();
+    let cancelled = false;
 
-    // A guest arriving from a shared prompt link may write freely — login is
-    // only required at Publish (CuenttoForm saves a draft and redirects
-    // there itself). Anyone else still needs to already be authenticated,
-    // matching every other page in the app.
-    if (!authed && !promptGroupId) {
-      router.replace(
-        `/login?redirect=${encodeURIComponent(
-          window.location.pathname + window.location.search,
-        )}`,
-      );
-      return;
-    }
+    const resolve = async () => {
+      // An expired access token is silently refreshed via the refresh cookie
+      // before deciding the visitor is a guest.
+      const authed = await restoreSession();
+      if (cancelled) return;
 
-    const restored = readCuenttoDraft(promptGroupId);
-    if (restored) {
-      setDraft(restored);
-    } else if (authed && localDraftId) {
-      const userId = getCurrentUserId();
-      const local = userId != null ? getLocalDraft(userId, localDraftId) : null;
-      if (local) setDraft(local);
-    }
+      // A guest arriving from a shared prompt link may write freely — login is
+      // only required at Publish (CuenttoForm saves a draft and redirects
+      // there itself). Anyone else still needs to already be authenticated,
+      // matching every other page in the app.
+      if (!authed && !promptGroupId) {
+        router.replace(
+          `/login?redirect=${encodeURIComponent(
+            window.location.pathname + window.location.search,
+          )}`,
+        );
+        return;
+      }
 
-    setReady(true);
+      const restored = readCuenttoDraft(promptGroupId);
+      if (restored) {
+        setDraft(restored);
+      } else if (authed && localDraftId) {
+        const userId = getCurrentUserId();
+        const local = userId != null ? getLocalDraft(userId, localDraftId) : null;
+        if (local) setDraft(local);
+      }
+
+      setReady(true);
+    };
+
+    resolve();
+    return () => {
+      cancelled = true;
+    };
   }, [router, promptGroupId, localDraftId]);
 
   if (!ready) return null;

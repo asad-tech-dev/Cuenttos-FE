@@ -26,17 +26,45 @@ export const loginUser = async (data: LoginFormData): Promise<LoginResponse> => 
   };
 };
 
+/**
+ * Fired on `window` whenever the stored access token is set or cleared, so
+ * chrome that derives "signed in" from it (sidebar, header) can re-check after
+ * a silent refresh instead of waiting for the next navigation.
+ */
+export const AUTH_CHANGE_EVENT = "cuentto:auth-change";
+
+const notifyAuthChange = () => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+};
+
 export const storeToken = (token: string) => {
   localStorage.setItem("authToken", token);
+  notifyAuthChange();
 };
+
+// Every caller (route guards, pages, the axios interceptor) shares one
+// in-flight refresh. The refresh token rotates on each use, so independent
+// parallel refreshes would race each other with the same cookie.
+let inFlightRefresh: Promise<string> | null = null;
 
 /**
  * Exchange the httpOnly refresh cookie for a fresh access token. The refresh
  * token itself is never touched by JS — the browser sends the cookie because
  * of `withCredentials`, and the backend rotates it via Set-Cookie. Returns the
  * new access token (also persisted to localStorage) or throws on failure.
+ * Concurrent calls share a single request.
  */
-export const refreshAccessToken = async (): Promise<string> => {
+export const refreshAccessToken = (): Promise<string> => {
+  if (!inFlightRefresh) {
+    inFlightRefresh = requestAccessToken().finally(() => {
+      inFlightRefresh = null;
+    });
+  }
+  return inFlightRefresh;
+};
+
+const requestAccessToken = async (): Promise<string> => {
   const response = await axios.post(
     `${API_URL}/api/auth/refreshtoken`,
     {},
@@ -79,6 +107,7 @@ export const clearAuth = () => {
   if (typeof window === "undefined") return;
   localStorage.removeItem("authToken");
   localStorage.removeItem("isAdmin");
+  notifyAuthChange();
 };
 
 export const storeIsAdmin = (isAdmin: boolean) => {
@@ -113,6 +142,30 @@ export const isAuthenticated = (): boolean => {
     }
     return true;
   } catch {
+    return false;
+  }
+};
+
+/**
+ * Resolve whether the visitor is signed in, silently refreshing an expired
+ * access token via the refresh cookie (e.g. after the browser was closed for
+ * longer than the access-token lifetime). Only attempts the refresh when this
+ * browser has held a session before, so plain guests don't trigger a request.
+ */
+export const restoreSession = async (): Promise<boolean> => {
+  if (isAuthenticated()) return true;
+  if (typeof window === "undefined" || !localStorage.getItem("authToken")) {
+    return false;
+  }
+  try {
+    await refreshAccessToken();
+    return true;
+  } catch (error) {
+    // A rejected refresh token means the session is over; a network error
+    // doesn't, so keep the stored token and let a later attempt retry.
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      clearAuth();
+    }
     return false;
   }
 };
