@@ -1,8 +1,12 @@
 "use client";
 import checkAuth from "@/HOC/checkAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CuenttoFeedCard from "@/app/components/ui/cuenttos/cuenttoFeedCard";
 import FeaturedCuenttoFeedCard from "@/app/components/ui/cuenttos/featuredCuenttosCard";
+import MoodFilter, {
+  moodKeyOf,
+  moodsFromCuenttos,
+} from "@/app/components/ui/cuenttos/MoodFilter";
 import { SkeletonCuenttoFeatured } from "@/app/components/skeletons/CuenttoFeatured";
 import { SkeletonCuenttoFeed } from "@/app/components/skeletons/CuenttoFeed";
 import { Cuentto, FeaturedCuentto } from "@/types/cuentto";
@@ -40,6 +44,19 @@ function SharePage() {
   const [featured, setFeatured] = useState<FeaturedCuentto[]>([]);
   const [loading1, setLoading1] = useState(false);
   const [loading2, setLoading2] = useState(false);
+  // Mood filter for "Shared to you" (like the mobile feed). Only moods that
+  // actually appear in the list are offered; null means "All".
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const moods = useMemo(() => moodsFromCuenttos(cuenttos), [cuenttos]);
+  // If the selected mood's last cuentto goes away (e.g. it was deleted), fall
+  // back to "All" instead of showing an empty list.
+  const activeMood =
+    selectedMood && moods.some((m) => m.key === selectedMood)
+      ? selectedMood
+      : null;
+  const visibleCuenttos = activeMood
+    ? cuenttos.filter((c) => moodKeyOf(c.mood) === activeMood)
+    : cuenttos;
   useEffect(() => {
     const getCuenttos = async () => {
       try {
@@ -110,7 +127,14 @@ function SharePage() {
           />
         ) : (
           <div className="flex flex-col gap-[20px]">
-            {cuenttos.map((cuentto) => (
+            {moods.length > 0 && (
+              <MoodFilter
+                moods={moods}
+                selectedKey={activeMood}
+                onSelect={setSelectedMood}
+              />
+            )}
+            {visibleCuenttos.map((cuentto) => (
               <CuenttoFeedCard
                 key={cuentto.id}
                 cuentto={cuentto}
