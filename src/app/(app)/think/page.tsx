@@ -326,17 +326,18 @@ function ThinkPage() {
                     text={challenge?.title ?? DEFAULT_CHALLENGE.title}
                     className="text-amber-700 text-[12px] font-bold tracking-[0.08em] uppercase"
                   />
-                  <ClampedText
-                    text={challenge?.description ?? DEFAULT_CHALLENGE.description}
-                    className="text-[14px] text-subtle-black"
-                  />
+                  {/* The full instructions, never cut off — a challenge's
+                      rules can run several lines. */}
+                  <p className="text-[14px] text-subtle-black whitespace-pre-line break-words">
+                    {challenge?.description ?? DEFAULT_CHALLENGE.description}
+                  </p>
                 </div>
                 <button
                   type="button"
                   onClick={() =>
                     router.push(
                       challenge
-                        ? `/cuentto/create?challenge=${challenge.id}&duration=${challenge.durationSeconds}&back=${encodeURIComponent("/think")}`
+                        ? `/cuentto/create?challenge=${challenge.id}&duration=${challenge.durationSeconds ?? "none"}&back=${encodeURIComponent("/think")}`
                         : `${DEFAULT_CHALLENGE.href}&back=${encodeURIComponent("/think")}`,
                     )
                   }

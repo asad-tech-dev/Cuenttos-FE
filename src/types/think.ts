@@ -4,8 +4,8 @@ export interface Challenge {
   id: number;
   title: string;
   description: string;
-  /** Composer countdown length. Backend bounds this to 60..3600. */
-  durationSeconds: number;
+  /** Composer countdown length, bounded 60..3600; null = no time limit. */
+  durationSeconds: number | null;
   /** Display-window bounds. Null on either side means "no bound" there. */
   startsAt?: string | null;
   endsAt?: string | null;
@@ -78,7 +78,8 @@ export interface ChallengeToggleResult {
 export interface ChallengeInput {
   title: string;
   description: string;
-  durationSeconds: number;
+  /** null = no time limit. */
+  durationSeconds: number | null;
   startsAt?: string | null;
   endsAt?: string | null;
   isActive?: boolean;

@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pause, Plus, Smile, Sparkles, Timer } from "lucide-react";
+import { Pause, Plus, Smile, Sparkles, Timer, Zap } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import PublishCuentto from "../popups/publishCuentto";
@@ -55,6 +55,12 @@ interface CuenttoFormProps {
 // Fallback countdown: what the sprint was before challenges became
 // admin-managed, and what a legacy ?challenge=5min link still means.
 const CHALLENGE_DURATION_SECONDS = 5 * 60;
+// The built-in sprint's instructions (same copy as the Think page's default
+// card), shown for a legacy ?challenge=5min link.
+const DEFAULT_CHALLENGE_INFO = {
+  title: "5-min sprint",
+  description: "Write without stopping. Don't edit. Just flow.",
+};
 
 function formatChallengeTime(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -194,6 +200,10 @@ export default function CuenttoForm({
   const durationParam = isEdit ? null : searchParams.get("duration");
   const parsedDuration = durationParam ? Number(durationParam) : NaN;
   const hasValidDuration = Number.isFinite(parsedDuration) && parsedDuration > 0;
+  // ?duration=none marks a challenge with no time limit: instructions only,
+  // no countdown.
+  const isUntimedParam = durationParam === "none";
+  const [challengeUntimed, setChallengeUntimed] = useState(isUntimedParam);
   const initialDuration = hasValidDuration
     ? parsedDuration
     : CHALLENGE_DURATION_SECONDS;
@@ -205,22 +215,38 @@ export default function CuenttoForm({
   // param, or the fixed 5min legacy sprint) or the fallback fetch has resolved.
   // Until then we render a neutral placeholder instead of a wrong number.
   const [challengeReady, setChallengeReady] = useState(
-    () => hasValidDuration || challengeParam === "5min",
+    () => hasValidDuration || isUntimedParam || challengeParam === "5min",
   );
 
-  // Fallback only — for a ?challenge=<id> link that didn't carry the duration
-  // (older shares/bookmarks). /api/think/today returns the challenge on display
-  // (the one just clicked); a normal writer can't hit the admin route. If it
-  // stopped being live in between, the default stands rather than erroring.
+  // The challenge's instructions, shown in full above the editor while
+  // writing (the Think card is only a preview).
+  const [challengeInfo, setChallengeInfo] = useState<{
+    title: string;
+    description: string;
+  } | null>(() => (challengeParam === "5min" ? DEFAULT_CHALLENGE_INFO : null));
+  const [challengeInfoDismissed, setChallengeInfoDismissed] = useState(false);
+
+  // /api/think/today returns the challenge on display (the one just clicked);
+  // a normal writer can't hit the admin route. It supplies the instructions,
+  // and the duration for a ?challenge=<id> link that didn't carry it (older
+  // shares/bookmarks). If it stopped being live in between, the defaults
+  // stand rather than erroring.
   useEffect(() => {
-    if (!challengeParam || challengeParam === "5min" || hasValidDuration) return;
+    if (!challengeParam || challengeParam === "5min") return;
     let cancelled = false;
     (async () => {
       try {
         const { challenge } = await fetchThinkToday();
         if (cancelled) return;
         if (challenge && String(challenge.id) === challengeParam) {
-          setChallengeDuration(challenge.durationSeconds);
+          setChallengeInfo({
+            title: challenge.title,
+            description: challenge.description,
+          });
+          if (!hasValidDuration && !isUntimedParam) {
+            if (challenge.durationSeconds == null) setChallengeUntimed(true);
+            else setChallengeDuration(challenge.durationSeconds);
+          }
         }
       } catch (error) {
         console.error(error);
@@ -231,7 +257,7 @@ export default function CuenttoForm({
     return () => {
       cancelled = true;
     };
-  }, [challengeParam, hasValidDuration]);
+  }, [challengeParam, hasValidDuration, isUntimedParam]);
 
   // Keep the remaining time in step with the resolved duration.
   useEffect(() => {
@@ -241,12 +267,12 @@ export default function CuenttoForm({
   // Tick only once the duration is known, so the countdown always starts from
   // the correct full length.
   useEffect(() => {
-    if (!isChallenge || !challengeReady) return;
+    if (!isChallenge || !challengeReady || challengeUntimed) return;
     const interval = setInterval(() => {
       setChallengeSecondsLeft((prev) => Math.max(prev - 1, 0));
     }, 1000);
     return () => clearInterval(interval);
-  }, [isChallenge, challengeReady]);
+  }, [isChallenge, challengeReady, challengeUntimed]);
 
   const innerCircleGroup = groups.find((g) => g.default);
 
@@ -642,7 +668,7 @@ export default function CuenttoForm({
     >
       <div className="flex w-full flex-wrap justify-between gap-3 pb-[20px] border-b border-light-gray">
         <div className="flex flex-row gap-3 items-center">
-          {isChallenge && (
+          {isChallenge && !challengeUntimed && (
             <span className="inline-flex items-center gap-1.5 h-[32px] px-3 rounded-[100px] bg-light-violet text-violet text-[14px] font-semibold tabular-nums">
               <Timer size={14} />
               {challengeReady ? formatChallengeTime(challengeSecondsLeft) : "–:––"}
@@ -911,6 +937,28 @@ export default function CuenttoForm({
           </Sheet>
         </div>
       </div>
+
+      {isChallenge && challengeInfo && !challengeInfoDismissed && (
+        <div className="w-full mt-[30px] rounded-[16px] border border-amber-200 bg-amber-50 px-6 py-5 flex flex-col gap-2">
+          <div className="flex flex-row items-start justify-between gap-4">
+            <span className="inline-flex min-w-0 items-center gap-1.5 text-amber-700 text-[12px] font-bold tracking-[0.08em] uppercase break-words">
+              <Zap size={14} className="shrink-0 fill-amber-600 text-amber-600" />
+              {challengeInfo.title}
+            </span>
+            <button
+              type="button"
+              onClick={() => setChallengeInfoDismissed(true)}
+              aria-label="Hide challenge instructions"
+              className="shrink-0 cursor-pointer"
+            >
+              <CloseIcon width={12} height={12} className="text-amber-700" />
+            </button>
+          </div>
+          <p className="text-subtle-black text-[15px] leading-[24px] whitespace-pre-line break-words">
+            {challengeInfo.description}
+          </p>
+        </div>
+      )}
 
       {prompt && !promptDismissed && (
         <div className="w-full mt-[30px] rounded-[16px] bg-light-violet px-6 py-5 flex flex-col gap-3">
