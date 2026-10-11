@@ -38,6 +38,20 @@ export const fetchMyCuenttos = async (
   return response.data.cuenttos ?? [];
 };
 
+/**
+ * Another user's cuenttos that the signed-in user is allowed to see — the
+ * same rules as their Share feed (public posts, followers-only posts of people
+ * they follow, and posts shared to circles they belong to). Taken from the
+ * feed rather than /api/cuentto/user/:id, which also returns posts shared to
+ * circles the viewer isn't part of.
+ */
+export const fetchVisibleCuenttosOf = async (
+  userId: number
+): Promise<Cuentto[]> => {
+  const cuenttos = await fetchAllCuenttos();
+  return (cuenttos ?? []).filter((c) => c.user?.id === userId);
+};
+
 export const fetchFeaturedCuenttos = async (): Promise<FeaturedCuentto[]> => {
   const token = localStorage.getItem("authToken");
   const response = await axios.get(`${API_URL}/api/feed/featured`, {

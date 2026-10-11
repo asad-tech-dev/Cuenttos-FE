@@ -67,6 +67,7 @@ export interface FeaturedCuentto {
     color: string;
   };
   user: {
+    id: number;
     username: string;
     usernameSlug?: string | null;
     profileName: string;

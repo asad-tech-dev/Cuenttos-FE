@@ -13,6 +13,8 @@ interface ProfileHeaderProps {
   followingCount?: number;
   onTabSelect?: (tab: "about" | "followers" | "following") => void;
   onEditClick?: () => void;
+  /** Shown where "Edit Profile" sits, e.g. a Follow button on someone else's profile. */
+  action?: React.ReactNode;
 }
 
 export default function ProfileHeader({
@@ -23,6 +25,7 @@ export default function ProfileHeader({
   followingCount = 0,
   onTabSelect,
   onEditClick,
+  action,
 }: ProfileHeaderProps) {
   const [imgError, setImgError] = useState(false);
 
@@ -101,6 +104,8 @@ export default function ProfileHeader({
                 )}
               </div>
 
+              {action && <div className="hidden sm:block shrink-0">{action}</div>}
+
               {/* Edit Profile button - Desktop & Tablet */}
               {onEditClick && (
                 <button
@@ -127,6 +132,8 @@ export default function ProfileHeader({
                 </p>
               )}
             </div>
+
+            {action && <div className="mt-2.5 sm:hidden">{action}</div>}
 
             {/* Edit Profile button - Mobile only (placed cleanly below name/bio so it never squishes the name) */}
             {onEditClick && (

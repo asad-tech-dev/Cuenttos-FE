@@ -2,6 +2,7 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { profilePath } from "@/lib/api/profile";
 import { Clock, TrendingUp } from "lucide-react";
 import { FeaturedCuentto } from "@/types/cuentto";
 import { moodGradient } from "@/lib/utils";
@@ -62,7 +63,11 @@ const FeaturedCuenttoFeedCard: React.FC<{
         </span>
       </div>
 
-      <div className="flex items-center gap-2.5 mt-auto pt-4">
+      <Link
+        href={profilePath(cuentto.user)}
+        aria-label={`View ${displayName}'s profile`}
+        className="group flex items-center gap-2.5 mt-auto pt-4 min-w-0 self-start max-w-full"
+      >
         {cuentto.user.profilePicture ? (
           <Image
             src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${cuentto.user.profilePicture}`}
@@ -76,10 +81,10 @@ const FeaturedCuenttoFeedCard: React.FC<{
             {getInitial(displayName)}
           </div>
         )}
-        <span className="text-[13px] font-medium text-subtle-black truncate">
+        <span className="text-[13px] font-medium text-subtle-black truncate group-hover:underline">
           {displayName}
         </span>
-      </div>
+      </Link>
     </div>
   );
 };

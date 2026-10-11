@@ -2,6 +2,7 @@
 import { Pause, FileQuestion } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import { profilePath } from "@/lib/api/profile";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SkeletonCuenttoDetail } from "@/app/components/skeletons/CuenttoDetail";
@@ -289,7 +290,11 @@ function CuenttoDetailView({
             )}
           </div>
         </div>
-        <div className="relative z-10 flex items-center gap-4">
+        <Link
+          href={cuentto ? profilePath(cuentto.user) : "#"}
+          aria-label={cuentto ? `View ${cuentto.user.username}'s profile` : undefined}
+          className="group relative z-10 flex items-center gap-4 self-start"
+        >
           <div className="w-[40px] h-[40px]">
             <Image
               src={
@@ -304,7 +309,7 @@ function CuenttoDetailView({
             />
           </div>
           <div>
-            <p className="font-medium text-[14px] text-dark-violet">
+            <p className="font-medium text-[14px] text-dark-violet group-hover:underline">
               {cuentto?.user.username}
             </p>
             <p className="font-normal text-[14px] text-gray">
@@ -315,7 +320,7 @@ function CuenttoDetailView({
                 : "Unknown time"}
             </p>
           </div>
-        </div>
+        </Link>
         {!isFeatured && (
           <div
             className="absolute bottom-0 right-0 w-[160px] h-[90px] md:w-[276px] md:h-[158px] rounded-tl-[60px] md:rounded-tl-[90px]"
