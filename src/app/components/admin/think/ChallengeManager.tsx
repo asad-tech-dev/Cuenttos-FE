@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CalendarClock, Pencil, Plus, Timer, Trash2, Zap } from "lucide-react";
+import {
+  CalendarClock,
+  Pencil,
+  Plus,
+  Timer,
+  TimerOff,
+  Trash2,
+  Zap,
+} from "lucide-react";
 import {
   createChallenge,
   deleteChallenge,
@@ -36,21 +44,37 @@ interface FormState {
   id: number | null;
   title: string;
   description: string;
+  /** false = no time limit (the composer shows no countdown). */
+  timed: boolean;
   minutes: string;
+  /** Whether the optional Show from / Show until fields are in the form. */
+  hasStart: boolean;
   startsAt: string;
+  hasEnd: boolean;
   endsAt: string;
   isActive: boolean;
 }
 
+// A new challenge starts with a 5-minute timer (as before) and shows the
+// optional Show from / Show until fields (left empty = no bound); each can be
+// removed or added back in the form.
 const emptyForm: FormState = {
   id: null,
   title: "",
   description: "",
+  timed: true,
   minutes: "5",
+  hasStart: true,
   startsAt: "",
+  hasEnd: true,
   endsAt: "",
   isActive: true,
 };
+
+const formatDuration = (durationSeconds: number | null) =>
+  durationSeconds == null
+    ? "No time limit"
+    : `${Math.round(durationSeconds / 60)} min write`;
 
 const describeWindow = (challenge: Challenge) => {
   const start = challenge.startsAt
@@ -64,6 +88,71 @@ const describeWindow = (challenge: Challenge) => {
   if (!start && end) return `Until ${end}`;
   return `${start} → ${end}`;
 };
+
+/**
+ * Why an active challenge isn't on Think right now, if it isn't: its window
+ * hasn't opened yet, or has already closed.
+ */
+const offThinkReason = (challenge: Challenge, now = Date.now()) => {
+  if (!challenge.isActive) return null;
+  if (challenge.startsAt && new Date(challenge.startsAt).getTime() > now) {
+    return `Scheduled · shows from ${new Date(challenge.startsAt).toLocaleString()}`;
+  }
+  if (challenge.endsAt && new Date(challenge.endsAt).getTime() <= now) {
+    return "Window ended · not shown on Think";
+  }
+  return null;
+};
+
+/**
+ * An optional form field with the same trash button the challenge cards use,
+ * so a setting that isn't needed (time limit, display dates) can be removed
+ * instead of having to be emptied.
+ */
+function RemovableField({
+  label,
+  onRemove,
+  children,
+}: {
+  label: string;
+  onRemove: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative">
+      {children}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${label}`}
+        title={`Remove ${label}`}
+        className="absolute -top-1.5 right-0 flex h-[28px] w-[28px] items-center justify-center rounded-full text-gray-7 transition-colors duration-200 hover:bg-red/10 hover:text-red focus:outline-none focus-visible:ring-2 focus-visible:ring-red/30 cursor-pointer"
+      >
+        <Trash2 size={14} />
+      </button>
+    </div>
+  );
+}
+
+/** Small button that adds a removed optional field back to the form. */
+function AddFieldButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-violet/50 px-3 py-1.5 text-[12px] font-semibold text-violet transition-colors duration-200 hover:border-violet hover:bg-light-violet/50 cursor-pointer"
+    >
+      <Plus size={13} />
+      {label}
+    </button>
+  );
+}
 
 export default function ChallengeManager() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -103,8 +192,14 @@ export default function ChallengeManager() {
       id: challenge.id,
       title: challenge.title,
       description: challenge.description,
-      minutes: String(Math.round(challenge.durationSeconds / 60)),
+      timed: challenge.durationSeconds != null,
+      minutes:
+        challenge.durationSeconds != null
+          ? String(Math.round(challenge.durationSeconds / 60))
+          : emptyForm.minutes,
+      hasStart: Boolean(challenge.startsAt),
       startsAt: toLocalInput(challenge.startsAt),
+      hasEnd: Boolean(challenge.endsAt),
       endsAt: toLocalInput(challenge.endsAt),
       isActive: challenge.isActive,
     });
@@ -117,11 +212,18 @@ export default function ChallengeManager() {
       toast.error("Title and description are both required.");
       return;
     }
-    if (!Number.isFinite(minutes) || minutes < MIN_MINUTES || minutes > MAX_MINUTES) {
-      toast.error(`Duration must be between ${MIN_MINUTES} and ${MAX_MINUTES} minutes.`);
+    if (
+      form.timed &&
+      (!Number.isFinite(minutes) || minutes < MIN_MINUTES || minutes > MAX_MINUTES)
+    ) {
+      toast.error(
+        `Writing time must be between ${MIN_MINUTES} and ${MAX_MINUTES} minutes, or remove it for no time limit.`,
+      );
       return;
     }
-    if (form.startsAt && form.endsAt && form.endsAt <= form.startsAt) {
+    const startsAt = form.hasStart ? form.startsAt : "";
+    const endsAt = form.hasEnd ? form.endsAt : "";
+    if (startsAt && endsAt && endsAt <= startsAt) {
       toast.error("The end of the window must be after its start.");
       return;
     }
@@ -129,9 +231,10 @@ export default function ChallengeManager() {
     const payload: ChallengeInput = {
       title: form.title.trim(),
       description: form.description.trim(),
-      durationSeconds: Math.round(minutes * 60),
-      startsAt: fromLocalInput(form.startsAt),
-      endsAt: fromLocalInput(form.endsAt),
+      // null = no time limit; removed date fields are saved as "no bound".
+      durationSeconds: form.timed ? Math.round(minutes * 60) : null,
+      startsAt: fromLocalInput(startsAt),
+      endsAt: fromLocalInput(endsAt),
       isActive: form.isActive,
     };
 
@@ -139,7 +242,7 @@ export default function ChallengeManager() {
     try {
       if (form.id === null) {
         await createChallenge(payload);
-        toast.success("Challenge created");
+        toast.success("Challenge created and set as the active challenge");
       } else {
         await updateChallenge(form.id, payload);
         toast.success("Challenge updated");
@@ -169,20 +272,23 @@ export default function ChallengeManager() {
     const previousChallenges = challenges;
     const previousLiveId = liveId;
 
-    setTogglingId(challenge.id);
-    setChallenges((list) =>
+    // Only one challenge can be active: turning one on switches the rest off
+    // (the backend does the same in one transaction).
+    const applyToggle = (list: Challenge[], updated: Challenge) =>
       list.map((item) =>
-        item.id === challenge.id ? { ...item, isActive: next } : item,
-      ),
-    );
+        item.id === updated.id
+          ? updated
+          : next
+            ? { ...item, isActive: false }
+            : item,
+      );
+
+    setTogglingId(challenge.id);
+    setChallenges((list) => applyToggle(list, { ...challenge, isActive: next }));
 
     try {
       const result = await toggleChallengeActive(challenge.id, next);
-      setChallenges((list) =>
-        list.map((item) =>
-          item.id === result.challenge.id ? result.challenge : item,
-        ),
-      );
+      setChallenges((list) => applyToggle(list, result.challenge));
       setLiveId(result.liveChallengeId);
     } catch (err) {
       console.error(err);
@@ -241,8 +347,9 @@ export default function ChallengeManager() {
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-[560px] text-[13px] leading-[20px] text-gray">
-          Only one challenge shows on Think at a time: the most recently started
-          one that is active and inside its window.
+          Only one challenge can be active at a time, and that is the one shown
+          on Think while it&apos;s inside its dates. Creating a challenge or
+          turning one on switches the others off.
         </p>
         {!form && (
           <button
@@ -282,49 +389,120 @@ export default function ChallengeManager() {
             placeholder="Write without stopping. Don't edit. Just flow."
           />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <FormField
-              label="Writing time"
-              id="challenge-minutes"
-              type="number"
-              min={MIN_MINUTES}
-              max={MAX_MINUTES}
-              value={form.minutes}
-              onChange={(e) => setForm({ ...form, minutes: e.target.value })}
-              hint={`Countdown the writer sees (${MIN_MINUTES}–${MAX_MINUTES} min).`}
-            />
-            <FormField
-              label="Show from"
-              id="challenge-starts-at"
-              optional
-              type="datetime-local"
-              value={form.startsAt}
-              onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
-              hint="Empty = as soon as it's active."
-            />
-            <FormField
-              label="Show until"
-              id="challenge-ends-at"
-              optional
-              type="datetime-local"
-              value={form.endsAt}
-              onChange={(e) => setForm({ ...form, endsAt: e.target.value })}
-              hint="Empty = until you deactivate it."
-            />
+          {(form.timed || form.hasStart || form.hasEnd) && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {form.timed && (
+                <RemovableField
+                  label="time limit"
+                  onRemove={() => setForm({ ...form, timed: false })}
+                >
+                  <FormField
+                    label="Writing time"
+                    id="challenge-minutes"
+                    type="number"
+                    min={MIN_MINUTES}
+                    max={MAX_MINUTES}
+                    value={form.minutes}
+                    onChange={(e) => setForm({ ...form, minutes: e.target.value })}
+                    hint={`Countdown the writer sees (${MIN_MINUTES}–${MAX_MINUTES} min).`}
+                  />
+                </RemovableField>
+              )}
+              {form.hasStart && (
+                <RemovableField
+                  label="start date"
+                  onRemove={() =>
+                    setForm({ ...form, hasStart: false, startsAt: "" })
+                  }
+                >
+                  <FormField
+                    label="Show from"
+                    id="challenge-starts-at"
+                    optional
+                    type="datetime-local"
+                    value={form.startsAt}
+                    onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
+                    hint="Empty = as soon as it's active."
+                  />
+                </RemovableField>
+              )}
+              {form.hasEnd && (
+                <RemovableField
+                  label="end date"
+                  onRemove={() => setForm({ ...form, hasEnd: false, endsAt: "" })}
+                >
+                  <FormField
+                    label="Show until"
+                    id="challenge-ends-at"
+                    optional
+                    type="datetime-local"
+                    value={form.endsAt}
+                    onChange={(e) => setForm({ ...form, endsAt: e.target.value })}
+                    hint="Empty = until you deactivate it."
+                  />
+                </RemovableField>
+              )}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2.5">
+            {!form.timed && (
+              <p className="flex items-center gap-2 text-[13px] text-gray">
+                <TimerOff size={14} className="shrink-0 text-violet" />
+                No time limit: writers see the instructions but no countdown.
+              </p>
+            )}
+            {(!form.timed || !form.hasStart || !form.hasEnd) && (
+              <div className="flex flex-wrap items-center gap-2">
+                {!form.timed && (
+                  <AddFieldButton
+                    label="Time limit"
+                    onClick={() => setForm({ ...form, timed: true })}
+                  />
+                )}
+                {!form.hasStart && (
+                  <AddFieldButton
+                    label="Show from"
+                    onClick={() => setForm({ ...form, hasStart: true })}
+                  />
+                )}
+                {!form.hasEnd && (
+                  <AddFieldButton
+                    label="Show until"
+                    onClick={() => setForm({ ...form, hasEnd: true })}
+                  />
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-4 border-t border-light-gray pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <label className="flex items-center gap-2.5">
-              <Toggle
-                checked={form.isActive}
-                onChange={(next) => setForm({ ...form, isActive: next })}
-                size="sm"
-                ariaLabel="Active"
-              />
-              <span className="text-[13px] font-medium text-subtle-black">
-                Active
-              </span>
-            </label>
+            {form.id === null ? (
+              // A new challenge always becomes the active one.
+              <p className="flex items-center gap-2 text-[13px] text-gray">
+                <Zap size={14} className="shrink-0 text-violet" />
+                Saving makes this the active challenge and switches the others
+                off.
+              </p>
+            ) : (
+              <label className="flex items-center gap-2.5">
+                <Toggle
+                  checked={form.isActive}
+                  onChange={(next) => setForm({ ...form, isActive: next })}
+                  size="sm"
+                  ariaLabel="Active"
+                />
+                <span className="text-[13px] font-medium text-subtle-black">
+                  Active
+                  {form.isActive &&
+                    !challenges.find((c) => c.id === form.id)?.isActive && (
+                      <span className="ml-1.5 font-normal text-gray">
+                        (switches the others off)
+                      </span>
+                    )}
+                </span>
+              </label>
+            )}
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -363,6 +541,7 @@ export default function ChallengeManager() {
         <ul className="flex flex-col gap-4">
           {challenges.map((challenge) => {
             const isLive = challenge.id === liveId;
+            const notShownReason = isLive ? null : offThinkReason(challenge);
             return (
               <li
                 key={challenge.id}
@@ -393,6 +572,11 @@ export default function ChallengeManager() {
                           On Think now
                         </span>
                       )}
+                      {notShownReason && (
+                        <span className="shrink-0 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
+                          {notShownReason}
+                        </span>
+                      )}
                     </div>
                     <p className="text-[13px] leading-[20px] text-gray break-words">
                       {challenge.description}
@@ -420,8 +604,12 @@ export default function ChallengeManager() {
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-light-gray pt-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-6 px-3 py-1 text-[11px] font-semibold text-dark-gray tabular-nums">
-                      <Timer size={12} />
-                      {Math.round(challenge.durationSeconds / 60)} min write
+                      {challenge.durationSeconds == null ? (
+                        <TimerOff size={12} />
+                      ) : (
+                        <Timer size={12} />
+                      )}
+                      {formatDuration(challenge.durationSeconds)}
                     </span>
                     <span className="inline-flex min-w-0 items-center gap-1.5 text-[11px] text-gray-7">
                       <CalendarClock size={12} className="shrink-0" />

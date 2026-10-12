@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import { profilePath } from "@/lib/api/profile";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
@@ -149,7 +150,11 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
       </div>
 
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+        <Link
+          href={profilePath(cuentto.user)}
+          aria-label={`View ${cuentto.user.profileName || cuentto.user.username}'s profile`}
+          className="group flex min-w-0 items-center gap-3"
+        >
           <div className="w-[40px] h-[40px] shrink-0">
             <Image
               src={
@@ -164,14 +169,14 @@ const CuenttoFeedCard: React.FC<CuenttoFeedCardProps> = ({
             />
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-[14px] text-black leading-tight truncate">
+            <p className="font-semibold text-[14px] text-black leading-tight truncate group-hover:underline">
               {cuentto.user.profileName || cuentto.user.username}
             </p>
             <p className="font-normal text-[12px] text-gray mt-0.5">
               {relativeTime}
             </p>
           </div>
-        </div>
+        </Link>
         {cuentto.music?.name && (
           <div className="flex items-center gap-1.5 text-gray shrink-0">
             <MusicIcon width={12} height={14} className="text-gray" />

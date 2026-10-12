@@ -53,7 +53,9 @@ function EditCuenttoPage() {
   }, [cuenttoId, router]);
 
   return (
-    <div className="flex flex-col gap-[30px] w-full py-[60px] px-[110px]">
+    // Same responsive spacing as /cuentto/create (which renders the same
+    // form); the fixed 110px side padding left almost no room on phones.
+    <div className="flex flex-col gap-[20px] sm:gap-[30px] w-full py-8 sm:py-10 md:py-[60px] px-4 sm:px-6 md:px-[60px] lg:px-[110px]">
       <div className="flex flex-row justify-between">
         <BackIcon
           width={10}

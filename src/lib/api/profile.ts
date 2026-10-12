@@ -5,6 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export interface UserProfile {
   id: number;
   username: string;
+  usernameSlug?: string | null;
   email?: string;
   profileName?: string | null;
   profileLabel?: string | null;
@@ -27,6 +28,17 @@ export interface FollowUser {
   isPublic?: boolean;
   isFollowing?: boolean;
 }
+
+/**
+ * Profile page URL for a user, by username: /profile/<usernameSlug>. Falls
+ * back to the numeric id when a payload has no slug; that URL redirects to the
+ * username form once the profile loads.
+ */
+export const profilePath = (user: {
+  id: number;
+  usernameSlug?: string | null;
+}) =>
+  `/profile/${user.usernameSlug ? encodeURIComponent(user.usernameSlug) : user.id}`;
 
 export function formatUsername(name?: string | null): string {
   if (!name) return "";
@@ -51,6 +63,16 @@ export const fetchUserProfile = async (
   const response = await axios.get(`${API_URL}/api/profile/${userId}`, {
     headers: getAuthHeader(),
   });
+  return response.data.user;
+};
+
+export const fetchUserProfileBySlug = async (
+  usernameSlug: string
+): Promise<UserProfile> => {
+  const response = await axios.get(
+    `${API_URL}/api/profile/username/${encodeURIComponent(usernameSlug)}`,
+    { headers: getAuthHeader() }
+  );
   return response.data.user;
 };
 
