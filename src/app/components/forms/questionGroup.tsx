@@ -1,16 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, Plus, RefreshCw, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FormField from "../ui/FormField";
 import Toggle from "../ui/Toggle";
 import VioletButton from "../buttons/VioletButton";
+import MoodTag from "../ui/MoodTag";
 import {
   QuestionGroupSchema,
   QuestionGroupFormData,
@@ -115,6 +123,15 @@ export default function QuestionGroupForm({
   });
 
   const canRemoveQuestion = fields.length > MIN_QUESTIONS_PER_GROUP;
+
+  // Step 2 shows which mood/group the admin is adding questions to; the
+  // select stores the id as a string, hence the Number() comparison.
+  const [watchedMoodId, watchedTitle] = useWatch({
+    control,
+    name: ["moodId", "title"],
+  });
+  const selectedMood = moods.find((mood) => mood.id === Number(watchedMoodId));
+  const groupTitle = watchedTitle?.trim();
 
   const handleAddQuestion = () => {
     if (loading) return;
@@ -451,20 +468,28 @@ export default function QuestionGroupForm({
                       className="flex flex-col gap-3 rounded-[12px] border border-light-gray bg-gray-5 p-5 transition-colors duration-200 focus-within:border-violet focus-within:bg-white hover:border-violet/40"
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
                           <motion.span
                             whileHover={{ rotate: [0, -8, 8, 0] }}
                             transition={{ duration: 0.4 }}
-                            className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-violet text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(93,77,190,0.3)]"
+                            className="flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-full bg-violet text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(93,77,190,0.3)]"
                           >
                             {index + 1}
                           </motion.span>
-                          <p className="text-[13px] font-medium uppercase tracking-[0.06em] text-dark-gray">
-                            Question {index + 1}
-                          </p>
+                          {/* Wraps the mood pill under the label on narrow
+                              cards instead of squeezing the toggle row. */}
+                          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                            <p className="text-[13px] font-medium uppercase tracking-[0.06em] text-dark-gray">
+                              Question {index + 1}
+                            </p>
+                            <MoodTag
+                              title={selectedMood?.title}
+                              color={selectedMood?.color}
+                            />
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                           <div className="flex items-center gap-2">
                             <Controller
                               control={control}
