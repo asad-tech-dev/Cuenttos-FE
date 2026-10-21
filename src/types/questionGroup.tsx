@@ -24,6 +24,9 @@ export interface QuestionGroup {
   isActive?: boolean;
   createdBy?: number;
   _count?: { questions: number };
+  // Number of "Answer On" questions; only the list endpoint sends it, and
+  // older backends omit it, so the card falls back to the total.
+  activeQuestionCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }

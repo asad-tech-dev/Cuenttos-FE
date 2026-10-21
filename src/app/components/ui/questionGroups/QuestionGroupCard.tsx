@@ -25,6 +25,10 @@ export default function QuestionGroupCard({
 }: QuestionGroupCardProps) {
   const questionCount =
     group._count?.questions ?? group.questions?.length ?? 0;
+  const questionCountLabel = `${questionCount} ${
+    questionCount === 1 ? "question" : "questions"
+  }`;
+  const activeQuestionCount = group.activeQuestionCount;
   const isActive = Boolean(group.isActive);
 
   const handleActivate = () => onClick?.();
@@ -90,8 +94,17 @@ export default function QuestionGroupCard({
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-3 border-t border-light-gray pt-4">
-        <span className="rounded-full bg-gray-6 px-3 py-1 text-[11px] font-semibold text-dark-gray">
-          {questionCount} {questionCount === 1 ? "question" : "questions"}
+        <span
+          title={
+            activeQuestionCount !== undefined
+              ? `${activeQuestionCount} of ${questionCountLabel} active`
+              : undefined
+          }
+          className="rounded-full bg-gray-6 px-3 py-1 text-[11px] font-semibold text-dark-gray"
+        >
+          {activeQuestionCount !== undefined
+            ? `${activeQuestionCount} active`
+            : questionCountLabel}
         </span>
 
         <div className="flex items-center gap-2">
