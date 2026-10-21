@@ -356,7 +356,7 @@ function ThinkPage() {
                       : "bg-gray-6 text-subtle-black"
                   }`}
                 >
-                  All
+                  <span aria-hidden>✨</span> Top
                 </button>
                 {moods.map((mood) => (
                   <button
@@ -388,11 +388,17 @@ function ThinkPage() {
           {gridGroups.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {gridGroups.flatMap((group) => {
-                const questions = validQuestions(group.questions);
+                // "Top" previews each group with its first answerable
+                // question; a mood tab lists every one of them.
+                const answerable = validQuestions(group.questions);
+                const questions =
+                  selectedMoodId === "all"
+                    ? answerable.slice(0, 1)
+                    : answerable;
                 if (questions.length === 0) return [];
                 const color = group.mood?.color || "#5D4DBE";
                 const accent = readableAccent(color);
-                // One card per answerable question, each keeping the group's
+                // One card per shown question, each keeping the group's
                 // title, mood color, and share / start-writing actions.
                 return questions.map((question, index) => (
                   <div
