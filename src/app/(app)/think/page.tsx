@@ -27,11 +27,6 @@ function dailyIndex(dateKey: string, length: number): number {
   return hash % length;
 }
 
-function estimateReadMinutes(text: string): number {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(words / 200));
-}
-
 function hexToRgb(hex: string): [number, number, number] | null {
   const match = hex.replace("#", "").match(/^([0-9a-f]{6})$/i);
   if (!match) return null;
@@ -300,9 +295,6 @@ function ThinkPage() {
                       <ShareIcon width={14} height={18} />
                     </button>
                   </div>
-                  <span className="text-white/70 text-[14px]">
-                    {estimateReadMinutes(dailyText)} min read
-                  </span>
                 </div>
               </div>
             </div>
@@ -364,7 +356,7 @@ function ThinkPage() {
                       : "bg-gray-6 text-subtle-black"
                   }`}
                 >
-                  All
+                  <span aria-hidden>✨</span> Top
                 </button>
                 {moods.map((mood) => (
                   <button
@@ -396,11 +388,17 @@ function ThinkPage() {
           {gridGroups.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {gridGroups.flatMap((group) => {
-                const questions = validQuestions(group.questions);
+                // "Top" previews each group with its first answerable
+                // question; a mood tab lists every one of them.
+                const answerable = validQuestions(group.questions);
+                const questions =
+                  selectedMoodId === "all"
+                    ? answerable.slice(0, 1)
+                    : answerable;
                 if (questions.length === 0) return [];
                 const color = group.mood?.color || "#5D4DBE";
                 const accent = readableAccent(color);
-                // One card per answerable question, each keeping the group's
+                // One card per shown question, each keeping the group's
                 // title, mood color, and share / start-writing actions.
                 return questions.map((question, index) => (
                   <div

@@ -239,14 +239,14 @@ function CuenttoDetailView({
 
   if (needsAuth === null || loading) {
     return (
-      <div className="flex flex-col gap-6 md:gap-[30px] w-full py-8 md:py-[60px] px-4 sm:px-6 md:px-[110px]">
+      <div className="flex flex-col gap-6 md:gap-[30px] w-full pt-5 pb-8 md:pt-8 md:pb-[60px] px-4 sm:px-6 md:px-[110px]">
         <SkeletonCuenttoDetail />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 md:gap-[30px] w-full py-8 md:py-[60px] px-4 sm:px-6 md:px-[110px]">
+    <div className="flex flex-col gap-6 md:gap-[30px] w-full pt-5 pb-8 md:pt-8 md:pb-[60px] px-4 sm:px-6 md:px-[110px]">
       <div className="flex flex-row justify-between">
         <BackIcon
           width={10}
@@ -263,7 +263,7 @@ function CuenttoDetailView({
         />
       </div>
       <div
-        className="relative overflow-hidden flex flex-col gap-8 md:gap-0 mt-2 md:mt-[30px] justify-between rounded-[24px] bg-gray-5 min-h-[260px] md:h-[370px] p-6 sm:p-10 md:p-[60px]"
+        className="relative overflow-hidden flex flex-col gap-6 justify-between rounded-[24px] bg-gray-5 min-h-[180px] md:min-h-[230px] p-5 sm:p-8 md:p-10"
         style={{
           backgroundColor: isFeatured ? cuentto?.mood.color : "bg-gray-5",
         }}
@@ -323,12 +323,12 @@ function CuenttoDetailView({
         </Link>
         {!isFeatured && (
           <div
-            className="absolute bottom-0 right-0 w-[160px] h-[90px] md:w-[276px] md:h-[158px] rounded-tl-[60px] md:rounded-tl-[90px]"
+            className="absolute bottom-0 right-0 w-[140px] h-[76px] md:w-[190px] md:h-[100px] rounded-tl-[50px] md:rounded-tl-[70px]"
             style={{ backgroundColor: cuentto?.mood.color }}
           ></div>
         )}
       </div>
-      <div className="flex flex-row flex-wrap gap-y-3 justify-between items-center mt-2 md:mt-[20px] border-b border-light-gray pb-5 md:pb-[30px]">
+      <div className="flex flex-row flex-wrap gap-y-3 justify-between items-center border-b border-light-gray pb-4 md:pb-5">
         <div className="flex flex-row items-center gap-5 sm:gap-[40px]">
           <p className="text-[16px] font-medium text-black">
             {cuentto?.duration} min read
