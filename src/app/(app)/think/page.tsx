@@ -27,11 +27,6 @@ function dailyIndex(dateKey: string, length: number): number {
   return hash % length;
 }
 
-function estimateReadMinutes(text: string): number {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(words / 200));
-}
-
 function hexToRgb(hex: string): [number, number, number] | null {
   const match = hex.replace("#", "").match(/^([0-9a-f]{6})$/i);
   if (!match) return null;
@@ -300,9 +295,6 @@ function ThinkPage() {
                       <ShareIcon width={14} height={18} />
                     </button>
                   </div>
-                  <span className="text-white/70 text-[14px]">
-                    {estimateReadMinutes(dailyText)} min read
-                  </span>
                 </div>
               </div>
             </div>
