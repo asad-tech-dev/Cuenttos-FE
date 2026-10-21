@@ -124,14 +124,10 @@ export default function QuestionGroupForm({
 
   const canRemoveQuestion = fields.length > MIN_QUESTIONS_PER_GROUP;
 
-  // Step 2 shows which mood/group the admin is adding questions to; the
-  // select stores the id as a string, hence the Number() comparison.
-  const [watchedMoodId, watchedTitle] = useWatch({
-    control,
-    name: ["moodId", "title"],
-  });
+  // Step 2 tags each question with the mood it's being added to; the select
+  // stores the id as a string, hence the Number() comparison.
+  const watchedMoodId = useWatch({ control, name: "moodId" });
   const selectedMood = moods.find((mood) => mood.id === Number(watchedMoodId));
-  const groupTitle = watchedTitle?.trim();
 
   const handleAddQuestion = () => {
     if (loading) return;
