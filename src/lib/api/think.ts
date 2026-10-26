@@ -2,11 +2,13 @@ import axios from "axios";
 import {
   ChallengeInput,
   ChallengeList,
-  DailyPromptSchedule,
-  SelectableGroup,
+  ThinkPrompt,
+  ThinkPromptInput,
+  ThinkPromptList,
   ThinkToday,
 } from "@/types/think";
 import { Challenge, ChallengeToggleResult } from "@/types/think";
+import { localDateKey } from "@/lib/thinkPrompt";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -33,7 +35,9 @@ export const fetchThinkToday = async (): Promise<ThinkToday> => {
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
     },
-    params: { _: Date.now() },
+    // The viewer's local day, so a prompt scheduled for today shows on their
+    // today rather than on the server's UTC day.
+    params: { date: localDateKey(), _: Date.now() },
   });
   return {
     prompt: response.data?.prompt ?? null,
@@ -66,59 +70,69 @@ export const describeThinkApiError = (
   if (status === 401) return "Your session has expired. Sign in again.";
   if (status === 403) return "This account doesn't have admin access.";
 
-  const data = error.response.data as { message?: string } | undefined;
-  return data?.message ?? fallback;
+  // Validation failures come back as express-validator's `errors[].msg`.
+  const data = error.response.data as
+    | { message?: string; errors?: { msg?: string }[] }
+    | undefined;
+  return data?.message ?? data?.errors?.[0]?.msg ?? fallback;
 };
 
 // --------------------------------------------------------------------------
-// Admin — Today's Prompt schedule
+// Today's Prompt — admin-written prompts
 // --------------------------------------------------------------------------
 
-export const fetchDailyPromptSchedule = async (params?: {
-  from?: string;
-  to?: string;
-}): Promise<DailyPromptSchedule> => {
-  const response = await axios.get(`${API_URL}/api/admin/daily-prompts`, {
+/**
+ * Public (no login): backs shared /prompt/daily/{slug} links and the prompt
+ * banner on Create Cuentto. Resolves even after the prompt is switched off.
+ */
+export const fetchThinkPromptBySlug = async (
+  slug: string,
+): Promise<ThinkPrompt> => {
+  const response = await axios.get(
+    `${API_URL}/api/think/prompts/${encodeURIComponent(slug)}`,
+  );
+  return response.data.thinkPrompt;
+};
+
+export const fetchThinkPrompts = async (): Promise<ThinkPromptList> => {
+  const response = await axios.get(`${API_URL}/api/admin/think-prompts`, {
     headers: authHeaders(),
-    params: { ...params, _: Date.now() },
+    // Same local day the Think page sends, so both agree on "today".
+    params: { date: localDateKey(), _: Date.now() },
   });
   return {
-    from: response.data?.from ?? "",
-    to: response.data?.to ?? "",
     today: response.data?.today ?? "",
-    dailyPrompts: response.data?.dailyPrompts ?? [],
+    livePromptId: response.data?.livePromptId ?? null,
+    maxWords: response.data?.maxWords ?? 0,
+    thinkPrompts: response.data?.thinkPrompts ?? [],
   };
 };
 
-/**
- * Groups that can actually be scheduled. Purpose-built endpoint rather than
- * the general question-group list, which omits the questions themselves and
- * so can't say whether a group has an answerable one.
- */
-export const fetchSelectableGroups = async (): Promise<SelectableGroup[]> => {
-  const response = await axios.get(
-    `${API_URL}/api/admin/daily-prompts/selectable-groups`,
-    { headers: authHeaders(), params: { _: Date.now() } },
-  );
-  return response.data?.questionGroups ?? [];
+export const createThinkPrompt = async (
+  data: ThinkPromptInput,
+): Promise<ThinkPrompt> => {
+  const response = await axios.post(`${API_URL}/api/admin/think-prompts`, data, {
+    headers: authHeaders(),
+  });
+  return response.data.thinkPrompt;
 };
 
-export const setDailyPrompt = async (
-  date: string,
-  questionGroupId: number,
-): Promise<void> => {
-  await axios.put(
-    `${API_URL}/api/admin/daily-prompts/${encodeURIComponent(date)}`,
-    { questionGroupId },
+export const updateThinkPrompt = async (
+  id: number,
+  data: Partial<ThinkPromptInput>,
+): Promise<ThinkPrompt> => {
+  const response = await axios.patch(
+    `${API_URL}/api/admin/think-prompts/${id}`,
+    data,
     { headers: authHeaders() },
   );
+  return response.data.thinkPrompt;
 };
 
-export const clearDailyPrompt = async (date: string): Promise<void> => {
-  await axios.delete(
-    `${API_URL}/api/admin/daily-prompts/${encodeURIComponent(date)}`,
-    { headers: authHeaders() },
-  );
+export const deleteThinkPrompt = async (id: number): Promise<void> => {
+  await axios.delete(`${API_URL}/api/admin/think-prompts/${id}`, {
+    headers: authHeaders(),
+  });
 };
 
 // --------------------------------------------------------------------------

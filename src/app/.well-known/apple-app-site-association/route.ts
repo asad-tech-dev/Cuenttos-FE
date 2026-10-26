@@ -21,6 +21,14 @@ const APPLE_APP_SITE_ASSOCIATION = {
             comment: "Legacy links shared with a double slash",
           },
           {
+            // Must precede "/prompt/*": the first matching component wins,
+            // and the app can't open written Today's Prompts yet, so these
+            // links stay on the web.
+            "/": "/prompt/daily/*",
+            exclude: true,
+            comment: "Shared Today's Prompt links (web only for now)",
+          },
+          {
             "/": "/prompt/*",
             comment: "Shared prompt links",
           },

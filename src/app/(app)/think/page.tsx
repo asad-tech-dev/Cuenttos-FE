@@ -10,6 +10,7 @@ import { fetchThinkToday } from "@/lib/api/think";
 import { QuestionGroup } from "@/types/questionGroup";
 import { Challenge, TodaysPrompt } from "@/types/think";
 import { firstValidQuestion, validQuestions } from "@/lib/questionPrompt";
+import { localDateKey } from "@/lib/thinkPrompt";
 import CustomToast from "@/app/components/toasts/toast";
 import ClampedText from "@/app/components/ui/ClampedText";
 
@@ -175,13 +176,18 @@ function ThinkPage() {
     return Array.from(byId.values());
   }, [groups]);
 
+  // An admin-written prompt for today, resolved server-side, always wins; it
+  // has no question group behind it.
+  const writtenPrompt = serverPrompt?.thinkPrompt ?? null;
+
   const dailyGroup = useMemo(() => {
-    // An admin's explicit pick for today, resolved server-side, always wins.
+    if (writtenPrompt) return null;
+    // Otherwise the server's automatic question pick.
     if (serverPrompt?.questionGroup) return serverPrompt.questionGroup;
     if (!groups.length) return null;
-    const today = new Date().toISOString().slice(0, 10);
-    return groups[dailyIndex(today, groups.length)];
-  }, [serverPrompt, groups]);
+    // Same local day the server resolves against when it's reachable.
+    return groups[dailyIndex(localDateKey(), groups.length)];
+  }, [writtenPrompt, serverPrompt, groups]);
 
   // The API names today's question outright; firstValidQuestion stays as the
   // fallback for the offline path, where dailyGroup came from the client-side
@@ -189,11 +195,13 @@ function ThinkPage() {
   const dailyQuestion =
     serverPrompt?.question ??
     (dailyGroup ? firstValidQuestion(dailyGroup.questions) : null);
-  const dailyText = dailyQuestion
-    ? [dailyQuestion.text.trim(), dailyQuestion.description?.trim()]
-        .filter(Boolean)
-        .join(" ")
-    : "";
+  const dailyText = writtenPrompt
+    ? writtenPrompt.text.trim()
+    : dailyQuestion
+      ? [dailyQuestion.text.trim(), dailyQuestion.description?.trim()]
+          .filter(Boolean)
+          .join(" ")
+      : "";
 
   const gridGroups = useMemo(
     () =>
@@ -218,8 +226,10 @@ function ThinkPage() {
   // Prefers the backend's ready-made shareLink; falls back to building the
   // path by hand from slug, then id, if an older backend response doesn't
   // have shareLink/slug yet — never produces a broken link.
-  const sharePrompt = async (group: QuestionGroup) => {
-    const path = group.shareLink || `/prompt/${group.slug || group.id}`;
+  const sharePrompt = (group: QuestionGroup) =>
+    copyPromptLink(group.shareLink || `/prompt/${group.slug || group.id}`);
+
+  const copyPromptLink = async (path: string) => {
     const url = `${window.location.origin}${path}`;
     try {
       await navigator.clipboard.writeText(url);
@@ -252,7 +262,7 @@ function ThinkPage() {
         <p className="text-[14px] text-dark-red">{error}</p>
       ) : (
         <>
-          {dailyGroup && dailyQuestion && (
+          {(writtenPrompt || (dailyGroup && dailyQuestion)) && (
             <div className="flex flex-col gap-3">
               <p className="text-dark-gray text-[12px] font-semibold tracking-[0.12em] uppercase">
                 Today&apos;s Prompt
@@ -280,7 +290,13 @@ function ThinkPage() {
                   <div className="flex flex-row items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => openPrompt(dailyGroup.id)}
+                      onClick={() =>
+                        writtenPrompt
+                          ? router.push(
+                              `/cuentto/create?dailyPrompt=${encodeURIComponent(writtenPrompt.slug)}&back=${encodeURIComponent("/think")}`,
+                            )
+                          : dailyGroup && openPrompt(dailyGroup.id)
+                      }
                       className="inline-flex items-center gap-2 h-[44px] px-6 rounded-[100px] bg-white text-violet text-[14px] font-semibold cursor-pointer whitespace-nowrap"
                     >
                       <PenLine size={16} />
@@ -288,7 +304,11 @@ function ThinkPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => sharePrompt(dailyGroup)}
+                      onClick={() =>
+                        writtenPrompt
+                          ? copyPromptLink(writtenPrompt.shareLink)
+                          : dailyGroup && sharePrompt(dailyGroup)
+                      }
                       aria-label="Share prompt"
                       className="shrink-0 w-[38px] h-[38px] rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white cursor-pointer transition-colors"
                     >

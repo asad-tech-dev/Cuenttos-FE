@@ -8,6 +8,15 @@ const DRAFT_KEY_PREFIX = "cuentto-draft:";
 const draftKey = (promptGroupId?: string | number | null) =>
   `${DRAFT_KEY_PREFIX}${promptGroupId != null ? String(promptGroupId) : "none"}`;
 
+// The draft key for a Create Cuentto session started from a prompt: a question
+// prompt keeps its group id (so drafts saved before written prompts existed
+// still restore); an admin-written Today's Prompt is keyed by its slug.
+export const promptDraftKey = (
+  promptGroupId: string | null,
+  dailyPromptSlug: string | null,
+): string | null =>
+  promptGroupId ?? (dailyPromptSlug ? `daily:${dailyPromptSlug}` : null);
+
 // Saved right before bouncing an unauthenticated guest (writing from a
 // shared prompt link) to /login, so the Cuentto they already wrote survives
 // the login/register round trip — sessionStorage persists across same-tab

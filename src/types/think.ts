@@ -12,20 +12,38 @@ export interface Challenge {
   isActive: boolean;
 }
 
+/** An admin-written Today's Prompt (free text, not tied to any mood). */
+export interface ThinkPrompt {
+  id: number;
+  text: string;
+  /** Public share slug; never changes after create. */
+  slug: string;
+  /** Ready-made "/prompt/daily/{slug}" relative path. */
+  shareLink: string;
+  /** YYYY-MM-DD it's pinned to, or null when it's in the daily rotation. */
+  scheduledFor: string | null;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface TodaysPrompt {
   /**
-   * "scheduled" — an admin picked this group for today.
-   * "fallback"  — nothing scheduled, so the server made the same
-   *               deterministic date-based pick the client used to make.
+   * "scheduled" — an admin-written prompt pinned to today.
+   * "rotation"  — today's turn in the rotation of undated written prompts.
+   * "fallback"  — no written prompt applies, so the server made the
+   *               deterministic date-based pick of a mood question.
    */
-  source: "scheduled" | "fallback";
+  source: "scheduled" | "rotation" | "fallback";
+  /** Set for "scheduled" and "rotation"; question/questionGroup are then null. */
+  thinkPrompt?: ThinkPrompt | null;
   /**
-   * The single question on display today, hoisted by the API so nothing has
-   * to re-derive it. `questionGroup.questions` now contains only this same
-   * question. Optional so an older backend response still type-checks.
+   * The single question on display today ("fallback" only), hoisted by the
+   * API so nothing has to re-derive it. `questionGroup.questions` contains
+   * only this same question.
    */
-  question?: Question;
-  questionGroup: QuestionGroup;
+  question?: Question | null;
+  questionGroup?: QuestionGroup | null;
 }
 
 export interface ThinkToday {
@@ -33,34 +51,20 @@ export interface ThinkToday {
   challenge: Challenge | null;
 }
 
-/** One scheduled day in the admin's Today's Prompt calendar. */
-export interface DailyPrompt {
-  id: number;
-  /** YYYY-MM-DD */
-  date: string;
-  questionGroupId: number;
-  questionGroup?: QuestionGroup;
-}
-
-export interface DailyPromptSchedule {
-  from: string;
-  to: string;
+export interface ThinkPromptList {
   /** The server's idea of today — the client never derives this itself. */
   today: string;
-  dailyPrompts: DailyPrompt[];
+  /** Written prompt live on Think today; null = the automatic question pick. */
+  livePromptId: number | null;
+  maxWords: number;
+  thinkPrompts: ThinkPrompt[];
 }
 
-/** Minimal shape the daily-prompt picker needs. */
-export interface SelectableGroup {
-  id: number;
-  title: string;
-  isActive: boolean;
-  /**
-   * The question that will actually appear on Think for this group — its
-   * first answerable one. This is what the picker shows, since a group title
-   * like "group-1" says nothing about what a writer will read.
-   */
-  questionText: string;
+export interface ThinkPromptInput {
+  text: string;
+  /** YYYY-MM-DD pins it to that day; null puts it in the rotation. */
+  scheduledFor: string | null;
+  isActive?: boolean;
 }
 
 export interface ChallengeList {
