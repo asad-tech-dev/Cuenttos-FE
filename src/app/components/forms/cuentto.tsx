@@ -26,7 +26,7 @@ import { Group } from "@/types/group";
 import { Cuentto } from "@/types/cuentto";
 import { Question } from "@/types/questionGroup";
 import { fetchMusics } from "@/lib/api/music";
-import { fetchThinkToday } from "@/lib/api/think";
+import { fetchThinkPromptBySlug, fetchThinkToday } from "@/lib/api/think";
 import { createGroup, fetchGroups } from "@/lib/api/group";
 import { CIRCLE_EMOJI_SUGGESTIONS, toSingleEmoji } from "@/lib/emoji";
 import EmojiInput from "../ui/EmojiInput";
@@ -36,7 +36,11 @@ import { firstValidQuestion } from "@/lib/questionPrompt";
 import { CuenttoSchema, CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 import { createCuentto, updateCuentto } from "@/lib/api/cuentto";
 import { getCurrentUserId, isAuthenticated } from "@/lib/api/auth";
-import { saveCuenttoDraft, clearCuenttoDraft } from "@/lib/cuenttoDraft";
+import {
+  saveCuenttoDraft,
+  clearCuenttoDraft,
+  promptDraftKey,
+} from "@/lib/cuenttoDraft";
 import { saveLocalDraft, deleteLocalDraft } from "@/lib/localDrafts";
 
 interface CuenttoFormProps {
@@ -122,6 +126,13 @@ export default function CuenttoForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const promptGroupId = !isEdit ? searchParams.get("promptGroupId") : null;
+  // An admin-written Today's Prompt (by share slug) instead of a question.
+  const dailyPromptSlug = !isEdit ? searchParams.get("dailyPrompt") : null;
+  const draftKey = promptDraftKey(promptGroupId, dailyPromptSlug);
+  // Where a guest lands back after login; unchanged for question prompts.
+  const promptQuery = dailyPromptSlug
+    ? `dailyPrompt=${encodeURIComponent(dailyPromptSlug)}`
+    : `promptGroupId=${promptGroupId ?? ""}`;
   const stepParam = searchParams.get("step");
 
   const [loading, setLoading] = useState(false);
@@ -186,6 +197,27 @@ export default function CuenttoForm({
       cancelled = true;
     };
   }, [promptGroupId]);
+
+  useEffect(() => {
+    if (!dailyPromptSlug) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const thinkPrompt = await fetchThinkPromptBySlug(dailyPromptSlug);
+        if (!cancelled && thinkPrompt?.text?.trim()) {
+          setPrompt({
+            groupTitle: "Today's Prompt",
+            question: { text: thinkPrompt.text },
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [dailyPromptSlug]);
 
   // A challenge on /think opens straight into Create Cuentto with a live
   // countdown. `?challenge=<id>` is the admin-managed form; `?challenge=5min`
@@ -474,7 +506,7 @@ export default function CuenttoForm({
     const isFormValid = await trigger(["duration", "title", "description"]);
     if (isFormValid) {
       if (!isEdit && !isAuthenticated()) {
-        saveCuenttoDraft(promptGroupId, getValues());
+        saveCuenttoDraft(draftKey, getValues());
       }
       setStep(2);
     }
@@ -485,9 +517,9 @@ export default function CuenttoForm({
       if (!isEdit && !isAuthenticated()) {
         // Unregistered user clicking Share on the emotion step:
         // Save their story and selected emotion, then redirect to login/register
-        saveCuenttoDraft(promptGroupId, getValues());
+        saveCuenttoDraft(draftKey, getValues());
         const fromPrompt = searchParams.get("fromPrompt");
-        const target = `/cuentto/create?promptGroupId=${promptGroupId ?? ""}&step=3${
+        const target = `/cuentto/create?${promptQuery}&step=3${
           fromPrompt ? `&fromPrompt=${encodeURIComponent(fromPrompt)}` : ""
         }`;
         router.push(`/login?redirect=${encodeURIComponent(target)}`);
@@ -604,9 +636,9 @@ export default function CuenttoForm({
     // survives the login/register round trip, and send them there instead
     // of letting the API call 401.
     if (!isEdit && !isAuthenticated()) {
-      saveCuenttoDraft(promptGroupId, data);
+      saveCuenttoDraft(draftKey, data);
       const fromPrompt = searchParams.get("fromPrompt");
-      const target = `/cuentto/create?promptGroupId=${promptGroupId ?? ""}&step=3${
+      const target = `/cuentto/create?${promptQuery}&step=3${
         fromPrompt ? `&fromPrompt=${encodeURIComponent(fromPrompt)}` : ""
       }`;
       router.push(`/login?redirect=${encodeURIComponent(target)}`);
@@ -654,7 +686,7 @@ export default function CuenttoForm({
       const userId = getCurrentUserId();
       if (userId != null) deleteLocalDraft(userId, localDraftId);
     }
-    clearCuenttoDraft(promptGroupId);
+    clearCuenttoDraft(draftKey);
     setStep(1);
     setTimeout(() => {
       setOpenDialog(true);

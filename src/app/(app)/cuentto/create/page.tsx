@@ -6,7 +6,7 @@ import { BackIcon } from "@/app/components/icons";
 import Spinner from "@/app/components/ui/Spinner";
 import Link from "next/link";
 import { getCurrentUserId, restoreSession } from "@/lib/api/auth";
-import { readCuenttoDraft } from "@/lib/cuenttoDraft";
+import { promptDraftKey, readCuenttoDraft } from "@/lib/cuenttoDraft";
 import { getLocalDraft } from "@/lib/localDrafts";
 import { CuenttoCreateData } from "@/lib/formSchemas/cuentto";
 import { fetchQuestionGroupById } from "@/lib/api/questionGroup";
@@ -16,6 +16,8 @@ function CreateCuenttoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const promptGroupId = searchParams.get("promptGroupId");
+  // An admin-written Today's Prompt, by its share slug.
+  const dailyPromptSlug = searchParams.get("dailyPrompt");
   const localDraftId = searchParams.get("draftId");
   const fromPrompt = searchParams.get("fromPrompt");
   const [ready, setReady] = useState(false);
@@ -53,7 +55,7 @@ function CreateCuenttoContent() {
       // only required at Publish (CuenttoForm saves a draft and redirects
       // there itself). Anyone else still needs to already be authenticated,
       // matching every other page in the app.
-      if (!authed && !promptGroupId) {
+      if (!authed && !promptGroupId && !dailyPromptSlug) {
         router.replace(
           `/login?redirect=${encodeURIComponent(
             window.location.pathname + window.location.search,
@@ -62,7 +64,9 @@ function CreateCuenttoContent() {
         return;
       }
 
-      const restored = readCuenttoDraft(promptGroupId);
+      const restored = readCuenttoDraft(
+        promptDraftKey(promptGroupId, dailyPromptSlug),
+      );
       if (restored) {
         setDraft(restored);
       } else if (authed && localDraftId) {
@@ -78,7 +82,7 @@ function CreateCuenttoContent() {
     return () => {
       cancelled = true;
     };
-  }, [router, promptGroupId, localDraftId]);
+  }, [router, promptGroupId, dailyPromptSlug, localDraftId]);
 
   if (!ready) return null;
 
@@ -90,6 +94,8 @@ function CreateCuenttoContent() {
   const backParam = searchParams.get("back");
   const backHref = isSafeRedirectPath(backParam)
     ? backParam
+    : dailyPromptSlug
+    ? `/prompt/daily/${encodeURIComponent(dailyPromptSlug)}`
     : promptSlug
     ? `/prompt/${promptSlug}`
     : promptGroupId

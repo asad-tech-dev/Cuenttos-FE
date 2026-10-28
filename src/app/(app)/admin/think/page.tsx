@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Lightbulb, Zap } from "lucide-react";
 import checkAdminAuth from "@/HOC/checkAdminAuth";
-import DailyPromptScheduler from "@/app/components/admin/think/DailyPromptScheduler";
+import ThinkPromptManager from "@/app/components/admin/think/ThinkPromptManager";
 import ChallengeManager from "@/app/components/admin/think/ChallengeManager";
 
 type Tab = "prompt" | "challenge";
@@ -26,7 +26,7 @@ function ManageThinkPage() {
           Manage Think
         </h1>
         <p className="max-w-[640px] text-[14px] leading-[22px] text-gray">
-          Choose which prompt is featured each day and which challenge writers
+          Write the prompt featured each day and choose which challenge writers
           see. Anything you leave unset keeps its existing automatic behaviour.
         </p>
       </header>
@@ -67,7 +67,7 @@ function ManageThinkPage() {
         })}
       </div>
 
-      {tab === "prompt" ? <DailyPromptScheduler /> : <ChallengeManager />}
+      {tab === "prompt" ? <ThinkPromptManager /> : <ChallengeManager />}
     </div>
   );
 }

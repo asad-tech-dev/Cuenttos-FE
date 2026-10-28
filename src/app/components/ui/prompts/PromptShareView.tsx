@@ -12,6 +12,11 @@ interface PromptShareViewProps {
   questionText: string | null;
   groupSlug: string | null;
   questionId: number | null;
+  /**
+   * Where "Start Writing" goes. Set for an admin-written Today's Prompt,
+   * which has no question group; question prompts build it from groupId.
+   */
+  startWritingHref?: string;
 }
 
 export default function PromptShareView({
@@ -20,6 +25,7 @@ export default function PromptShareView({
   questionText,
   groupSlug,
   questionId,
+  startWritingHref,
 }: PromptShareViewProps) {
   const router = useRouter();
   const [authed, setAuthed] = useState(false);
@@ -32,6 +38,10 @@ export default function PromptShareView({
   // freely there; CuenttoForm only sends them to login at Publish, saving
   // what they've written so it survives the round trip.
   const handleStartWriting = () => {
+    if (startWritingHref) {
+      router.push(startWritingHref);
+      return;
+    }
     const slugOrId = groupSlug || String(groupId);
     router.push(
       `/cuentto/create?promptGroupId=${groupId}&fromPrompt=${encodeURIComponent(slugOrId)}`,
