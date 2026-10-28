@@ -7,6 +7,7 @@ import { Pause, Plus, Smile, Sparkles, Timer, Zap } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import PublishCuentto from "../popups/publishCuentto";
+import GuestSignupPrompt from "../popups/guestSignupPrompt";
 import Image from "next/image";
 import { CheckIcon, CloseIcon, MicIcon, MusicIcon, PlayIcon } from "../icons";
 import {
@@ -502,6 +503,23 @@ export default function CuenttoForm({
       setSelectedMusic({ id, name, musicFile, albumArt, artist });
     }
   };
+  // A guest (writing from a shared prompt link) who taps Share is invited to
+  // create an account rather than sent straight to Sign In. Their writing is
+  // saved first so it survives the sign-up round trip, which lands back on
+  // the share step of this same Cuentto.
+  const [guestSignupTarget, setGuestSignupTarget] = useState<string | null>(
+    null,
+  );
+  const askGuestToSignUp = (data: CuenttoCreateData) => {
+    saveCuenttoDraft(draftKey, data);
+    const fromPrompt = searchParams.get("fromPrompt");
+    setGuestSignupTarget(
+      `/cuentto/create?${promptQuery}&step=3${
+        fromPrompt ? `&fromPrompt=${encodeURIComponent(fromPrompt)}` : ""
+      }`,
+    );
+  };
+
   const handleFirstStep = async () => {
     const isFormValid = await trigger(["duration", "title", "description"]);
     if (isFormValid) {
@@ -515,14 +533,9 @@ export default function CuenttoForm({
     const isMoodValid = await trigger(["moodId"]);
     if (isMoodValid) {
       if (!isEdit && !isAuthenticated()) {
-        // Unregistered user clicking Share on the emotion step:
-        // Save their story and selected emotion, then redirect to login/register
-        saveCuenttoDraft(draftKey, getValues());
-        const fromPrompt = searchParams.get("fromPrompt");
-        const target = `/cuentto/create?${promptQuery}&step=3${
-          fromPrompt ? `&fromPrompt=${encodeURIComponent(fromPrompt)}` : ""
-        }`;
-        router.push(`/login?redirect=${encodeURIComponent(target)}`);
+        // Unregistered user clicking Share on the emotion step: save their
+        // story and selected emotion, then invite them to create an account.
+        askGuestToSignUp(getValues());
         return;
       }
       setStep(3);
@@ -630,18 +643,31 @@ export default function CuenttoForm({
     }
   }, [innerCircleGroup, getValues, setValue]);
 
+  // `?step=3` is only ever set on the way back from signing up or in after
+  // writing as a guest. They never saw the share options, so the Public
+  // default carried in their draft wasn't a choice: start them on their
+  // Inner Circle, as agreed with the client. Applied once, so any change
+  // they make afterwards sticks. The share list only reads its selection on
+  // mount, so it's remounted to show the new default.
+  const guestShareDefaultApplied = useRef(false);
+  const [guestShareDefaultKey, setGuestShareDefaultKey] = useState(0);
+  useEffect(() => {
+    if (isEdit || stepParam !== "3" || !innerCircleGroup) return;
+    if (guestShareDefaultApplied.current) return;
+    guestShareDefaultApplied.current = true;
+    setValue("isSelfShared", false);
+    setValue("isPublic", false);
+    setValue("groupIds", [innerCircleGroup.id]);
+    setGuestShareDefaultKey((key) => key + 1);
+  }, [isEdit, stepParam, innerCircleGroup, setValue]);
+
   const onSubmit = async (data: CuenttoCreateData) => {
     // A guest writing from a shared prompt link can fill out the whole form
     // — login is only required at Publish. Save what they've written so it
     // survives the login/register round trip, and send them there instead
     // of letting the API call 401.
     if (!isEdit && !isAuthenticated()) {
-      saveCuenttoDraft(draftKey, data);
-      const fromPrompt = searchParams.get("fromPrompt");
-      const target = `/cuentto/create?${promptQuery}&step=3${
-        fromPrompt ? `&fromPrompt=${encodeURIComponent(fromPrompt)}` : ""
-      }`;
-      router.push(`/login?redirect=${encodeURIComponent(target)}`);
+      askGuestToSignUp(data);
       return;
     }
 
@@ -1308,7 +1334,7 @@ export default function CuenttoForm({
                     under the last option and stays visible. */}
                 <div className="flex flex-col mt-[40px] gap-4 w-full justify-start min-h-0 overflow-y-auto overscroll-y-contain -mx-1 px-1 py-1">
                   <CustomRadioButtonGroup
-                    key={`share-radio-${innerCircleGroup?.id ?? "none"}`}
+                    key={`share-radio-${innerCircleGroup?.id ?? "none"}-${guestShareDefaultKey}`}
                     className="flex flex-col gap-4 w-full justify-start"
                     onChange={(values) => {
                       const isSelfShared = values.includes("self");
@@ -1386,6 +1412,19 @@ export default function CuenttoForm({
           )}
         </SheetContent>
       </Sheet>
+      <Dialog
+        open={guestSignupTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setGuestSignupTarget(null);
+        }}
+      >
+        {guestSignupTarget && (
+          <GuestSignupPrompt
+            redirectTarget={guestSignupTarget}
+            onKeepWriting={() => setGuestSignupTarget(null)}
+          />
+        )}
+      </Dialog>
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <PublishCuentto
           message={

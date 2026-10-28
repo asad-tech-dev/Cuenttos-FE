@@ -1,12 +1,21 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import OnboardHeader from "../components/headers/onboardHeader";
 import { CheckIcon } from "../components/icons";
 import Image from "next/image";
 import { Mood } from "@/types/mood";
 import { fetchMoods } from "@/lib/api/mood";
-export default function InterestPage() {
+import { isSafeRedirectPath } from "@/lib/safeRedirect";
+
+function InterestContent() {
+  // A guest who just signed up from a shared prompt is already logged in, so
+  // Continue takes them straight back to sharing what they wrote. Everyone
+  // else continues to Sign In, as before.
+  const searchParams = useSearchParams();
+  const rawRedirect = searchParams.get("redirect");
+  const continueHref = isSafeRedirectPath(rawRedirect) ? rawRedirect : "/login";
   const [activeGenres, setActiveGenres] = useState<string[]>([]);
   const [moods, setMoods] = useState<Mood[]>([]);
 
@@ -71,7 +80,7 @@ export default function InterestPage() {
               </div>
             </div>
             <div className="flex flex-row gap-4 md:px-0 items-center justify-end mt-[30px]">
-              <Link href="/login">
+              <Link href={continueHref}>
                 <button className="w-[110px] h-[40px] text-white bg-violet text-[14px] rounded-[8px] font-medium cursor-pointer">
                   Continue
                 </button>
@@ -81,5 +90,13 @@ export default function InterestPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function InterestPage() {
+  return (
+    <Suspense fallback={null}>
+      <InterestContent />
+    </Suspense>
   );
 }
