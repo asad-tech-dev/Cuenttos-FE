@@ -637,10 +637,10 @@ export default function CuenttoForm({
 
   // A guest who just signed up or in after writing (through the pop-up, or
   // the `?step=3` return from the login page) never saw the share options,
-  // so the Public default wasn't a choice: start them on their Inner Circle,
-  // as agreed with the client. Applied once, so any change
-  // they make afterwards sticks. The share list only reads its selection on
-  // mount, so it's remounted to show the new default.
+  // so start them on Public, the same default members get (a restored draft
+  // can't carry an older choice over). Applied once, so any change they make
+  // afterwards sticks. The share list only reads its selection on mount, so
+  // it's remounted to show the default.
   const guestShareDefaultApplied = useRef(false);
   const [guestShareDefaultKey, setGuestShareDefaultKey] = useState(0);
   useEffect(() => {
@@ -649,13 +649,13 @@ export default function CuenttoForm({
     if (guestShareDefaultApplied.current) return;
     guestShareDefaultApplied.current = true;
     setValue("isSelfShared", false);
-    setValue("isPublic", false);
-    setValue("groupIds", [innerCircleGroup.id]);
+    setValue("isPublic", true);
+    setValue("groupIds", []);
     setGuestShareDefaultKey((key) => key + 1);
   }, [isEdit, stepParam, guestSignedIn, innerCircleGroup, setValue]);
 
   // Signed in from the pop-up: the page carries on as a member. Their circles
-  // load first so the share step opens with their Inner Circle ready.
+  // load first so the share step opens with all their options ready.
   const handleGuestAuthenticated = async () => {
     setGuestSignupOpen(false);
     setIsAuthed(true);
