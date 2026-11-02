@@ -322,9 +322,11 @@ export default function ThinkPromptManager() {
                 {livePrompt.text}
               </h3>
               <p className="text-[13px] leading-[20px] text-gray break-words">
-                {livePrompt.scheduledFor
-                  ? `Scheduled for ${today}.`
-                  : "Today's turn in the daily rotation."}
+                {!livePrompt.scheduledFor
+                  ? "Today's turn in the daily rotation."
+                  : livePrompt.scheduledFor < today
+                    ? `Scheduled for ${livePrompt.scheduledFor}, and stays up until a newer prompt takes over.`
+                    : `Scheduled for ${today}.`}
               </p>
             </>
           ) : (

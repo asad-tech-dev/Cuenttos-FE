@@ -28,6 +28,9 @@ export default function RegisterForm() {
   const searchParams = useSearchParams();
   const rawRedirect = searchParams.get("redirect");
   const redirect = isSafeRedirectPath(rawRedirect) ? rawRedirect : null;
+  // Set by the guest sign-up pop-up: a brand-new account goes through the
+  // standard onboarding (/interest) before landing on `redirect`.
+  const withOnboarding = searchParams.get("onboarding") === "1";
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -45,7 +48,11 @@ export default function RegisterForm() {
           if (token) {
             storeToken(token);
             storeIsAdmin(Boolean(isAdmin));
-            router.push(redirect);
+            router.push(
+              withOnboarding
+                ? `/interest?redirect=${encodeURIComponent(redirect)}`
+                : redirect,
+            );
             return;
           }
         } catch {
