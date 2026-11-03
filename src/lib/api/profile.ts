@@ -100,6 +100,17 @@ export const fetchUserFollowers = async (
   return response.data.followers ?? [];
 };
 
+/**
+ * Whoever shared the link the signed-in user signed up from, or null. They
+ * can be added to the user's circles even before following them.
+ */
+export const fetchReferrer = async (): Promise<FollowUser | null> => {
+  const response = await axios.get(`${API_URL}/api/profile/referrer`, {
+    headers: getAuthHeader(),
+  });
+  return response.data.referrer ?? null;
+};
+
 export const fetchUserFollowings = async (
   userId: number
 ): Promise<FollowUser[]> => {

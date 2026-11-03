@@ -11,6 +11,7 @@ import {
   Lightbulb,
   ChevronDown,
   LogOut,
+  Compass,
 } from "lucide-react";
 import {
   ThinkIcon,
@@ -21,6 +22,7 @@ import {
 } from "../icons";
 import { getIsAdmin, logoutUser, clearAuth } from "@/lib/api/auth";
 import { useMobileNav } from "../context/MobileNavContext";
+import { WALKTHROUGH_START_EVENT } from "@/lib/walkthrough";
 
 // The app's own icons are all drawn on one 24x24 grid with one 2px stroke
 // (see IconBase), which is the same grid and weight lucide uses — so both
@@ -133,6 +135,7 @@ export default function Sidebar() {
           return (
             <Link key={item.href} href={item.href} onClick={close}>
               <div
+                data-tour={`nav-${item.name.toLowerCase()}`}
                 className={`relative flex items-center gap-4 px-4 w-[200px] h-[56px] transition-all duration-300 rounded-[100px] cursor-pointer
                 ${isActive ? "text-black font-semibold" : "text-gray"}
               `}
@@ -234,6 +237,23 @@ export default function Sidebar() {
         <div
           className={`${isAdmin ? "" : "mt-[16px]"} pt-[12px] border-t border-light-gray w-[200px]`}
         >
+          <button
+            type="button"
+            data-tour="nav-tour"
+            onClick={() =>
+              window.dispatchEvent(new Event(WALKTHROUGH_START_EVENT))
+            }
+            className="group relative flex items-center gap-4 px-4 w-[200px] h-[56px] rounded-[100px] transition-all duration-300 cursor-pointer text-gray hover:text-black"
+          >
+            <span className={ICON_SLOT}>
+              <Compass
+                size={ICON_SIZE}
+                strokeWidth={ICON_STROKE}
+                className="text-gray group-hover:text-black transition-colors duration-300"
+              />
+            </span>
+            <p className="text-[14px] font-semibold">Take the tour</p>
+          </button>
           <button
             type="button"
             onClick={handleLogout}

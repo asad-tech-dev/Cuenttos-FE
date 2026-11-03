@@ -11,6 +11,8 @@ import VioletButton from "../buttons/VioletButton";
 import { RegisterFormData,registerSchema } from "@/lib/formSchemas/auth";
 import { registerUser, loginUser, storeToken, storeIsAdmin } from "@/lib/api/auth";
 import { isSafeRedirectPath } from "@/lib/safeRedirect";
+import { clearReferrer, readReferrer } from "@/lib/referrer";
+import { markWalkthroughPending } from "@/lib/walkthrough";
 
 export default function RegisterForm() {
   const {
@@ -38,7 +40,10 @@ export default function RegisterForm() {
     setLoading(true);
     setError(null);
     try {
-      await registerUser(data);
+      await registerUser({ ...data, referrer: readReferrer() ?? undefined });
+      clearReferrer();
+      // New account: show the walkthrough once onboarding is done.
+      markWalkthroughPending(data.email);
       if (redirect) {
         try {
           const { token, isAdmin } = await loginUser({
