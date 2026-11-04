@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Pause, Plus, Smile, Sparkles, Timer, Zap } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
-import PublishCuentto from "../popups/publishCuentto";
+import PublishCuentto, { PublishAudience } from "../popups/publishCuentto";
 import GuestSignupPrompt from "../popups/guestSignupPrompt";
 import Image from "next/image";
 import { CheckIcon, CloseIcon, MicIcon, MusicIcon, PlayIcon } from "../icons";
@@ -156,6 +156,8 @@ export default function CuenttoForm({
   const [duration, setDuration] = useState(0);
   const [playingMusicId, setPlayingMusicId] = useState<number | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [publishedAudience, setPublishedAudience] =
+    useState<PublishAudience>("public");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -717,6 +719,9 @@ export default function CuenttoForm({
     }
     clearCuenttoDraft(draftKey);
     setStep(1);
+    setPublishedAudience(
+      rest.isSelfShared ? "private" : rest.isPublic ? "public" : "circles",
+    );
     setTimeout(() => {
       setOpenDialog(true);
     }, 500);
@@ -1425,13 +1430,8 @@ export default function CuenttoForm({
       </Dialog>
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <PublishCuentto
-          message={
-            isEdit ? (
-              <>
-                Your Cuentto has been <br></br>succesfully updated.
-              </>
-            ) : undefined
-          }
+          variant={isEdit ? "updated" : "published"}
+          audience={publishedAudience}
         />
       </Dialog>
       <audio
