@@ -182,7 +182,42 @@ export const getCurrentUserId = (): number | null => {
   }
 };
 
-export const registerUser = async (data: RegisterFormData) => {
+/**
+ * A JWT's payload. JWTs use base64url (`-`/`_`, no padding), which plain
+ * `atob` rejects, and the payload is UTF-8, so non-ASCII names need decoding.
+ */
+export const decodeTokenPayload = (
+  token: string,
+): Record<string, unknown> | null => {
+  try {
+    const part = token.split(".")[1];
+    if (!part) return null;
+    const base64 = part.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    const bytes = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
+    const payload = JSON.parse(new TextDecoder().decode(bytes));
+    return payload && typeof payload === "object" ? payload : null;
+  } catch {
+    return null;
+  }
+};
+
+/** The signed-in user's username, from the access token's `userName` claim. */
+export const getCurrentUsername = (): string | null => {
+  if (typeof window === "undefined") return null;
+  const token = localStorage.getItem("authToken");
+  if (!token) return null;
+  const payload = decodeTokenPayload(token);
+  return typeof payload?.userName === "string" ? payload.userName : null;
+};
+
+/**
+ * `referrer` is the username of whoever shared the link they signed up from
+ * (see lib/referrer); the backend ignores it when unknown.
+ */
+export const registerUser = async (
+  data: RegisterFormData & { referrer?: string },
+) => {
   const response = await axios.post(`${API_URL}/api/auth/register`, data, {
     headers: {
       "Content-Type": "application/json",

@@ -8,6 +8,9 @@ export default defineConfig({
   // These tests don't exercise CSS; skip the project's Tailwind v4 PostCSS
   // config (Vite's PostCSS loader can't parse it).
   css: { postcss: { plugins: [] } },
+  // Next compiles JSX with the automatic runtime (no `import React`); match it
+  // so component tests can render the app's .tsx files.
+  esbuild: { jsx: "automatic" },
   test: {
     environment: "jsdom",
     // Interceptor reads NEXT_PUBLIC_API_URL at module load, so provide it here.

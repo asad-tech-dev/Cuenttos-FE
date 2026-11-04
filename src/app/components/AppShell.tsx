@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import AppHeader from "./headers/appHeader";
 import Sidebar from "./sidebar/mainSidebar";
+import Walkthrough from "./walkthrough/Walkthrough";
 import { MobileNavProvider } from "./context/MobileNavContext";
 import { SavedCuenttosProvider } from "./context/SavedCuenttosContext";
 import { AUTH_CHANGE_EVENT, isAuthenticated } from "@/lib/api/auth";
@@ -46,6 +47,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             </main>
           </div>
         </div>
+        {authed && <Walkthrough />}
       </SavedCuenttosProvider>
     </MobileNavProvider>
   );

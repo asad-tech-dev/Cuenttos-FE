@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FileQuestion, PenLine, Sparkles } from "lucide-react";
 import { isAuthenticated } from "@/lib/api/auth";
+import { referrerFromSearch, rememberReferrer } from "@/lib/referrer";
 import { OpenInAppButton } from "@/app/components/buttons/OpenInAppButton";
 
 interface PromptShareViewProps {
@@ -31,7 +32,14 @@ export default function PromptShareView({
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    setAuthed(isAuthenticated());
+    const signedIn = isAuthenticated();
+    setAuthed(signedIn);
+    // A guest remembers who shared this link (`?from=`), so if they sign up
+    // they can add that person to a circle.
+    if (!signedIn) {
+      const sharer = referrerFromSearch(window.location.search);
+      if (sharer) rememberReferrer(sharer);
+    }
   }, []);
 
   // Goes straight to Create Cuentto regardless of auth — a guest can write

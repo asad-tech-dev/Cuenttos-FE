@@ -11,6 +11,9 @@ import { QuestionGroup } from "@/types/questionGroup";
 import { Challenge, TodaysPrompt } from "@/types/think";
 import { firstValidQuestion, validQuestions } from "@/lib/questionPrompt";
 import { localDateKey } from "@/lib/thinkPrompt";
+import { withReferrer } from "@/lib/referrer";
+import { getCurrentUserId, getCurrentUsername } from "@/lib/api/auth";
+import { fetchUserProfile } from "@/lib/api/profile";
 import CustomToast from "@/app/components/toasts/toast";
 import ClampedText from "@/app/components/ui/ClampedText";
 
@@ -118,6 +121,27 @@ function ThinkPage() {
   // Distinguishes "the backend said there is no challenge" (hide the section)
   // from "we never heard back" (keep showing the default card).
   const [thinkResolved, setThinkResolved] = useState(false);
+  // Your URL-safe username slug, for signing shared links (`?from=`). Until it
+  // loads — or if it can't — links fall back to the username in the token.
+  const [sharerSlug, setSharerSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    const userId = getCurrentUserId();
+    if (userId === null) return;
+    let cancelled = false;
+    fetchUserProfile(userId)
+      .then((profile) => {
+        if (!cancelled && profile?.usernameSlug) {
+          setSharerSlug(profile.usernameSlug);
+        }
+      })
+      .catch(() => {
+        // Not critical: the username fallback still signs the link.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -229,8 +253,11 @@ function ThinkPage() {
   const sharePrompt = (group: QuestionGroup) =>
     copyPromptLink(group.shareLink || `/prompt/${group.slug || group.id}`);
 
+  // Signed with `?from=<you>`, so whoever signs up from the link can add you
+  // to a circle straight away (see lib/referrer).
   const copyPromptLink = async (path: string) => {
-    const url = `${window.location.origin}${path}`;
+    const sharer = sharerSlug ?? getCurrentUsername();
+    const url = `${window.location.origin}${withReferrer(path, sharer)}`;
     try {
       await navigator.clipboard.writeText(url);
       CustomToast({ title: "Prompt link copied!" });

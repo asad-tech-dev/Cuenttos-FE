@@ -18,6 +18,8 @@ import {
   loginSchema,
   registerSchema,
 } from "@/lib/formSchemas/auth";
+import { clearReferrer, readReferrer } from "@/lib/referrer";
+import { markWalkthroughPending } from "@/lib/walkthrough";
 
 // Light-theme versions of the /login and /register forms for the guest
 // sign-up pop-up. Same schemas and API calls as those pages; the difference
@@ -86,12 +88,16 @@ export function GuestRegisterForm({ onAuthenticated, onSwitch }: AuthFormProps) 
     setLoading(true);
     setError(null);
     try {
-      await registerUser(data);
+      // The sharer of the prompt they came from, so they can add them to a circle.
+      await registerUser({ ...data, referrer: readReferrer() ?? undefined });
+      clearReferrer();
     } catch (err) {
       setError(apiError(err, "Signup failed. Please try again."));
       setLoading(false);
       return;
     }
+    // Shown once they've shared what they wrote and reach a main page.
+    markWalkthroughPending(data.email);
     try {
       // Same as /register: sign the new account straight in.
       await signIn({ email: data.email, password: data.password });

@@ -9,7 +9,11 @@ import { SheetTitle } from "@/components/ui/sheet";
 import VioletButton from "../buttons/VioletButton";
 import { Group } from "@/types/group";
 import { addGroupMembers } from "@/lib/api/group";
-import { FollowUser, fetchUserFollowers } from "@/lib/api/profile";
+import {
+  FollowUser,
+  fetchReferrer,
+  fetchUserFollowers,
+} from "@/lib/api/profile";
 import { getCurrentUserId } from "@/lib/api/auth";
 
 interface CircleMembersProps {
@@ -35,10 +39,13 @@ function PersonRow({
   user,
   selected,
   onToggle,
+  note,
 }: {
   user: FollowUser;
   selected: boolean;
   onToggle: (id: number) => void;
+  /** Extra context after the @username, e.g. why they're suggested. */
+  note?: string;
 }) {
   const [imgError, setImgError] = useState(false);
   const displayName = user.profileName?.trim() || user.username;
@@ -66,6 +73,7 @@ function PersonRow({
         </span>
         <span className="truncate text-[13px] text-gray mt-0.5">
           @{user.username}
+          {note && <span className="text-violet"> · {note}</span>}
         </span>
       </span>
       <span
@@ -102,10 +110,13 @@ function SectionHeader({
   );
 }
 
+const REFERRER_NOTE = "Shared a prompt with you";
+
 /**
  * Second step of "Create New Circle" (mirrors the mobile app): pick which of
  * your followers join the new circle. Picking nobody is fine — the circle is
- * already created.
+ * already created. Whoever shared the prompt you signed up from is listed
+ * first too, even before they follow you (the backend allows adding them).
  */
 export default function CircleMembers({
   group,
@@ -113,6 +124,7 @@ export default function CircleMembers({
   onCancel,
 }: CircleMembersProps) {
   const [followers, setFollowers] = useState<FollowUser[]>([]);
+  const [referrer, setReferrer] = useState<FollowUser | null>(null);
   const [loadingFollowers, setLoadingFollowers] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -127,29 +139,50 @@ export default function CircleMembers({
       return;
     }
     let active = true;
-    fetchUserFollowers(userId)
-      .then((data) => {
-        if (active) setFollowers(data.filter((u) => u.id !== userId));
-      })
-      .catch(() => {
-        if (active) setLoadError(true);
-      })
-      .finally(() => {
-        if (active) setLoadingFollowers(false);
-      });
+    // The referrer lookup is a bonus: if it fails the list is just followers.
+    Promise.allSettled([fetchUserFollowers(userId), fetchReferrer()]).then(
+      ([followersResult, referrerResult]) => {
+        if (!active) return;
+        if (followersResult.status === "fulfilled") {
+          setFollowers(followersResult.value.filter((u) => u.id !== userId));
+        } else {
+          setLoadError(true);
+        }
+        if (
+          referrerResult.status === "fulfilled" &&
+          referrerResult.value &&
+          referrerResult.value.id !== userId
+        ) {
+          setReferrer(referrerResult.value);
+        }
+        setLoadingFollowers(false);
+      },
+    );
     return () => {
       active = false;
     };
   }, []);
 
+  // The referrer first (once, even if they already follow you), then followers.
+  const people = useMemo(
+    () =>
+      referrer
+        ? [referrer, ...followers.filter((u) => u.id !== referrer.id)]
+        : followers,
+    [followers, referrer],
+  );
+
   const q = query.trim().toLowerCase();
   const { selected, suggested } = useMemo(() => {
-    const visible = q ? followers.filter((u) => matches(u, q)) : followers;
+    const visible = q ? people.filter((u) => matches(u, q)) : people;
     return {
       selected: visible.filter((u) => selectedIds.includes(u.id)),
       suggested: visible.filter((u) => !selectedIds.includes(u.id)),
     };
-  }, [followers, selectedIds, q]);
+  }, [people, selectedIds, q]);
+
+  const noteFor = (user: FollowUser) =>
+    user.id === referrer?.id ? REFERRER_NOTE : undefined;
 
   const toggle = (id: number) =>
     setSelectedIds((prev) =>
@@ -232,12 +265,12 @@ export default function CircleMembers({
                 </div>
               ))}
             </div>
-          ) : loadError ? (
+          ) : loadError && people.length === 0 ? (
             <p className="text-[14px] text-gray px-2">
               Could not load your followers. You can still finish and add
               people later.
             </p>
-          ) : followers.length === 0 ? (
+          ) : people.length === 0 ? (
             <p className="text-[14px] text-gray px-2">
               No followers yet. Only people who follow you can be added to a
               circle — you can finish now and add them later.
@@ -256,6 +289,7 @@ export default function CircleMembers({
                     user={user}
                     selected
                     onToggle={toggle}
+                    note={noteFor(user)}
                   />
                 ))}
               </section>
@@ -271,11 +305,18 @@ export default function CircleMembers({
                     user={user}
                     selected={false}
                     onToggle={toggle}
+                    note={noteFor(user)}
                   />
                 ))}
                 {q && selected.length === 0 && suggested.length === 0 && (
                   <p className="text-[14px] text-gray px-2 py-2">
                     No followers match &ldquo;{query.trim()}&rdquo;.
+                  </p>
+                )}
+                {loadError && (
+                  <p className="text-[14px] text-gray px-2 py-2">
+                    Could not load your followers. You can still finish and
+                    add them later.
                   </p>
                 )}
               </section>
