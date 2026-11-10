@@ -9,6 +9,13 @@ import CustomToast from "../toasts/comingSoon";
 import { useMobileNav } from "../context/MobileNavContext";
 import { isAuthenticated } from "@/lib/api/auth";
 
+// Pages a guest reaches from a shared prompt link (including short /s/
+// links), where the logo shouldn't send them off to the signed-in app.
+const isGuestPromptPage = (pathname: string) =>
+  pathname.startsWith("/prompt") ||
+  pathname.startsWith("/s/") ||
+  pathname.startsWith("/cuentto/create");
+
 export default function AppHeader({
   showSidebar = false,
 }: {
@@ -23,17 +30,14 @@ export default function AppHeader({
   }, [pathname, showSidebar]);
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (
-      !authed &&
-      (pathname.startsWith("/prompt") || pathname.startsWith("/cuentto/create"))
-    ) {
+    if (!authed && isGuestPromptPage(pathname)) {
       e.preventDefault();
     }
   };
 
   const logoHref = authed
     ? "/share"
-    : pathname.startsWith("/prompt") || pathname.startsWith("/cuentto/create")
+    : isGuestPromptPage(pathname)
       ? "#"
       : "/share";
 

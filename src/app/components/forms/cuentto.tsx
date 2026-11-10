@@ -3,7 +3,15 @@ import { useForm, Controller } from "react-hook-form";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pause, Plus, Smile, Sparkles, Timer, Zap } from "lucide-react";
+import {
+  CircleAlert,
+  Pause,
+  Plus,
+  Smile,
+  Sparkles,
+  Timer,
+  Zap,
+} from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import PublishCuentto, { PublishAudience } from "../popups/publishCuentto";
@@ -20,6 +28,7 @@ import CustomRadioButtonGroup from "../ui/CustomRadioButtonGroup";
 import { Dialog } from "@/components/ui/dialog";
 import { Editor } from "@tinymce/tinymce-react";
 import VioletButton from "../buttons/VioletButton";
+import { hasShareAudience } from "@/lib/shareAudience";
 import CircleMembers from "./circleMembers";
 import { Mood } from "@/types/mood";
 import { Music, Durations } from "@/types/music";
@@ -150,6 +159,12 @@ export default function CuenttoForm({
   const [moods, setMoods] = useState<Mood[]>([]);
   const [moodsLoading, setMoodsLoading] = useState(true);
   const [groups, setGroups] = useState<Group[]>([]);
+  // The user's circles have loaded, so a group id not among them is stale.
+  const [groupsLoaded, setGroupsLoaded] = useState(false);
+  // The user has changed the share options. Until then the list shows a
+  // default when the form has no audience yet; afterwards it shows exactly
+  // what they picked — including nothing.
+  const [shareTouched, setShareTouched] = useState(false);
   const [musics, setMusics] = useState<Music[]>([]);
   const [durations, setDurations] = useState<Durations>({});
   const [currentTime, setCurrentTime] = useState(0);
@@ -329,8 +344,23 @@ export default function CuenttoForm({
       ...(shareIsPublic ? ["all"] : []),
       ...(shareGroupIds ?? []),
     ];
-    return values.length > 0 ? values : initialShareSelection;
+    return values.length > 0 || shareTouched ? values : initialShareSelection;
   })();
+  // Share stays disabled until at least one audience is picked.
+  const canShare = hasShareAudience(
+    shareTouched
+      ? {
+          isSelfShared: shareIsSelf,
+          isPublic: shareIsPublic,
+          groupIds: shareGroupIds,
+        }
+      : {
+          isSelfShared: currentShareSelection.includes("self"),
+          isPublic: currentShareSelection.includes("all"),
+          groupIds: currentShareSelection,
+        },
+    groupsLoaded ? groups.map((g) => g.id) : undefined,
+  );
 
   // "Create New Circle" view inside the share drawer.
   // "Create New Circle" is two screens, as in the mobile app: the circle's
@@ -614,6 +644,7 @@ export default function CuenttoForm({
       setGroups(
         userId !== null ? data.filter((g) => g.createdBy === userId) : [],
       );
+      setGroupsLoaded(true);
     } catch (error) {
       console.log(error);
     }
@@ -667,6 +698,10 @@ export default function CuenttoForm({
   };
 
   const onSubmit = async (data: CuenttoCreateData) => {
+    // Nothing to share with (every option deselected): the Share button is
+    // disabled, and this also stops Enter or any other submit path.
+    if (!canShare) return;
+
     // A guest writing from a shared prompt link can fill out the whole form
     // — login is only required at Publish. Save what they've written so it
     // survives the login/register round trip, and send them there instead
@@ -1345,6 +1380,7 @@ export default function CuenttoForm({
                     key={`share-radio-${innerCircleGroup?.id ?? "none"}-${guestShareDefaultKey}`}
                     className="flex flex-col gap-4 w-full justify-start"
                     onChange={(values) => {
+                      setShareTouched(true);
                       const isSelfShared = values.includes("self");
                       const isPublic = !isSelfShared && values.includes("all");
                       const groupIds = isSelfShared
@@ -1401,6 +1437,28 @@ export default function CuenttoForm({
                   <p className="text-red-400 w-full text-left">{error}</p>
                 )}
               </div>
+              {/* Shown while Share is disabled, so it's clear why. */}
+              <p
+                id="share-audience-hint"
+                role="status"
+                aria-live="polite"
+                className={`w-full text-[14px] text-red-400 items-start gap-2 ${
+                  canShare ? "hidden" : "flex"
+                }`}
+              >
+                {!canShare && (
+                  <>
+                    <CircleAlert
+                      size={16}
+                      aria-hidden
+                      className="shrink-0 mt-[2px]"
+                    />
+                    {isEdit
+                      ? "Please select at least one option to save your changes."
+                      : "Please select at least one option to share your Cuentto."}
+                  </>
+                )}
+              </p>
               <div className="flex flex-row justify-end items-center gap-6">
                 <p
                   className="text-violet text-[14px] font-medium cursor-pointer"
@@ -1412,6 +1470,11 @@ export default function CuenttoForm({
                   text={isEdit ? "Save" : "Share"}
                   className="w-[87px]"
                   loading={loading}
+                  disabled={!canShare}
+                  title={canShare ? undefined : "Select who to share with"}
+                  aria-describedby={
+                    canShare ? undefined : "share-audience-hint"
+                  }
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
                 />
