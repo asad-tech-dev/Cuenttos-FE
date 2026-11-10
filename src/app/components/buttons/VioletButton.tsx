@@ -8,12 +8,25 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   onClick?: () => void;
 }
 
-const VioletButton: React.FC<ButtonProps> = ({ text, className = "", loading = false, onClick, ...props }) => {
+const VioletButton: React.FC<ButtonProps> = ({
+  text,
+  className = "",
+  loading = false,
+  onClick,
+  disabled = false,
+  ...props
+}) => {
+  // Only an explicit `disabled` greys the button out; while loading it keeps
+  // its violet look (with the spinner) and just ignores clicks.
+  const stateClass = disabled
+    ? "bg-disabled-button text-disabled-text cursor-not-allowed"
+    : "bg-violet text-white cursor-pointer";
   return (
     <button
-      className={`bg-violet cursor-pointer rounded-[8px] text-white font-medium h-[40px] ${className}`}
+      className={`${stateClass} rounded-[8px] font-medium h-[40px] transition-colors duration-200 ${className}`}
       onClick={onClick}
-      disabled={loading || props.disabled}
+      disabled={loading || disabled}
+      aria-disabled={loading || disabled || undefined}
       {...props}
     >
       {loading ? (

@@ -36,6 +36,12 @@
   --color-dark-red: #ba1b1b;
 }
 
+/* Inter Variable comes from @fontsource-variable/inter (imported in layout). */
+:root {
+  --font-inter: "Inter Variable", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Arial, sans-serif;
+}
+
 html,
 body {
   font-family: var(--font-inter), sans-serif;

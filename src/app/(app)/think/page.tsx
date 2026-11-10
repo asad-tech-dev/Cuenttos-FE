@@ -11,7 +11,7 @@ import { QuestionGroup } from "@/types/questionGroup";
 import { Challenge, TodaysPrompt } from "@/types/think";
 import { firstValidQuestion, validQuestions } from "@/lib/questionPrompt";
 import { localDateKey } from "@/lib/thinkPrompt";
-import { withReferrer } from "@/lib/referrer";
+import { buildPromptShareUrl, copyPendingText } from "@/lib/promptShareLink";
 import { getCurrentUserId, getCurrentUsername } from "@/lib/api/auth";
 import { fetchUserProfile } from "@/lib/api/profile";
 import CustomToast from "@/app/components/toasts/toast";
@@ -253,13 +253,19 @@ function ThinkPage() {
   const sharePrompt = (group: QuestionGroup) =>
     copyPromptLink(group.shareLink || `/prompt/${group.slug || group.id}`);
 
-  // Signed with `?from=<you>`, so whoever signs up from the link can add you
-  // to a circle straight away (see lib/referrer).
+  // A short /s/<code> link that records you as the sharer, so whoever signs
+  // up from it can add you to a circle straight away — even if they edit the
+  // link. Falls back to the prompt URL signed with `?from=<you>` if the short
+  // link can't be made (see lib/promptShareLink, lib/referrer).
   const copyPromptLink = async (path: string) => {
-    const sharer = sharerSlug ?? getCurrentUsername();
-    const url = `${window.location.origin}${withReferrer(path, sharer)}`;
+    const url = buildPromptShareUrl({
+      path,
+      userId: getCurrentUserId(),
+      sharer: sharerSlug ?? getCurrentUsername(),
+      origin: window.location.origin,
+    });
     try {
-      await navigator.clipboard.writeText(url);
+      await copyPendingText(url);
       CustomToast({ title: "Prompt link copied!" });
     } catch (error) {
       console.error(error);
