@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FileQuestion, PenLine, Sparkles } from "lucide-react";
+import { ArrowRight, FileQuestion, PenLine, Sparkles } from "lucide-react";
 import { isAuthenticated } from "@/lib/api/auth";
 import { referrerFromSearch, rememberReferrer } from "@/lib/referrer";
 import { OpenInAppButton } from "@/app/components/buttons/OpenInAppButton";
@@ -112,14 +112,32 @@ export default function PromptShareView({
           take — no rules, no pressure.
         </p>
 
-        <button
-          type="button"
-          onClick={handleStartWriting}
-          className="inline-flex items-center gap-2 h-[48px] px-8 rounded-[100px] bg-violet text-white text-[15px] font-semibold cursor-pointer"
-        >
-          <PenLine size={16} />
-          Start Writing
-        </button>
+        <div className="flex flex-col items-center gap-3">
+          {/* The prompt card above is the same violet, so the button is made
+              to read as the thing to tap: bigger, raised with a shadow, an
+              arrow, and a hover/press response. */}
+          <button
+            type="button"
+            onClick={handleStartWriting}
+            className="group inline-flex items-center gap-2 h-[54px] px-10 rounded-[100px] bg-violet text-white text-[16px] font-semibold cursor-pointer shadow-[0_10px_24px_-6px_rgba(93,77,190,0.55)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_-6px_rgba(93,77,190,0.65)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-2"
+          >
+            <PenLine size={18} />
+            Start Writing
+            <ArrowRight
+              size={18}
+              className="transition-transform duration-200 group-hover:translate-x-1"
+            />
+          </button>
+
+          {/* Guests weren't sure whether they could write here or had to get
+              the app first: they can write right away, app optional. */}
+          {!authed && (
+            <p className="text-[13px] leading-[20px] text-gray max-w-[360px]">
+              No app needed — write right here in your browser. You can
+              download the app afterwards.
+            </p>
+          )}
+        </div>
 
         {!authed && groupSlug && questionId != null && (
           <OpenInAppButton
