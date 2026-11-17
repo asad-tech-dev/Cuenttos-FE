@@ -30,6 +30,26 @@ export const createGroup = async (data: CreateGroupData): Promise<Group> => {
 };
 
 /**
+ * Ids of the people in a circle, not counting its creator (the backend lists
+ * only `member`-role rows, the same set `addGroupMembers` replaces).
+ */
+export const fetchGroupMemberIds = async (
+  groupId: number,
+): Promise<number[]> => {
+  const token = localStorage.getItem("authToken");
+  const response = await axios.get(`${API_URL}/api/group/detail/${groupId}`, {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  });
+  const members: { user?: { id?: unknown } }[] =
+    response.data?.group?.members ?? [];
+  return members
+    .map((m) => m.user?.id)
+    .filter((id): id is number => typeof id === "number");
+};
+
+/**
  * Set a circle's members (the backend adds new ids and removes missing ones;
  * only people who follow the circle's creator can be added).
  */

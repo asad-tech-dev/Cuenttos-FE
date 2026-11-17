@@ -30,6 +30,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import VioletButton from "../buttons/VioletButton";
 import { hasShareAudience } from "@/lib/shareAudience";
 import CircleMembers from "./circleMembers";
+import EmptyInnerCircleNotice from "./EmptyInnerCircleNotice";
 import { Mood } from "@/types/mood";
 import { Music, Durations } from "@/types/music";
 import { Group } from "@/types/group";
@@ -1417,6 +1418,16 @@ export default function CuenttoForm({
                     exclusiveValues={["self"]}
                   />
                 </div>
+                {/* Warns when the picked Inner Circle has nobody in it, and
+                    offers to add whoever shared the prompt with them. */}
+                {isAuthed && innerCircleGroup && (
+                  <EmptyInnerCircleNotice
+                    circle={innerCircleGroup}
+                    selected={currentShareSelection.includes(
+                      innerCircleGroup.id,
+                    )}
+                  />
+                )}
                 {/* Creating a circle needs an account; guests sharing from a
                     prompt link log in at Share instead. */}
                 {isAuthed && (
