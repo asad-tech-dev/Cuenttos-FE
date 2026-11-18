@@ -1,5 +1,8 @@
 # Cuenttos Frontend
 
+## Documentation
+Full technical documentation — architecture, routing, API integration, deployment, and known issues — lives in [`docs/`](./docs/README.md). Start there.
+
 ## Getting Started
 
 ### Prerequisites

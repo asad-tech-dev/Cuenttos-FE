@@ -1,7 +1,7 @@
 "use client";
 
 import checkAuth from "@/HOC/checkAuth";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Zap, PenLine, ArrowRight } from "lucide-react";
 import { ShareIcon } from "@/app/components/icons";
@@ -11,6 +11,7 @@ import { QuestionGroup } from "@/types/questionGroup";
 import { Challenge, TodaysPrompt } from "@/types/think";
 import { firstValidQuestion, validQuestions } from "@/lib/questionPrompt";
 import { localDateKey } from "@/lib/thinkPrompt";
+import { useLocalDayChange } from "@/lib/useLocalDayChange";
 import { buildPromptShareUrl, copyPendingText } from "@/lib/promptShareLink";
 import { getCurrentUserId, getCurrentUsername } from "@/lib/api/auth";
 import { fetchUserProfile } from "@/lib/api/profile";
@@ -124,6 +125,12 @@ function ThinkPage() {
   // Your URL-safe username slug, for signing shared links (`?from=`). Until it
   // loads — or if it can't — links fall back to the username in the token.
   const [sharerSlug, setSharerSlug] = useState<string | null>(null);
+  // The viewer's local day. Today's Prompt changes at their own midnight, so
+  // a page left open across it reloads the prompt (see useLocalDayChange).
+  const [today, setToday] = useState(() => localDateKey());
+  // Numbers each Think request, so a slow older response never overwrites a
+  // newer day's prompt.
+  const thinkRequest = useRef(0);
 
   useEffect(() => {
     const userId = getCurrentUserId();
@@ -151,6 +158,7 @@ function ThinkPage() {
         setError(null);
         // Settled, not all: the mood grid must still render if the Think
         // endpoint is unavailable, and vice versa.
+        const request = ++thinkRequest.current;
         const [activeResult, todayResult] = await Promise.allSettled([
           fetchActiveQuestionGroups(),
           fetchThinkToday(),
@@ -165,7 +173,9 @@ function ThinkPage() {
           throw activeResult.reason;
         }
 
-        if (todayResult.status === "fulfilled") {
+        if (request !== thinkRequest.current) {
+          // A newer day's prompt was already requested; it wins.
+        } else if (todayResult.status === "fulfilled") {
           setServerPrompt(todayResult.value.prompt);
           setChallenge(todayResult.value.challenge);
           setThinkResolved(true);
@@ -185,6 +195,22 @@ function ThinkPage() {
       cancelled = true;
     };
   }, []);
+
+  // A new local day while the page is open: quietly fetch that day's prompt
+  // (and challenge). Until it arrives — or if it can't — the current one
+  // stays up rather than the card flashing empty.
+  useLocalDayChange((dateKey) => {
+    setToday(dateKey);
+    const request = ++thinkRequest.current;
+    fetchThinkToday()
+      .then((result) => {
+        if (request !== thinkRequest.current) return;
+        setServerPrompt(result.prompt);
+        setChallenge(result.challenge);
+        setThinkResolved(true);
+      })
+      .catch((err) => console.error(err));
+  });
 
   const moods = useMemo(() => {
     const byId = new Map<number, Mood>();
@@ -210,8 +236,8 @@ function ThinkPage() {
     if (serverPrompt?.questionGroup) return serverPrompt.questionGroup;
     if (!groups.length) return null;
     // Same local day the server resolves against when it's reachable.
-    return groups[dailyIndex(localDateKey(), groups.length)];
-  }, [writtenPrompt, serverPrompt, groups]);
+    return groups[dailyIndex(today, groups.length)];
+  }, [writtenPrompt, serverPrompt, groups, today]);
 
   // The API names today's question outright; firstValidQuestion stays as the
   // fallback for the offline path, where dailyGroup came from the client-side

@@ -30,6 +30,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import VioletButton from "../buttons/VioletButton";
 import { hasShareAudience } from "@/lib/shareAudience";
 import CircleMembers from "./circleMembers";
+import EmptyInnerCircleNotice from "./EmptyInnerCircleNotice";
 import { Mood } from "@/types/mood";
 import { Music, Durations } from "@/types/music";
 import { Group } from "@/types/group";
@@ -192,6 +193,8 @@ export default function CuenttoForm({
     question: Question;
   } | null>(null);
   const [promptDismissed, setPromptDismissed] = useState(false);
+  // The song an admin attached to the Today's Prompt being written from.
+  const [promptMusicId, setPromptMusicId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!promptGroupId) return;
@@ -223,6 +226,7 @@ export default function CuenttoForm({
             groupTitle: "Today's Prompt",
             question: { text: thinkPrompt.text },
           });
+          if (thinkPrompt.musicId) setPromptMusicId(thinkPrompt.musicId);
         }
       } catch (error) {
         console.log(error);
@@ -625,6 +629,77 @@ export default function CuenttoForm({
     }
   }, [initialData, musics, setValue]);
 
+  // Writing from a Today's Prompt that has a song starts with that song
+  // selected and playing. Only on a fresh start — a restored draft or an edit
+  // keeps its own choice — and only if no song has been picked yet. Applied
+  // once, so the writer can change, pause or remove it freely afterwards.
+  const promptMusicApplied = useRef(false);
+  // Set while the browser has blocked autoplay: the writer's first tap or
+  // keypress (on the page or in the editor) starts the song instead.
+  const promptSongGesture = useRef<{
+    onGesture: (event?: Event) => void;
+    disarm: () => void;
+  } | null>(null);
+  useEffect(() => () => promptSongGesture.current?.disarm(), []);
+  useEffect(() => {
+    if (promptMusicApplied.current) return;
+    if (isEdit || initialData || !promptMusicId || musics.length === 0) return;
+    promptMusicApplied.current = true;
+    if (getValues("musicId")) return;
+    const match = musics.find((m) => m.id === promptMusicId);
+    if (!match) return;
+    setValue("musicId", match.id);
+    setSelectedMusic({
+      id: match.id,
+      name: match.name,
+      musicFile: match.musicFile,
+      albumArt: match.albumArt,
+      artist: match.artist,
+    });
+
+    const src = `${process.env.NEXT_PUBLIC_API_URL}/uploads/music/${match.musicFile}`;
+    // True when there's nothing left to do: it's playing, or the writer has
+    // since removed or swapped the song. False when the browser blocked it.
+    const tryPlay = async () => {
+      const audio = audioRef.current;
+      if (!audio || getValues("musicId") !== match.id) return true;
+      if (!audio.paused) return true;
+      if (audio.src !== src) {
+        audio.src = src;
+        audio.currentTime = 0;
+      }
+      try {
+        await audio.play();
+        setPlayingMusicId(match.id);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    // Coming from a click (e.g. Start Writing on a shared link) most
+    // browsers allow this straight away; Safari and fresh tabs may not.
+    void tryPlay().then((done) => {
+      if (done) return;
+      const onGesture = (event?: Event) => {
+        disarm();
+        // Their own tap on the music controls decides instead.
+        const target = event?.target;
+        if (target instanceof Element && target.closest("[data-music-control]"))
+          return;
+        void tryPlay();
+      };
+      const disarm = () => {
+        document.removeEventListener("click", onGesture, true);
+        document.removeEventListener("keydown", onGesture, true);
+        promptSongGesture.current = null;
+      };
+      document.addEventListener("click", onGesture, true);
+      document.addEventListener("keydown", onGesture, true);
+      promptSongGesture.current = { onGesture, disarm };
+    });
+  }, [isEdit, initialData, promptMusicId, musics, getValues, setValue]);
+
   useEffect(() => {
     const getMusics = async () => {
       try {
@@ -792,7 +867,22 @@ export default function CuenttoForm({
             className="cursor-pointer text-gray-9"
           />
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <div className="flex flex-row items-center gap-[15px]">
+            <div
+              className="flex flex-row items-center gap-[15px]"
+              data-music-control
+            >
+              {/* Guests (writing from a shared prompt) can't add music: they
+                  see the prompt's song, but it doesn't open the library. */}
+              {!isAuthed ? (
+                selectedMusic && (
+                  <span className="w-fit px-4 h-[32px] rounded-[100px] bg-white border border-violet flex flex-row justify-center items-center gap-[10px]">
+                    <MusicIcon width={9} height={13} className="text-violet" />
+                    <p className="text-[14px] font-medium text-violet">
+                      {selectedMusic.name}
+                    </p>
+                  </span>
+                )
+              ) : (
               <SheetTrigger asChild>
                 <button
                   type="button"
@@ -820,6 +910,7 @@ export default function CuenttoForm({
                   )}
                 </button>
               </SheetTrigger>
+              )}
               {selectedMusic && (
                 <>
                   <div
@@ -858,7 +949,10 @@ export default function CuenttoForm({
                 </>
               )}
             </div>
-            <SheetContent className="bg-white flex flex-col border-none !max-w-none !w-full md:!w-[588px] border-l px-6 py-10 sm:px-[50px] sm:py-[60px] border-light-gray overflow-hidden">
+            <SheetContent
+              data-music-control={sidebarContent === "music" ? "" : undefined}
+              className="bg-white flex flex-col border-none !max-w-none !w-full md:!w-[588px] border-l px-6 py-10 sm:px-[50px] sm:py-[60px] border-light-gray overflow-hidden"
+            >
               {sidebarContent === "music" && (
                 <>
                   <div className="flex flex-col justify-start items-start flex-1 min-h-0 w-full">
@@ -1105,6 +1199,10 @@ export default function CuenttoForm({
               apiKey={process.env.NEXT_PUBLIC_TINY_MCE || ""}
               value={field.value}
               onEditorChange={(content) => field.onChange(content)}
+              // The editor is an iframe, so its taps and keys never reach
+              // the page; pass them on for a prompt song waiting to start.
+              onClick={() => promptSongGesture.current?.onGesture()}
+              onKeyDown={() => promptSongGesture.current?.onGesture()}
               init={{
                 branding: false,
                 highlight_on_focus: false,
@@ -1417,6 +1515,16 @@ export default function CuenttoForm({
                     exclusiveValues={["self"]}
                   />
                 </div>
+                {/* Warns when the picked Inner Circle has nobody in it, and
+                    offers to add whoever shared the prompt with them. */}
+                {isAuthed && innerCircleGroup && (
+                  <EmptyInnerCircleNotice
+                    circle={innerCircleGroup}
+                    selected={currentShareSelection.includes(
+                      innerCircleGroup.id,
+                    )}
+                  />
+                )}
                 {/* Creating a circle needs an account; guests sharing from a
                     prompt link log in at Share instead. */}
                 {isAuthed && (

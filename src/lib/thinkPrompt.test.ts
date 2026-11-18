@@ -1,8 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   THINK_PROMPT_MAX_WORDS,
   countWords,
   localDateKey,
+  msUntilNextLocalMidnight,
+  viewerDayParams,
+  viewerTimeZone,
 } from "./thinkPrompt";
 import { promptDraftKey } from "./cuenttoDraft";
 
@@ -36,5 +39,51 @@ describe("localDateKey", () => {
     // 00:42 local on the 27th: local fields, whatever the machine's timezone.
     expect(localDateKey(new Date(2026, 9, 27, 0, 42))).toBe("2026-10-27");
     expect(localDateKey(new Date(2026, 0, 5, 23, 59))).toBe("2026-01-05");
+  });
+});
+
+describe("viewer's day for Think requests", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("sends the device's timezone along with its local date", () => {
+    vi.spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions").mockReturnValue({
+      timeZone: "America/Puerto_Rico",
+    } as Intl.ResolvedDateTimeFormatOptions);
+    expect(viewerTimeZone()).toBe("America/Puerto_Rico");
+    expect(viewerDayParams(new Date(2026, 10, 12, 9, 30))).toEqual({
+      date: "2026-11-12",
+      tz: "America/Puerto_Rico",
+    });
+  });
+
+  it("falls back to just the date when the timezone can't be read", () => {
+    vi.spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions").mockImplementation(
+      () => {
+        throw new Error("no Intl");
+      },
+    );
+    expect(viewerTimeZone()).toBeNull();
+    expect(viewerDayParams(new Date(2026, 10, 12, 9, 30))).toEqual({
+      date: "2026-11-12",
+    });
+  });
+
+  it("uses the local calendar day, not UTC's", () => {
+    // 00:30 local is still the previous day in UTC east of Greenwich.
+    expect(localDateKey(new Date(2026, 10, 12, 0, 30))).toBe("2026-11-12");
+    expect(localDateKey(new Date(2026, 0, 1, 23, 59))).toBe("2026-01-01");
+  });
+
+  it("measures the time left until local midnight", () => {
+    expect(msUntilNextLocalMidnight(new Date(2026, 10, 12, 23, 0, 0))).toBe(
+      60 * 60 * 1000,
+    );
+    expect(msUntilNextLocalMidnight(new Date(2026, 10, 12, 23, 59, 59))).toBe(
+      1000,
+    );
+    // Month and year boundaries.
+    expect(msUntilNextLocalMidnight(new Date(2026, 11, 31, 23, 30))).toBe(
+      30 * 60 * 1000,
+    );
   });
 });

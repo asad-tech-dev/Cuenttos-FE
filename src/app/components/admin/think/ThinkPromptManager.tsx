@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   CalendarDays,
   Lightbulb,
+  Music2,
   Pencil,
   Plus,
   Repeat,
@@ -20,7 +21,11 @@ import {
   updateThinkPrompt,
 } from "@/lib/api/think";
 import { ThinkPrompt, ThinkPromptInput } from "@/types/think";
+import { Music } from "@/types/music";
+import { fetchMusics } from "@/lib/api/music";
+import PromptMusicPicker from "./PromptMusicPicker";
 import { THINK_PROMPT_MAX_WORDS, countWords } from "@/lib/thinkPrompt";
+import { useLocalDayChange } from "@/lib/useLocalDayChange";
 import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
 import FormField from "@/app/components/ui/FormField";
 import Toggle from "@/app/components/ui/Toggle";
@@ -31,6 +36,8 @@ interface FormState {
   /** YYYY-MM-DD, or "" for the daily rotation. */
   scheduledFor: string;
   isActive: boolean;
+  /** A song id, or "" for no song. */
+  musicId: string;
 }
 
 const emptyForm: FormState = {
@@ -38,6 +45,7 @@ const emptyForm: FormState = {
   text: "",
   scheduledFor: "",
   isActive: true,
+  musicId: "",
 };
 
 export default function ThinkPromptManager() {
@@ -52,6 +60,28 @@ export default function ThinkPromptManager() {
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [pendingDelete, setPendingDelete] = useState<ThinkPrompt | null>(null);
   const [deleting, setDeleting] = useState(false);
+  // The song library for the "Background music" picker. Until it loads (or
+  // if it can't), the picker is disabled and saves leave the song as it is.
+  const [musics, setMusics] = useState<Music[]>([]);
+  const [musicsLoaded, setMusicsLoaded] = useState(false);
+  const [musicsFailed, setMusicsFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetchMusics()
+      .then((list) => {
+        if (!active) return;
+        setMusics(list ?? []);
+        setMusicsLoaded(true);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (active) setMusicsFailed(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const load = useCallback(async () => {
     // `loading` only gates the first paint (see the skeleton check below), so
@@ -76,6 +106,12 @@ export default function ThinkPromptManager() {
     load();
   }, [load]);
 
+  // Past the admin's midnight, "Live on Think today", the Scheduled/Past
+  // split and the earliest pickable date all move on a day; reload them.
+  useLocalDayChange(() => {
+    load();
+  });
+
   const wordCount = form ? countWords(form.text) : 0;
   const overLimit = wordCount > maxWords;
 
@@ -95,6 +131,10 @@ export default function ThinkPromptManager() {
       text,
       scheduledFor: form.scheduledFor || null,
       isActive: form.isActive,
+      // Only once the songs have loaded, so a failed load can't clear one.
+      ...(musicsLoaded && {
+        musicId: form.musicId ? Number(form.musicId) : null,
+      }),
     };
 
     setSaving(true);
@@ -196,6 +236,9 @@ export default function ThinkPromptManager() {
 
   const renderPrompt = (prompt: ThinkPrompt) => {
     const isLive = prompt.id === liveId;
+    const song = prompt.musicId
+      ? musics.find((m) => m.id === prompt.musicId)
+      : undefined;
     return (
       <li
         key={prompt.id}
@@ -223,6 +266,12 @@ export default function ThinkPromptManager() {
               <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-6 px-3 py-1 text-[11px] font-semibold text-dark-gray">
                 <Repeat size={12} />
                 Rotation
+              </span>
+            )}
+            {song && (
+              <span className="inline-flex max-w-[220px] items-center gap-1.5 rounded-full bg-gray-6 px-3 py-1 text-[11px] font-semibold text-dark-gray">
+                <Music2 size={12} className="shrink-0" />
+                <span className="truncate">{song.name}</span>
               </span>
             )}
             {isLive && (
@@ -254,6 +303,7 @@ export default function ThinkPromptManager() {
                   text: prompt.text,
                   scheduledFor: prompt.scheduledFor ?? "",
                   isActive: prompt.isActive,
+                  musicId: prompt.musicId ? String(prompt.musicId) : "",
                 })
               }
               aria-label={`Edit prompt: ${prompt.text}`}
@@ -423,6 +473,14 @@ export default function ThinkPromptManager() {
               )}
             </div>
           </div>
+
+          <PromptMusicPicker
+            songs={musics}
+            loaded={musicsLoaded}
+            failed={musicsFailed}
+            value={form.musicId}
+            onChange={(musicId) => setForm({ ...form, musicId })}
+          />
 
           <div className="flex flex-col gap-4 border-t border-light-gray pt-5 sm:flex-row sm:items-center sm:justify-between">
             <label className="flex items-center gap-2.5">

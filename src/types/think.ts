@@ -23,6 +23,11 @@ export interface ThinkPrompt {
   /** YYYY-MM-DD it's pinned to, or null when it's in the daily rotation. */
   scheduledFor: string | null;
   isActive: boolean;
+  /**
+   * Background song Create Cuentto starts with when writing from this
+   * prompt; null (or missing, on an older API) when none was picked.
+   */
+  musicId?: number | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -65,6 +70,8 @@ export interface ThinkPromptInput {
   /** YYYY-MM-DD pins it to that day; null puts it in the rotation. */
   scheduledFor: string | null;
   isActive?: boolean;
+  /** A song id, or null to have none. Left out, an edit keeps the song. */
+  musicId?: number | null;
 }
 
 export interface ChallengeList {
