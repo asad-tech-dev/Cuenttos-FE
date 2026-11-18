@@ -43,7 +43,7 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
     id: "write",
     target: "nav-write",
     title: "Write",
-    body: "Your writing desk. Begin a Cuentto from a prompt or a blank page, then pick a mood and some background music.",
+    body: "Your writing desk. Begin a Cuentto from a prompt or a blank page, then pick a mood and some background music, and share it with your personal circles.",
   },
   {
     id: "share",
