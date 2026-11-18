@@ -8,7 +8,7 @@ import {
   ThinkToday,
 } from "@/types/think";
 import { Challenge, ChallengeToggleResult } from "@/types/think";
-import { localDateKey } from "@/lib/thinkPrompt";
+import { viewerDayParams } from "@/lib/thinkPrompt";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -35,9 +35,9 @@ export const fetchThinkToday = async (): Promise<ThinkToday> => {
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
     },
-    // The viewer's local day, so a prompt scheduled for today shows on their
-    // today rather than on the server's UTC day.
-    params: { date: localDateKey(), _: Date.now() },
+    // The viewer's timezone and local day, so a prompt scheduled for today
+    // shows from their own midnight rather than the server's.
+    params: { ...viewerDayParams(), _: Date.now() },
   });
   return {
     prompt: response.data?.prompt ?? null,
@@ -97,8 +97,8 @@ export const fetchThinkPromptBySlug = async (
 export const fetchThinkPrompts = async (): Promise<ThinkPromptList> => {
   const response = await axios.get(`${API_URL}/api/admin/think-prompts`, {
     headers: authHeaders(),
-    // Same local day the Think page sends, so both agree on "today".
-    params: { date: localDateKey(), _: Date.now() },
+    // Same timezone and day the Think page sends, so both agree on "today".
+    params: { ...viewerDayParams(), _: Date.now() },
   });
   return {
     today: response.data?.today ?? "",

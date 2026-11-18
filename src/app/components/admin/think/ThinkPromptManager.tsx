@@ -25,6 +25,7 @@ import { Music } from "@/types/music";
 import { fetchMusics } from "@/lib/api/music";
 import PromptMusicPicker from "./PromptMusicPicker";
 import { THINK_PROMPT_MAX_WORDS, countWords } from "@/lib/thinkPrompt";
+import { useLocalDayChange } from "@/lib/useLocalDayChange";
 import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
 import FormField from "@/app/components/ui/FormField";
 import Toggle from "@/app/components/ui/Toggle";
@@ -104,6 +105,12 @@ export default function ThinkPromptManager() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Past the admin's midnight, "Live on Think today", the Scheduled/Past
+  // split and the earliest pickable date all move on a day; reload them.
+  useLocalDayChange(() => {
+    load();
+  });
 
   const wordCount = form ? countWords(form.text) : 0;
   const overLimit = wordCount > maxWords;
