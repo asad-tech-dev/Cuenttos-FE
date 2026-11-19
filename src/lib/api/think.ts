@@ -8,7 +8,7 @@ import {
   ThinkToday,
 } from "@/types/think";
 import { Challenge, ChallengeToggleResult } from "@/types/think";
-import { viewerDayParams } from "@/lib/thinkPrompt";
+import { viewerDayParams, viewerTimeZone } from "@/lib/thinkPrompt";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -139,10 +139,18 @@ export const deleteThinkPrompt = async (id: number): Promise<void> => {
 // Admin — Challenges
 // --------------------------------------------------------------------------
 
+// Show from / Show until apply in each viewer's own timezone, so which
+// challenge is "on Think now" depends on whose clock. Every call that returns
+// `liveChallengeId` sends the admin's zone, so it's what they'd see on Think.
+const adminZoneParams = () => {
+  const tz = viewerTimeZone();
+  return tz ? { tz } : {};
+};
+
 export const fetchChallenges = async (): Promise<ChallengeList> => {
   const response = await axios.get(`${API_URL}/api/admin/challenges`, {
     headers: authHeaders(),
-    params: { _: Date.now() },
+    params: { ...adminZoneParams(), _: Date.now() },
   });
   return {
     liveChallengeId: response.data?.liveChallengeId ?? null,
@@ -155,6 +163,7 @@ export const createChallenge = async (
 ): Promise<Challenge> => {
   const response = await axios.post(`${API_URL}/api/admin/challenges`, data, {
     headers: authHeaders(),
+    params: adminZoneParams(),
   });
   return response.data.challenge;
 };
@@ -166,7 +175,7 @@ export const updateChallenge = async (
   const response = await axios.patch(
     `${API_URL}/api/admin/challenges/${id}`,
     data,
-    { headers: authHeaders() },
+    { headers: authHeaders(), params: adminZoneParams() },
   );
   return response.data.challenge;
 };
@@ -184,7 +193,7 @@ export const toggleChallengeActive = async (
   const response = await axios.patch(
     `${API_URL}/api/admin/challenges/${id}/${next ? "activate" : "deactivate"}`,
     {},
-    { headers: authHeaders() },
+    { headers: authHeaders(), params: adminZoneParams() },
   );
   return {
     challenge: response.data.challenge,

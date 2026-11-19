@@ -6,9 +6,15 @@ export interface Challenge {
   description: string;
   /** Composer countdown length, bounded 60..3600; null = no time limit. */
   durationSeconds: number | null;
-  /** Display-window bounds. Null on either side means "no bound" there. */
+  /**
+   * Display-window bounds. Null on either side means "no bound" there.
+   * With `viewerLocalTime` they're wall-clock times with no offset
+   * ("2026-11-20T00:00:00"), applied in each viewer's own timezone; otherwise
+   * fixed instants (ISO with offset), as every challenge was before.
+   */
   startsAt?: string | null;
   endsAt?: string | null;
+  viewerLocalTime?: boolean;
   isActive: boolean;
 }
 
@@ -91,6 +97,10 @@ export interface ChallengeInput {
   description: string;
   /** null = no time limit. */
   durationSeconds: number | null;
+  /**
+   * "YYYY-MM-DDTHH:mm" with no offset = that time in each viewer's own
+   * timezone (what the admin form sends); null = no bound.
+   */
   startsAt?: string | null;
   endsAt?: string | null;
   isActive?: boolean;

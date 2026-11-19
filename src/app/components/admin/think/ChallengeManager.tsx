@@ -28,17 +28,23 @@ import Toggle from "@/app/components/ui/Toggle";
 const MIN_MINUTES = 1;
 const MAX_MINUTES = 60;
 
-// <input type="datetime-local"> speaks local wall-clock time with no zone;
-// these convert to and from the ISO instants the API stores.
-const toLocalInput = (iso?: string | null) => {
-  if (!iso) return "";
-  const date = new Date(iso);
+// <input type="datetime-local"> speaks wall-clock time with no zone, and
+// that's exactly what's saved: "Nov 20, 00:00" opens at midnight on the 20th
+// in each viewer's own timezone (Berlin, Karachi, Puerto Rico…), like a
+// scheduled Today's Prompt -- not at the admin's midnight for everyone.
+//
+// Reading back: a viewer-local value arrives without an offset, which Date
+// parses as local time, so the same wall-clock comes back. A challenge saved
+// before this is a fixed instant (with an offset) and shows in the admin's
+// own time; saving it from the form makes it viewer-local.
+const toLocalInput = (value?: string | null) => {
+  if (!value) return "";
+  const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
-const fromLocalInput = (value: string) =>
-  value ? new Date(value).toISOString() : null;
+const fromLocalInput = (value: string) => value || null;
 
 interface FormState {
   id: number | null;
@@ -84,9 +90,11 @@ const describeWindow = (challenge: Challenge) => {
     ? new Date(challenge.endsAt).toLocaleString()
     : null;
   if (!start && !end) return "Always, while active";
-  if (start && !end) return `From ${start}`;
-  if (!start && end) return `Until ${end}`;
-  return `${start} → ${end}`;
+  // Viewer-local windows say so; ones saved before read exactly as they did.
+  const zone = challenge.viewerLocalTime ? " · each viewer's local time" : "";
+  if (start && !end) return `From ${start}${zone}`;
+  if (!start && end) return `Until ${end}${zone}`;
+  return `${start} → ${end}${zone}`;
 };
 
 /**
@@ -422,7 +430,7 @@ export default function ChallengeManager() {
                     type="datetime-local"
                     value={form.startsAt}
                     onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
-                    hint="Empty = as soon as it's active."
+                    hint="Each viewer's local time. Empty = as soon as it's active."
                   />
                 </RemovableField>
               )}
@@ -438,7 +446,7 @@ export default function ChallengeManager() {
                     type="datetime-local"
                     value={form.endsAt}
                     onChange={(e) => setForm({ ...form, endsAt: e.target.value })}
-                    hint="Empty = until you deactivate it."
+                    hint="Each viewer's local time. Empty = until you deactivate it."
                   />
                 </RemovableField>
               )}
