@@ -1,6 +1,7 @@
 import axios from "axios";
 import { LoginFormData } from "../formSchemas/auth";
 import { RegisterFormData } from "../formSchemas/auth";
+import { normalizeEmail } from "../email";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -10,7 +11,10 @@ export interface LoginResponse {
 }
 
 export const loginUser = async (data: LoginFormData): Promise<LoginResponse> => {
-  const response = await axios.post(`${API_URL}/api/auth/login`, data, {
+  // Lowercased here, so every sign-in (login page, guest popup, the one right
+  // after sign-up) works however the email was typed.
+  const credentials = { ...data, email: normalizeEmail(data.email) };
+  const response = await axios.post(`${API_URL}/api/auth/login`, credentials, {
     headers: {
       "Content-Type": "application/json",
       // Identify as a web client so the backend delivers the refresh token as
@@ -218,7 +222,10 @@ export const getCurrentUsername = (): string | null => {
 export const registerUser = async (
   data: RegisterFormData & { referrer?: string },
 ) => {
-  const response = await axios.post(`${API_URL}/api/auth/register`, data, {
+  // New accounts are saved lowercase, matching what loginUser sends, so the
+  // sign-in right after sign-up (and every later one) finds the account.
+  const account = { ...data, email: normalizeEmail(data.email) };
+  const response = await axios.post(`${API_URL}/api/auth/register`, account, {
     headers: {
       "Content-Type": "application/json",
     },

@@ -3,10 +3,12 @@
 import checkAuth from "@/HOC/checkAuth";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Star, Zap, PenLine, ArrowRight } from "lucide-react";
+import { Star, Zap, PenLine, ArrowRight, Music as MusicIcon } from "lucide-react";
 import { ShareIcon } from "@/app/components/icons";
 import { fetchActiveQuestionGroups } from "@/lib/api/questionGroup";
 import { fetchThinkToday } from "@/lib/api/think";
+import { fetchMusics } from "@/lib/api/music";
+import { Music } from "@/types/music";
 import { QuestionGroup } from "@/types/questionGroup";
 import { Challenge, TodaysPrompt } from "@/types/think";
 import { firstValidQuestion, validQuestions } from "@/lib/questionPrompt";
@@ -230,6 +232,30 @@ function ThinkPage() {
   // has no question group behind it.
   const writtenPrompt = serverPrompt?.thinkPrompt ?? null;
 
+  // The song the admin picked for today's written prompt, shown on the card.
+  // The prompt only carries its id, so the name comes from the same song list
+  // Create Cuentto uses -- fetched only when a prompt actually has a song, and
+  // once per visit (a new day's prompt reuses it). A song that's gone or a
+  // list that can't load just means no song line, never a broken card.
+  const promptMusicId = writtenPrompt?.musicId ?? null;
+  const [musics, setMusics] = useState<Music[] | null>(null);
+  useEffect(() => {
+    if (promptMusicId == null || musics) return;
+    let cancelled = false;
+    fetchMusics()
+      .then((list) => {
+        if (!cancelled) setMusics(Array.isArray(list) ? list : []);
+      })
+      .catch((err) => console.error(err));
+    return () => {
+      cancelled = true;
+    };
+  }, [promptMusicId, musics]);
+  const promptSong =
+    promptMusicId == null
+      ? null
+      : (musics?.find((song) => song.id === promptMusicId) ?? null);
+
   const dailyGroup = useMemo(() => {
     if (writtenPrompt) return null;
     // Otherwise the server's automatic question pick.
@@ -336,10 +362,31 @@ function ThinkPage() {
                   className="absolute -bottom-16 right-10 w-[220px] h-[220px] rounded-full bg-white/5"
                 />
                 <div className="relative z-10 flex flex-col gap-5">
-                  <span className="inline-flex items-center gap-1.5 w-fit bg-white/15 text-white text-[12px] font-semibold px-3 py-1.5 rounded-full">
-                    <Star size={12} className="fill-white text-white" />
-                    Daily pick
-                  </span>
+                  {/* The prompt's song sits beside "Daily pick" as a matching
+                      pill; without one the row is just "Daily pick", as before.
+                      On a narrow screen a long name wraps under it and is cut
+                      off with an ellipsis rather than overflowing the card. */}
+                  <div className="flex flex-wrap items-center gap-2 min-w-0">
+                    <span className="inline-flex items-center gap-1.5 w-fit shrink-0 bg-white/15 text-white text-[12px] font-semibold px-3 py-1.5 rounded-full">
+                      <Star size={12} className="fill-white text-white" />
+                      Daily pick
+                    </span>
+                    {writtenPrompt && promptSong && (
+                      <span
+                        data-testid="todays-prompt-song"
+                        title={
+                          promptSong.artist
+                            ? `${promptSong.name} · ${promptSong.artist}`
+                            : promptSong.name
+                        }
+                        className="inline-flex items-center gap-1.5 min-w-0 max-w-full bg-white/15 text-white text-[12px] font-semibold px-3 py-1.5 rounded-full"
+                      >
+                        <MusicIcon size={12} aria-hidden className="shrink-0" />
+                        <span className="sr-only">Background music: </span>
+                        <span className="truncate">{promptSong.name}</span>
+                      </span>
+                    )}
+                  </div>
                   <ClampedText
                     text={`"${dailyText}"`}
                     className="text-white text-[22px] sm:text-[28px] leading-[30px] sm:leading-[36px] font-medium max-w-[640px]"
