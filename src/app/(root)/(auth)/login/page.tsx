@@ -1,11 +1,15 @@
 import Spinner from "@/app/components/ui/Spinner";
 import LoginForm from "@/app/components/forms/login";
+import SessionRestoreGate from "@/app/components/auth/SessionRestoreGate";
 
 import { Suspense } from "react";
 
 export default function LoginPage() {
   return (
     <div className="flex flex-col gap-[20px] w-[360px] h-[480px]">
+      {/* Outside the Suspense below so it's in the server HTML: covers this
+          screen before first paint for someone who's still signed in. */}
+      <SessionRestoreGate />
       <h1 className="text-[45px] text-white font-normal leading-[52px]">
         Sign In
       </h1>
