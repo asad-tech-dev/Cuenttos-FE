@@ -7,10 +7,22 @@ import "@fontsource-variable/inter";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import AuthInterceptorProvider from "@/app/components/AuthInterceptorProvider";
+import { siteUrl } from "@/lib/og/siteUrl";
 
 export const metadata: Metadata = {
+  // Makes og:image / og:url absolute, which link-preview crawlers require.
+  metadataBase: siteUrl(),
   title: "Cuentto",
   description: "Free your mind, Write your mind",
+  // Defaults for any shared link; pages with their own preview (a public
+  // Cuentto, a prompt) override these. The image is app/opengraph-image.tsx.
+  openGraph: {
+    type: "website",
+    siteName: "Cuentto",
+    title: "Cuentto",
+    description: "Free your mind, Write your mind",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({

@@ -1,29 +1,28 @@
-"use client";
-import { useCallback } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import CuenttoDetailView from "@/app/components/ui/cuenttos/CuenttoDetailView";
-import { fetchDetailCuenttoBySlug } from "@/lib/api/cuentto";
+import type { Metadata } from "next";
+import CuenttoBySlugClient from "./CuenttoBySlugClient";
+import {
+  cuenttoMetadata,
+  fetchPublicCuenttoBySlug,
+} from "@/lib/og/cuenttoShareMeta";
 
-function CuenttoBySlugPage() {
-  const searchParams = useSearchParams();
-  const { username, slug } = useParams();
-  const isFeatured = searchParams.get("featured") === "true";
-
-  const usernameSlug = Array.isArray(username) ? username[0] : username;
-  const cuenttoSlug = Array.isArray(slug) ? slug[0] : slug;
-  const paramsValid = Boolean(usernameSlug && cuenttoSlug);
-
-  const fetchCuentto = useCallback(
-    () => fetchDetailCuenttoBySlug(usernameSlug as string, cuenttoSlug as string),
-    [usernameSlug, cuenttoSlug],
-  );
-
-  return (
-    <CuenttoDetailView
-      fetchCuentto={fetchCuentto}
-      paramsValid={paramsValid}
-      isFeatured={isFeatured}
-    />
-  );
+interface CuenttoPageProps {
+  params: Promise<{ username: string; slug: string }>;
 }
-export default CuenttoBySlugPage;
+
+// Server wrapper so a shared link carries the Cuentto's own title, excerpt
+// and preview image (opengraph-image.tsx) for Facebook, WhatsApp, X, etc.
+// The page itself is unchanged: it still loads in the browser, with the
+// viewer's token, exactly as before.
+export async function generateMetadata({
+  params,
+}: CuenttoPageProps): Promise<Metadata> {
+  const { username, slug } = await params;
+  const cuentto = await fetchPublicCuenttoBySlug(username, slug);
+  // Not public (or not found): keep the site-wide defaults, so nothing about
+  // a private Cuentto ends up in the tags.
+  return cuentto ? cuenttoMetadata(cuentto) : {};
+}
+
+export default function CuenttoBySlugPage() {
+  return <CuenttoBySlugClient />;
+}
