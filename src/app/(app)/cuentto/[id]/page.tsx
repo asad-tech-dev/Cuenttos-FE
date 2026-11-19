@@ -1,29 +1,24 @@
-"use client";
-import { useCallback } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import CuenttoDetailView from "@/app/components/ui/cuenttos/CuenttoDetailView";
-import { fetchDetailCuentto } from "@/lib/api/cuentto";
+import type { Metadata } from "next";
+import CuenttoByIdClient from "./CuenttoByIdClient";
+import {
+  cuenttoMetadata,
+  fetchPublicCuenttoById,
+} from "@/lib/og/cuenttoShareMeta";
 
-function CuenttoDetailPageContent() {
-  const searchParams = useSearchParams();
-  const { id } = useParams();
-  const isFeatured = searchParams.get("featured") === "true";
-
-  const rawId = Array.isArray(id) ? id[0] : id;
-  const numericId = Number(rawId);
-  const paramsValid = Boolean(rawId) && Number.isInteger(numericId) && numericId > 0;
-
-  const fetchCuentto = useCallback(
-    () => fetchDetailCuentto(numericId),
-    [numericId],
-  );
-
-  return (
-    <CuenttoDetailView
-      fetchCuentto={fetchCuentto}
-      paramsValid={paramsValid}
-      isFeatured={isFeatured}
-    />
-  );
+interface CuenttoPageProps {
+  params: Promise<{ id: string }>;
 }
-export default CuenttoDetailPageContent;
+
+// Legacy /cuentto/{id} links: same link preview as the slug route (og:url
+// points at the canonical slug link). The page itself is unchanged.
+export async function generateMetadata({
+  params,
+}: CuenttoPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const cuentto = await fetchPublicCuenttoById(id);
+  return cuentto ? cuenttoMetadata(cuentto) : {};
+}
+
+export default function CuenttoDetailPage() {
+  return <CuenttoByIdClient />;
+}
