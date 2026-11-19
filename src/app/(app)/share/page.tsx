@@ -42,8 +42,11 @@ function SectionEmptyState({
 function SharePage() {
   const [cuenttos, setCuenttos] = useState<Cuentto[]>([]);
   const [featured, setFeatured] = useState<FeaturedCuentto[]>([]);
-  const [loading1, setLoading1] = useState(false);
-  const [loading2, setLoading2] = useState(false);
+  // One flag per section, each tied to its own request. Both start true so
+  // the very first render (before the fetches begin) shows skeletons, never
+  // the "nothing here yet" empty states.
+  const [loadingShared, setLoadingShared] = useState(true);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
   // Mood filter for "Shared to you" (like the mobile feed). Only moods that
   // actually appear in the list are offered; null means "All".
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -57,34 +60,44 @@ function SharePage() {
   const visibleCuenttos = activeMood
     ? cuenttos.filter((c) => moodKeyOf(c.mood) === activeMood)
     : cuenttos;
+  // `active` drops a response that lands after unmount (or after React's
+  // dev-mode effect re-run), so a stale request can't end the loading state.
   useEffect(() => {
+    let active = true;
     const getCuenttos = async () => {
       try {
-        setLoading1(true);
+        setLoadingShared(true);
         const data = await fetchAllCuenttos();
-        setCuenttos(data);
+        if (active) setCuenttos(data);
       } catch (error) {
         console.log(error)
       } finally {
-        setLoading1(false);
+        if (active) setLoadingShared(false);
       }
     };
     getCuenttos();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
+    let active = true;
     const getFeatured = async () => {
       try {
-        setLoading2(true);
+        setLoadingFeatured(true);
         const data = await fetchFeaturedCuenttos();
-        setFeatured(data);
+        if (active) setFeatured(data);
       } catch (error) {
         console.log(error)
       } finally {
-        setLoading2(false);
+        if (active) setLoadingFeatured(false);
       }
     };
     getFeatured();
+    return () => {
+      active = false;
+    };
   }, []);
   return (
     <div className="px-4 sm:px-6 md:px-[60px] lg:pl-[110px] lg:pr-6 overflow-x-hidden">
@@ -92,7 +105,7 @@ function SharePage() {
         <h2 className="text-violet text-[14px] sm:text-[16px] font-bold flex items-center gap-1.5">
           <span aria-hidden>🔥</span> TRENDING CUENTTOS
         </h2>
-        {loading1 ? (
+        {loadingFeatured ? (
           <SkeletonCuenttoFeatured />
         ) : featured.length === 0 ? (
           <SectionEmptyState
@@ -117,7 +130,7 @@ function SharePage() {
         <h2 className="text-dark-gray text-[12px] font-medium flex items-center gap-1.5">
           <span aria-hidden>💌</span> SHARED TO YOU
         </h2>
-        {loading2 ? (
+        {loadingShared ? (
           <SkeletonCuenttoFeed />
         ) : cuenttos.length === 0 ? (
           <SectionEmptyState
